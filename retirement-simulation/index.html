@@ -700,6 +700,18 @@
       font-size: 11px;
       font-weight: 600;
     }
+    .cut-badge {
+      display: inline-block;
+      margin-left: 5px;
+      padding: 0 5px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--expense);
+      font-size: 10px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -784,6 +796,50 @@
             <button type="button" class="chip" data-wr="5">5%</button>
             <button type="button" class="chip" data-wr="6">6%</button>
           </div>
+        </div>
+
+        <div class="control-group">
+          <label for="expenseFloorPct">
+            <span>Expense Range (Bad-Yr Min – 100%)</span>
+            <span class="label-hint" id="expFloorHint">Fixed 100%</span>
+          </label>
+          <select id="expenseFloorPct">
+            <option value="100" selected>100% — Fixed (No Bad-Year Reduction)</option>
+            <option value="95">95% – 100% (Reduce to 95% in Bad Yrs)</option>
+            <option value="90">90% – 100% (Reduce to 90% in Bad Yrs)</option>
+            <option value="85">85% – 100% (Reduce to 85% in Bad Yrs)</option>
+            <option value="80">80% – 100% (Reduce to 80% in Bad Yrs)</option>
+            <option value="75">75% – 100% (Reduce to 75% in Bad Yrs)</option>
+            <option value="70">70% – 100% (Reduce to 70% in Bad Yrs)</option>
+            <option value="65">65% – 100% (Reduce to 65% in Bad Yrs)</option>
+            <option value="60">60% – 100% (Reduce to 60% in Bad Yrs)</option>
+            <option value="55">55% – 100% (Reduce to 55% in Bad Yrs)</option>
+            <option value="50">50% – 100% (Reduce to 50% in Bad Yrs)</option>
+            <option value="40">40% – 100% (Reduce to 40% in Bad Yrs)</option>
+            <option value="25">25% – 100% (Reduce to 25% in Bad Yrs)</option>
+            <option value="0">0% – 100% (Skip Expense in Bad Yrs)</option>
+          </select>
+          <div class="chips" id="expFloorChips">
+            <button type="button" class="chip active" data-floor="100">100%</button>
+            <button type="button" class="chip" data-floor="90">90%</button>
+            <button type="button" class="chip" data-floor="80">80%</button>
+            <button type="button" class="chip" data-floor="75">75%</button>
+            <button type="button" class="chip" data-floor="60">60%</button>
+            <button type="button" class="chip" data-floor="50">50%</button>
+          </div>
+        </div>
+
+        <div class="control-group" id="badYearTriggerGroup">
+          <label for="badYearTrigger">
+            <span>Bad-Year Reduction Trigger</span>
+            <span class="label-hint" id="triggerStateHint">Select &lt;100%</span>
+          </label>
+          <select id="badYearTrigger">
+            <option value="neg_return" selected>Negative Portfolio Return (&lt; 0%)</option>
+            <option value="below_initial">Balance Below Initial Asset</option>
+            <option value="below_real_initial">Balance Below Inflation-Adj. Initial</option>
+            <option value="in_drawdown">Balance Below Prior Peak (In Drawdown)</option>
+          </select>
         </div>
 
         <div class="control-group">
@@ -1030,6 +1086,7 @@
                 <button type="button" class="filter-pill active" data-filter="all">All Years</button>
                 <button type="button" class="filter-pill" data-filter="neg">Negative Return</button>
                 <button type="button" class="filter-pill" data-filter="dd10">Drawdown &gt; 10%</button>
+                <button type="button" class="filter-pill" id="filterCutBtn" data-filter="cut" style="display:none;">Reduced Expense</button>
               </div>
               <span id="ledgerCount" style="font-family:var(--mono); font-weight:500;"></span>
             </div>
@@ -1213,6 +1270,11 @@
     const elLblBdPct = document.getElementById("lblBdPct");
     const elExpense = document.getElementById("initialExpense");
     const elWrHint = document.getElementById("wrHint");
+    const elExpFloorPct = document.getElementById("expenseFloorPct");
+    const elExpFloorHint = document.getElementById("expFloorHint");
+    const elBadYearTriggerGroup = document.getElementById("badYearTriggerGroup");
+    const elBadYearTrigger = document.getElementById("badYearTrigger");
+    const elTriggerStateHint = document.getElementById("triggerStateHint");
     const elInfSource = document.getElementById("inflationSource");
     const elFixedInfGroup = document.getElementById("fixedInfGroup");
     const elFixedInfPct = document.getElementById("fixedInflationPct");
@@ -1500,17 +1562,56 @@
       return pool;
     }
 
-    function stepBenchmark(prevBal, targetExpNom, rAsset, timing) {
-      if (prevBal <= 0) return 0;
-      if (timing === "start") {
-        const afterWithdraw = prevBal - targetExpNom;
-        if (afterWithdraw <= 0) return 0;
-        return afterWithdraw * (1 + rAsset);
-      } else {
-        const grown = prevBal * (1 + rAsset);
-        const afterWithdraw = grown - targetExpNom;
-        return afterWithdraw <= 0 ? 0 : afterWithdraw;
+    function checkIsBadYear({ trigger, timing, stepIdx, balAtWithdraw, initialAsset, infIdxAtWithdraw, peakNom, prevRetNomPct, curRetNomPct }) {
+      const trig = trigger || "neg_return";
+      if (trig === "neg_return") {
+        if (timing === "start") return stepIdx > 0 && prevRetNomPct !== null && prevRetNomPct < 0;
+        return curRetNomPct < 0;
       }
+      if (trig === "below_initial") {
+        return balAtWithdraw < initialAsset - 1e-6;
+      }
+      if (trig === "below_real_initial") {
+        return balAtWithdraw < (initialAsset * infIdxAtWithdraw) - 1e-6;
+      }
+      if (trig === "in_drawdown") {
+        return balAtWithdraw < peakNom - 1e-6;
+      }
+      return false;
+    }
+
+    function stepBenchmark(bState, baseTargetExpNom, rAsset, cfg, prevInfIndex, cumInfIndex, stepIdx) {
+      if (bState.bal <= 0) {
+        bState.prevRetNomPct = 0;
+        return;
+      }
+      const { initialAsset, initialExpense, withdrawTiming, expenseFloorPct, badYearTrigger } = cfg;
+      const floorPct = expenseFloorPct !== undefined ? expenseFloorPct : 100;
+      const floorRatio = floorPct / 100.0;
+      const rPct = rAsset * 100;
+      if (withdrawTiming === "start") {
+        const isBad = checkIsBadYear({
+          trigger: badYearTrigger, timing: "start", stepIdx,
+          balAtWithdraw: bState.bal, initialAsset, infIdxAtWithdraw: prevInfIndex,
+          peakNom: bState.peakNom, prevRetNomPct: bState.prevRetNomPct, curRetNomPct: 0
+        });
+        const effExp = (initialExpense > 0 && floorPct < 100 && isBad) ? baseTargetExpNom * floorRatio : baseTargetExpNom;
+        const afterWithdraw = bState.bal - effExp;
+        bState.bal = afterWithdraw <= 0 ? 0 : afterWithdraw * (1 + rAsset);
+        bState.prevRetNomPct = afterWithdraw > 0 ? rPct : 0;
+      } else {
+        const grown = bState.bal * (1 + rAsset);
+        const isBad = checkIsBadYear({
+          trigger: badYearTrigger, timing: "end", stepIdx,
+          balAtWithdraw: grown, initialAsset, infIdxAtWithdraw: cumInfIndex,
+          peakNom: bState.peakNom, prevRetNomPct: bState.prevRetNomPct, curRetNomPct: rPct
+        });
+        const effExp = (initialExpense > 0 && floorPct < 100 && isBad) ? baseTargetExpNom * floorRatio : baseTargetExpNom;
+        const afterWithdraw = grown - effExp;
+        bState.bal = afterWithdraw <= 0 ? 0 : afterWithdraw;
+        bState.prevRetNomPct = rPct;
+      }
+      if (bState.bal > bState.peakNom) bState.peakNom = bState.bal;
     }
 
     function runSequence(yearSeq, cfg) {
@@ -1526,18 +1627,25 @@
         withdrawTiming,
         displayBasis
       } = cfg;
+      const expenseFloorPct = cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100;
+      const badYearTrigger = cfg.badYearTrigger || "neg_return";
+      const floorRatio = expenseFloorPct / 100.0;
 
       const bdWeight = 1.0 - eqWeight;
       let eqVal = initialAsset * eqWeight;
       let bdVal = initialAsset * bdWeight;
-      let benchEq = initialAsset;
-      let benchBd = initialAsset;
+      const benchEqState = { bal: initialAsset, peakNom: initialAsset, prevRetNomPct: null };
+      const benchBdState = { bal: initialAsset, peakNom: initialAsset, prevRetNomPct: null };
 
       let curExpenseNom = Math.max(0, initialExpense);
       let cumInfIndex = 1.0;
       let depletedStep = null;
       let depletedHistYear = null;
       let totalExpenseDisp = 0;
+
+      let peakNom = initialAsset;
+      let prevPortRetNomPct = null;
+      let cutYearsCount = 0;
 
       let peakDisp = initialAsset;
       let maxDD = 0;
@@ -1553,6 +1661,8 @@
         benchEq: initialAsset,
         benchBd: initialAsset,
         expense: 0,
+        expCutApplied: false,
+        expPctApplied: 0,
         infPct: null,
         dd: 0
       }];
@@ -1572,17 +1682,16 @@
         const prevInfIndex = cumInfIndex;
         cumInfIndex *= (1 + infRate);
 
-        let targetExpNom = curExpenseNom;
-        if (withdrawTiming === "end") {
-          targetExpNom = curExpenseNom * (1 + infRate);
-        }
+        const baseTargetExpNom = withdrawTiming === "end" ? curExpenseNom * (1 + infRate) : curExpenseNom;
 
-        benchEq = stepBenchmark(benchEq, targetExpNom, rEqNom, withdrawTiming);
-        benchBd = stepBenchmark(benchBd, targetExpNom, rBdNom, withdrawTiming);
+        stepBenchmark(benchEqState, baseTargetExpNom, rEqNom, cfg, prevInfIndex, cumInfIndex, i);
+        stepBenchmark(benchBdState, baseTargetExpNom, rBdNom, cfg, prevInfIndex, cumInfIndex, i);
 
         let actualExpNom = 0;
         let portRetPct = 0;
         let endNom = 0;
+        let expCutApplied = false;
+        let targetExpNom = baseTargetExpNom;
 
         if (startNom <= 0) {
           eqVal = 0;
@@ -1591,6 +1700,13 @@
           actualExpNom = 0;
           portRetPct = 0;
         } else if (withdrawTiming === "start") {
+          const isBadYear = checkIsBadYear({
+            trigger: badYearTrigger, timing: "start", stepIdx: i,
+            balAtWithdraw: startNom, initialAsset, infIdxAtWithdraw: prevInfIndex,
+            peakNom, prevRetNomPct: prevPortRetNomPct, curRetNomPct: 0
+          });
+          expCutApplied = initialExpense > 0 && expenseFloorPct < 100 && isBadYear;
+          targetExpNom = expCutApplied ? baseTargetExpNom * floorRatio : baseTargetExpNom;
           if (startNom <= targetExpNom) {
             actualExpNom = startNom;
             eqVal = 0;
@@ -1619,6 +1735,13 @@
           const grownBd = bdVal * (1 + rBdNom);
           const preWithdraw = grownEq + grownBd;
           portRetPct = ((preWithdraw / startNom) - 1) * 100;
+          const isBadYear = checkIsBadYear({
+            trigger: badYearTrigger, timing: "end", stepIdx: i,
+            balAtWithdraw: preWithdraw, initialAsset, infIdxAtWithdraw: cumInfIndex,
+            peakNom, prevRetNomPct: prevPortRetNomPct, curRetNomPct: portRetPct
+          });
+          expCutApplied = initialExpense > 0 && expenseFloorPct < 100 && isBadYear;
+          targetExpNom = expCutApplied ? baseTargetExpNom * floorRatio : baseTargetExpNom;
           if (preWithdraw <= targetExpNom) {
             actualExpNom = Math.max(0, preWithdraw);
             eqVal = 0;
@@ -1639,6 +1762,11 @@
           }
         }
 
+        if (expCutApplied) cutYearsCount += 1;
+        prevPortRetNomPct = startNom > 0 ? portRetPct : 0;
+        if (endNom > peakNom) peakNom = endNom;
+        const expPctApplied = (startNom <= 0 || initialExpense <= 0) ? 0 : (expCutApplied ? expenseFloorPct : 100);
+
         curExpenseNom = curExpenseNom * (1 + infRate);
 
         const deflatorStart = displayBasis === "real" ? prevInfIndex : 1.0;
@@ -1650,8 +1778,8 @@
         const endEqDisp = eqVal / deflatorEnd;
         const endBdDisp = bdVal / deflatorEnd;
         const endDisp = endNom / deflatorEnd;
-        const benchEqDisp = benchEq / deflatorEnd;
-        const benchBdDisp = benchBd / deflatorEnd;
+        const benchEqDisp = benchEqState.bal / deflatorEnd;
+        const benchBdDisp = benchBdState.bal / deflatorEnd;
 
         totalExpenseDisp += expDisp;
 
@@ -1679,6 +1807,8 @@
           depleted: endNom <= 0,
           startDisp,
           expDisp,
+          expCutApplied,
+          expPctApplied,
           infPct,
           eqRetPct: rEqDisp,
           bdRetPct: rBdDisp,
@@ -1697,6 +1827,8 @@
           benchEq: benchEqDisp,
           benchBd: benchBdDisp,
           expense: expDisp,
+          expCutApplied,
+          expPctApplied,
           infPct,
           dd: dd * 100
         });
@@ -1741,6 +1873,9 @@
         depletedHistYear,
         totalExpenseDisp,
         finalExpDisp: lastActiveExp ? lastActiveExp.expDisp : 0,
+        cutYearsCount,
+        activeYearsCount: rows.filter(r => r.startDisp > 0).length,
+        expenseFloorPct,
         avgInfPct,
         cumInfIndex,
         twwr,
@@ -2061,6 +2196,7 @@
       const filtered = sim.rows.filter(r => {
         if (filter === "neg") return r.portRetPct < 0 && !(r.depleted && r.startDisp <= 0);
         if (filter === "dd10") return r.ddPct < -10;
+        if (filter === "cut") return r.expCutApplied;
         return true;
       });
 
@@ -2078,7 +2214,10 @@
           <td><strong>Yr ${r.step}</strong></td>
           <td><span class="year-pill">${r.histYear}</span></td>
           <td>${fmtExactMoney(r.startDisp)}</td>
-          <td class="exp-col">${r.expDisp > 0 ? "-" + fmtExactMoney(r.expDisp) : '<span class="muted">$0</span>'}</td>
+          <td class="exp-col">${(() => {
+            const cutBadge = r.expCutApplied ? `<span class="cut-badge">${r.expPctApplied}%</span>` : "";
+            return r.expDisp > 0 ? "-" + fmtExactMoney(r.expDisp) + cutBadge : '<span class="muted">$0</span>' + cutBadge;
+          })()}</td>
           <td class="inf-col">${fmtPct(r.infPct, 2, false)}</td>
           <td class="${r.eqRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(r.eqRetPct)}</td>
           <td class="${r.bdRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(r.bdRetPct)}</td>
@@ -2110,7 +2249,7 @@
         p10: [], p25: [], p50: [], p75: [], p90: [], mean: [], survRate: [],
         ddP10: [], ddP50: [], ddP90: [], ddMean: [],
         retMean: [], retP50: [], expMean: [], expP50: [],
-        infMean: [], infP50: []
+        infMean: [], infP50: [], cutRate: []
       };
 
       for (let s = 0; s <= simYears; s++) {
@@ -2140,6 +2279,8 @@
         bands.expMean.push(meanArray(exps));
         bands.infP50.push(quantileSorted(infs, 0.50));
         bands.infMean.push(meanArray(infs));
+        const cutCnt = runs.filter(r => r.rows[i].expCutApplied).length;
+        bands.cutRate.push((cutCnt / numRuns) * 100);
       }
 
       const endVals = runs.map(r => r.endVal).sort((a, b) => a - b);
@@ -2149,6 +2290,7 @@
       const sharpes = runs.map(r => r.sharpe).sort((a, b) => a - b);
       const maxDDs = runs.map(r => r.maxDDPct).sort((a, b) => a - b);
       const avgInfs = runs.map(r => r.avgInfPct).sort((a, b) => a - b);
+      const cutYrsArr = runs.map(r => r.cutYearsCount).sort((a, b) => a - b);
 
       const survivedCount = runs.filter(r => r.survived).length;
       const grewCount = runs.filter(r => r.endVal >= cfg.initialAsset).length;
@@ -2178,6 +2320,9 @@
         maxDDP10: quantileSorted(maxDDs, 0.10),
         infMean: meanArray(avgInfs),
         infMedian: quantileSorted(avgInfs, 0.50),
+        cutYrsMean: meanArray(cutYrsArr),
+        cutYrsMedian: quantileSorted(cutYrsArr, 0.50),
+        expenseFloorPct: cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100,
         bands
       };
     }
@@ -2453,6 +2598,7 @@
     function renderRandomSummaryTable(batch) {
       document.getElementById("ledgerTitle").textContent = `Simulated Year-by-Year Distribution (${batch.numRuns} Random Runs)`;
       document.getElementById("ledgerFilters").style.display = "none";
+      const hasCut = batch.expenseFloorPct < 100;
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
           <th>Sim Yr</th>
@@ -2464,6 +2610,7 @@
           <th>75th Pct</th>
           <th>90th Pct</th>
           <th>Avg Expense Out</th>
+          ${hasCut ? "<th>Cut Runs %</th>" : ""}
           <th>Avg US Inflation</th>
           <th>Med Drawdown</th>
         </tr>
@@ -2484,6 +2631,7 @@
           <td class="muted">${fmtExactMoney(b.p75[s])}</td>
           <td class="pos">${fmtExactMoney(b.p90[s])}</td>
           <td class="exp-col">${b.expMean[s - 1] > 0 ? "-" + fmtExactMoney(b.expMean[s - 1]) : '<span class="muted">$0</span>'}</td>
+          ${hasCut ? `<td class="exp-col">${b.cutRate[s - 1].toFixed(1)}%</td>` : ""}
           <td class="inf-col">${fmtPct(b.infMean[s - 1], 2, false)}</td>
           <td class="${b.ddP50[s - 1] < -0.05 ? 'neg' : 'muted'}">${fmtPct(b.ddP50[s - 1], 2, false)}</td>
         `;
@@ -2858,6 +3006,34 @@
       });
     }
 
+    function syncExpFloorUI() {
+      const initExp = Math.max(0, parseMoneyInput(elExpense));
+      const floorPct = parseInt(elExpFloorPct.value, 10);
+      const active = initExp > 0 && floorPct < 100;
+      document.querySelectorAll("#expFloorChips .chip").forEach(c => {
+        c.classList.toggle("active", c.dataset.floor === elExpFloorPct.value);
+      });
+      if (initExp <= 0) {
+        elExpFloorHint.textContent = "$0 expense";
+      } else if (floorPct >= 100) {
+        elExpFloorHint.textContent = `Fixed 100% (${fmtCompactMoney(initExp)})`;
+      } else {
+        elExpFloorHint.textContent = `${fmtCompactMoney(initExp * floorPct / 100)} – ${fmtCompactMoney(initExp)}`;
+      }
+      elBadYearTriggerGroup.style.opacity = active ? "1" : "0.55";
+      elTriggerStateHint.textContent = active ? `Cut to ${floorPct}%` : "Select <100%";
+      const filterCutBtn = document.getElementById("filterCutBtn");
+      if (filterCutBtn) {
+        filterCutBtn.style.display = active ? "inline-block" : "none";
+        if (!active && state.ledgerFilter === "cut") {
+          state.ledgerFilter = "all";
+          document.querySelectorAll("#ledgerFilters .filter-pill").forEach(b => {
+            b.classList.toggle("active", b.dataset.filter === "all");
+          });
+        }
+      }
+    }
+
     function setKpi(idx, label, valHtml, subText, valClass = "kpi-val") {
       document.getElementById(`kpiLbl${idx}`).textContent = label;
       const vEl = document.getElementById(`kpiVal${idx}`);
@@ -2878,6 +3054,8 @@
       const numRuns = Math.max(10, Math.min(5000, parseInt(elNumRuns.value, 10) || 500));
       const inflationSource = elInfSource.value;
       const fixedInfPct = parseFloat(elFixedInfPct.value) || 0;
+      const expenseFloorPct = parseInt(elExpFloorPct.value, 10);
+      const badYearTrigger = elBadYearTrigger.value;
       const withdrawTiming = elWithdrawTiming.value;
       const displayBasis = elDisplayBasis.value;
       const centerStat = state.centerStat;
@@ -2889,6 +3067,7 @@
       elFixedInfGroup.style.display = inflationSource === "fixed" ? "block" : "none";
       syncAssetChips();
       syncWrHint();
+      syncExpFloorUI();
 
       const poolYears = getPoolYears();
       updateModeNotices(poolYears, simYears, mode);
@@ -2917,6 +3096,8 @@
       const cfg = {
         initialAsset,
         initialExpense,
+        expenseFloorPct: isNaN(expenseFloorPct) ? 100 : expenseFloorPct,
+        badYearTrigger,
         eqWeight,
         eqKey,
         bdKey,
@@ -2943,6 +3124,7 @@
           <span class="summary-pill">Sequential</span>
           <span class="summary-pill"><strong>${simYears} yrs</strong> Sim</span>
           <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
+          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">Exp <strong>${expenseFloorPct}%–100%</strong></span>` : ""}
         `;
 
         if (sim.survived) {
@@ -2951,7 +3133,10 @@
           setKpi(1, "Ending Balance", "$0 (Depleted)", `Depleted Yr ${sim.depletedStep} (${sim.depletedHistYear})`, "kpi-val neg");
         }
         const seqInfLbl = inflationSource === "historical" ? "Avg US CPI" : "Fixed Infl";
-        setKpi(2, "Total Expense", fmtCompactMoney(sim.totalExpenseDisp), (initialExpense > 0 ? `Last Yr: ${fmtExactMoney(sim.finalExpDisp)} • ` : "No expense ($0) • ") + `${seqInfLbl}: ${sim.avgInfPct.toFixed(2)}%/yr`, "kpi-val exp-col");
+        const seqCutText = (expenseFloorPct < 100 && initialExpense > 0)
+          ? `Cut (${expenseFloorPct}%) in ${sim.cutYearsCount}/${sim.activeYearsCount} yrs`
+          : (initialExpense > 0 ? `Last Yr: ${fmtExactMoney(sim.finalExpDisp)}` : "No expense ($0)");
+        setKpi(2, "Total Expense", fmtCompactMoney(sim.totalExpenseDisp), `${seqCutText} • ${seqInfLbl}: ${sim.avgInfPct.toFixed(2)}%/yr`, "kpi-val exp-col");
         setKpi(3, "Portfolio TWWR", fmtPct(sim.twwr), `Ann. Vol: ${sim.vol.toFixed(2)}%`, "kpi-val " + (sim.twwr >= 0 ? "pos" : "neg"));
         setKpi(4, "Sharpe Ratio", sim.sharpe.toFixed(2), "vs. 3M US T-Bill");
         setKpi(5, "Max Drawdown", fmtPct(sim.maxDDPct, 2, false), sim.maxDDPct < 0 ? `Peak Yr ${sim.maxDDPeakStep} → Yr ${sim.maxDDTroughStep}` : "No year-end drawdown", "kpi-val neg");
@@ -2964,7 +3149,7 @@
           <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>100% ${SERIES_LABELS[eqKey]}</span></div>
           <div class="legend-item"><span class="swatch" style="background:var(--bond)"></span><span>100% ${SERIES_LABELS[bdKey]}</span></div>
         `;
-        document.getElementById("chartSubhead").textContent = "Hover to inspect exact balances • Identical expense schedule applied to all 3 curves";
+        document.getElementById("chartSubhead").textContent = "Hover to inspect exact balances • Same initial asset & spending rule applied to all 3 curves";
         document.getElementById("ddLegendItems").innerHTML = `
           <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span>Portfolio Investment Return (%)</span></div>
           <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>Wealth Drawdown from Peak (%)</span></div>
@@ -3008,6 +3193,7 @@
           <span class="summary-pill">Random (${numRuns} runs)</span>
           <span class="summary-pill"><strong>${simYears} yrs</strong> Sim</span>
           <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
+          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">Exp <strong>${expenseFloorPct}%–100%</strong></span>` : ""}
         `;
 
         setKpi(1, `Ending Balance (${statShort})`, fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
@@ -3015,7 +3201,11 @@
         setKpi(3, "10th–90th Pct End", `${fmtCompactMoney(batch.endP10)}–${fmtCompactMoney(batch.endP90)}`, `80% confidence band at Yr ${simYears}`);
         const centerInf = useMean ? batch.infMean : batch.infMedian;
         const rndInfLbl = inflationSource === "historical" ? "US CPI" : "Fixed";
-        setKpi(4, `Total Expense (${statShort})`, fmtCompactMoney(centerExp), `${simYears} yrs • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}%/yr`, "kpi-val exp-col");
+        const centerCutYrs = useMean ? batch.cutYrsMean : batch.cutYrsMedian;
+        const rndCutText = (expenseFloorPct < 100 && initialExpense > 0)
+          ? `${statShort} Cut Yrs: ${centerCutYrs.toFixed(1)}/${simYears}`
+          : `${simYears} yrs`;
+        setKpi(4, `Total Expense (${statShort})`, fmtCompactMoney(centerExp), `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}%/yr`, "kpi-val exp-col");
         setKpi(5, `Port. TWWR (${statShort})`, fmtPct(centerTwwr), `Vol ${centerVol.toFixed(2)}% • Sharpe ${centerSharpe.toFixed(2)}`, "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
         setKpi(6, `Max Drawdown (${statShort})`, fmtPct(centerDD, 2, false), `Severe (P10): ${fmtPct(batch.maxDDP10, 1, false)}`, "kpi-val neg");
 
@@ -3076,6 +3266,15 @@
     });
     elExpense.addEventListener("input", () => updateAll());
     elExpense.addEventListener("blur", () => formatMoneyInput(elExpense, Math.max(0, parseMoneyInput(elExpense))));
+
+    elExpFloorPct.addEventListener("change", () => updateAll());
+    document.querySelectorAll("#expFloorChips .chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        elExpFloorPct.value = btn.dataset.floor;
+        updateAll();
+      });
+    });
+    elBadYearTrigger.addEventListener("change", () => updateAll());
 
     elInfSource.addEventListener("change", () => updateAll());
     elFixedInfPct.addEventListener("input", () => {
@@ -3289,7 +3488,7 @@
         wealthTip.innerHTML = `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
           <div class="tip-row"><span style="color:var(--port);">Portfolio:</span><strong>${fmtExactMoney(p.port)}</strong></div>
-          <div class="tip-row"><span style="color:var(--expense);">Expense:</span><span>${p.step === 0 ? "—" : "-" + fmtExactMoney(p.expense)}</span></div>
+          <div class="tip-row"><span style="color:var(--expense);">Expense:</span><span>${p.step === 0 ? "—" : "-" + fmtExactMoney(p.expense) + (p.expCutApplied ? ` (${p.expPctApplied}%)` : "")}</span></div>
           <div class="tip-row"><span style="color:var(--equity);">100% Equity:</span><span>${fmtExactMoney(p.benchEq)}</span></div>
           <div class="tip-row"><span style="color:var(--bond);">100% Bond:</span><span>${fmtExactMoney(p.benchBd)}</span></div>
           <div class="tip-row"><span style="color:var(--inflation);">US Inflation:</span><span>${p.step === 0 ? "—" : fmtPct(p.infPct, 2, false)}</span></div>
@@ -3344,7 +3543,7 @@
           <div class="tip-row"><span style="color:var(--danger);">Med Drawdown:</span><span>${fmtPct(b.ddP50[idx], 2, false)}</span></div>
           <div class="tip-row"><span style="color:var(--danger);">Severe DD (P10):</span><span>${fmtPct(b.ddP10[idx], 2, false)}</span></div>
           <div class="tip-row"><span style="color:var(--inflation);">Avg / Med Inflation:</span><span>${fmtPct(b.infMean[idx], 2, false)} / ${fmtPct(b.infP50[idx], 2, false)}</span></div>
-          <div class="tip-row"><span style="color:var(--expense);">Avg Expense:</span><span>-${fmtExactMoney(b.expMean[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--expense);">Avg Expense:</span><span>-${fmtExactMoney(b.expMean[idx])}${m.batch.expenseFloorPct < 100 ? ` (${b.cutRate[idx].toFixed(0)}% cut)` : ""}</span></div>
         `;
       } else {
         const r = m.rows[idx];
@@ -3353,6 +3552,7 @@
           <div class="tip-row"><span style="color:var(--accent);">Port. Return:</span><strong class="${r.portRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(r.portRetPct)}</strong></div>
           <div class="tip-row"><span style="color:var(--equity);">Equity Ret:</span><span>${fmtPct(r.eqRetPct)}</span></div>
           <div class="tip-row"><span style="color:var(--bond);">Bond Ret:</span><span>${fmtPct(r.bdRetPct)}</span></div>
+          <div class="tip-row"><span style="color:var(--expense);">Expense Out:</span><span>${r.expDisp > 0 ? "-" + fmtExactMoney(r.expDisp) + (r.expCutApplied ? ` (${r.expPctApplied}%)` : "") : (r.expCutApplied ? "$0 (0%)" : "$0")}</span></div>
           <div class="tip-row"><span style="color:var(--inflation);">US Inflation:</span><span>${fmtPct(r.infPct, 2, false)}</span></div>
           <div class="tip-row"><span style="color:var(--danger);">Drawdown:</span><span>${fmtPct(r.ddPct, 2, false)}</span></div>
         `;
@@ -3446,7 +3646,7 @@
       if (mode === "random") {
         const { batch } = state.lastRun;
         const b = batch.bands;
-        lines = ["SimYear,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,AvgExpenseOut,MedExpenseOut,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
+        lines = ["SimYear,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,AvgExpenseOut,MedExpenseOut,CutRunsPct,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
         for (let s = 1; s <= batch.simYears; s++) {
           lines.push([
             s,
@@ -3459,6 +3659,7 @@
             b.p90[s].toFixed(2),
             b.expMean[s - 1].toFixed(2),
             b.expP50[s - 1].toFixed(2),
+            b.cutRate[s - 1].toFixed(2),
             b.infMean[s - 1].toFixed(2),
             b.infP50[s - 1].toFixed(2),
             b.ddMean[s - 1].toFixed(2),
@@ -3467,13 +3668,14 @@
         }
       } else {
         const { sim } = state.lastRun;
-        lines = ["SimYear,HistoricalYear,StartBalance,ExpenseWithdrawn,InflationPct,EquityRetPct,BondRetPct,PortfolioRetPct,EndEquity,EndBond,EndBalance,DrawdownPct"];
+        lines = ["SimYear,HistoricalYear,StartBalance,ExpenseWithdrawn,ExpenseTargetPct,InflationPct,EquityRetPct,BondRetPct,PortfolioRetPct,EndEquity,EndBond,EndBalance,DrawdownPct"];
         sim.rows.forEach(r => {
           lines.push([
             r.step,
             r.histYear,
             r.startDisp.toFixed(2),
             r.expDisp.toFixed(2),
+            r.expPctApplied,
             r.infPct.toFixed(2),
             r.eqRetPct.toFixed(2),
             r.bdRetPct.toFixed(2),
