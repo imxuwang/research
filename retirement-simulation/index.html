@@ -491,14 +491,81 @@
       text-overflow: ellipsis;
     }
 
-    /* TABS & SEGMENTED CONTROLS */
+    /* TABS & SEGMENTED CONTROLS (attached to results panel below) */
+    .results-shell {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      overflow: visible;
+    }
     .tabs-bar {
       display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 8px;
+      padding: 10px 14px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-subtle);
+      border-radius: 12px 12px 0 0;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
+      position: relative;
+    }
+    .tab-strip {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      margin-bottom: -1px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--muted);
+      padding: 8px 9px;
+      border-radius: 9px 9px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.12s, background 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(148, 163, 184, 0.08); }
+    .tab-btn.active {
+      background: var(--panel);
+      border-color: var(--border);
+      color: var(--text);
+      position: relative;
+    }
+    .tab-btn .tab-meta {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: var(--panel-alt);
+    }
+    .tab-btn.active .tab-meta {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .tabs-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-bottom: 7px;
+      margin-left: auto;
+    }
+    .results-body {
+      padding: 16px;
+    }
+    .results-body > div > .card {
+      box-shadow: none;
     }
     .seg-group {
       display: inline-flex;
@@ -506,40 +573,76 @@
       border: 1px solid var(--border);
       border-radius: 9px;
       padding: 3px;
-      gap: 3px;
+      gap: 2px;
       flex-wrap: wrap;
-    }
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      padding: 7px 13px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.12s;
-    }
-    .tab-btn:hover { color: var(--text); }
-    .tab-btn.active {
-      background: var(--seg-active);
-      color: var(--text);
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.10);
     }
     .scale-btn {
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 5px 10px;
+      padding: 4px 7px;
       border-radius: 6px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
     }
     .scale-btn.active {
       background: var(--seg-active);
       color: var(--accent);
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.10);
+    }
+    .basis-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .basis-help-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: Georgia, serif;
+      font-style: italic;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .basis-help-btn:hover, .basis-wrap:focus-within .basis-help-btn {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .basis-popover {
+      display: none;
+      position: absolute;
+      right: 14px;
+      top: calc(100% + 6px);
+      width: min(320px, calc(100% - 28px));
+      background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 11px 13px;
+      box-shadow: var(--tip-shadow);
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-soft);
+      z-index: 40;
+    }
+    .basis-wrap:hover .basis-popover,
+    .basis-wrap:focus-within .basis-popover {
+      display: block;
+    }
+    .basis-popover strong { color: var(--text); }
+    .basis-popover .bp-item + .bp-item {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
     }
 
     .btn {
@@ -1254,29 +1357,52 @@
         </div>
       </div>
 
-      <!-- VIEW TABS -->
-      <div class="tabs-bar">
-        <div class="seg-group">
-          <button type="button" class="tab-btn active" data-tab="single">Simulation View</button>
-          <button type="button" class="tab-btn" data-tab="rolling">Rolling Historical Start Years</button>
-          <button type="button" class="tab-btn" data-tab="data">Historical Data &amp; US CPI (1928–2025)</button>
+      <!-- VIEW TABS + ATTACHED RESULTS PANEL -->
+      <div class="results-shell">
+        <div class="tabs-bar">
+          <div class="tab-strip">
+            <button type="button" class="tab-btn active" data-tab="single">
+              <span id="tabLblSingle">Simulation View</span>
+              <span class="tab-meta" id="tabMetaSingle">30y</span>
+            </button>
+            <button type="button" class="tab-btn" data-tab="rolling">
+              <span>All Start Years</span>
+              <span class="tab-meta" id="tabMetaRolling">1988–2025</span>
+            </button>
+            <button type="button" class="tab-btn" data-tab="data">
+              <span>Market &amp; CPI Data</span>
+              <span class="tab-meta" id="tabMetaData">1988–2025</span>
+            </button>
+          </div>
+          <div class="tabs-controls">
+            <div class="basis-wrap" id="basisWrap">
+              <div class="seg-group" data-for="displayBasis">
+                <button type="button" class="scale-btn active" data-v="nominal">Nominal $</button>
+                <button type="button" class="scale-btn" data-v="real">Real $</button>
+              </div>
+              <button type="button" class="basis-help-btn" aria-label="What is Nominal $ vs Real $?">?</button>
+              <div class="basis-popover" role="tooltip">
+                <div class="bp-item">
+                  <strong>Nominal $ (Future Dollars)</strong><br />
+                  Actual dollar balance printed on your future account statement, <em>without</em> removing inflation.
+                </div>
+                <div class="bp-item">
+                  <strong>Real $ (Start-Year Purchasing Power)</strong><br />
+                  Inflation-adjusted dollars showing what your future balance can actually buy in start-year money (deflated by cumulative CPI / inflation).
+                </div>
+              </div>
+            </div>
+            <div id="centerToggleWrap" class="seg-group" style="display:none;">
+              <button type="button" class="scale-btn active" data-center="median">Median</button>
+              <button type="button" class="scale-btn" data-center="mean">Average</button>
+            </div>
+            <div id="scaleToggleWrap" class="seg-group">
+              <button type="button" class="scale-btn active" data-scale="linear">Linear</button>
+              <button type="button" class="scale-btn" data-scale="log">Log</button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <div class="seg-group" data-for="displayBasis" title="Show dollars as nominal, or inflation-adjusted to start-year dollars">
-            <button type="button" class="scale-btn active" data-v="nominal">Nominal $</button>
-            <button type="button" class="scale-btn" data-v="real">Real $</button>
-          </div>
-          <div id="centerToggleWrap" class="seg-group" style="display:none;">
-            <button type="button" class="scale-btn active" data-center="median">Median</button>
-            <button type="button" class="scale-btn" data-center="mean">Average</button>
-          </div>
-          <div id="scaleToggleWrap" class="seg-group">
-            <button type="button" class="scale-btn active" data-scale="linear">Linear</button>
-            <button type="button" class="scale-btn" data-scale="log">Log</button>
-          </div>
-        </div>
-      </div>
-
+        <div class="results-body">
       <!-- TAB 1: UNIFIED SIMULATION VIEW (SEQUENTIAL OR MULTI-RUN RANDOM) -->
       <div id="tabSingle">
         <div class="card" style="margin-bottom:14px;">
@@ -1397,8 +1523,8 @@
               <div class="subhead" id="dataSubhead">Annual US CPI inflation (NYU Stern / FRED CPI-U) alongside embedded total-return equity and bond benchmarks.</div>
             </div>
             <div id="dataScopeWrap" class="seg-group">
-              <button type="button" class="scale-btn active" data-scope="all">All 98 Years (1928–2025)</button>
-              <button type="button" class="scale-btn" data-scope="window">Selected Data Window</button>
+              <button type="button" class="scale-btn active" data-scope="window" id="btnScopeWindow">Selected Window (1988–2025)</button>
+              <button type="button" class="scale-btn" data-scope="all">All 98 Years (1928–2025)</button>
             </div>
           </div>
 
@@ -1449,6 +1575,8 @@
               <tbody></tbody>
             </table>
           </div>
+        </div>
+      </div>
         </div>
       </div>
     </section>
@@ -1530,7 +1658,7 @@
       sequenceKey: "",
       batchCache: null,
       batchKey: "",
-      dataScope: "all",
+      dataScope: "window",
       lastRun: null,
       lastHistRows: [],
       hoverStepIdx: null,
@@ -3634,6 +3762,7 @@
       document.getElementById("tabRolling").style.display = tabName === "rolling" ? "block" : "none";
       document.getElementById("tabData").style.display = tabName === "data" ? "block" : "none";
       document.getElementById("scaleToggleWrap").style.display = tabName === "single" ? "inline-flex" : "none";
+      document.getElementById("basisWrap").style.display = tabName === "data" ? "none" : "inline-flex";
       updateAll();
     }
 
@@ -3985,6 +4114,18 @@
         `${cutOn ? `Cut to ${floorPct}% in bad years` : "Fixed spending"} · ${infTxt} · ${elWithdrawTiming.value === "start" ? "Start" : "End"} of year`;
       document.getElementById("sumIndices").textContent =
         `${SERIES_LABELS[elEquity.value] || ""} + ${SERIES_LABELS[elBond.value] || ""}`;
+
+      // Sync tab bar labels with selected sidebar options
+      const simYrs = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 30));
+      const numRuns = Math.max(10, Math.min(5000, parseInt(elNumRuns.value, 10) || 500));
+      const isRandom = elSimMode.value === "random";
+      const winRange = (elStartYr.value && elEndYr.value) ? `${elStartYr.value}–${elEndYr.value}` : "1928–2025";
+      document.getElementById("tabLblSingle").textContent = isRandom ? "Random Runs" : "Single Path";
+      document.getElementById("tabMetaSingle").textContent = isRandom ? `${numRuns}×${simYrs}y` : `${elStartYr.value || "1988"} · ${simYrs}y`;
+      document.getElementById("tabMetaRolling").textContent = winRange;
+      document.getElementById("tabMetaData").textContent = state.dataScope === "all" ? "1928–2025" : winRange;
+      const scopeBtn = document.getElementById("btnScopeWindow");
+      if (scopeBtn) scopeBtn.textContent = `Selected Window (${winRange})`;
     }
 
     window.addEventListener("resize", () => updateAll());
