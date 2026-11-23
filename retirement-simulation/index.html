@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Historical Portfolio Backtester — Institutional Wealth Simulator</title>
+  <title>Retirement Simulation</title>
   <style>
     :root {
       --bg: #f1f5f9;
@@ -706,7 +706,7 @@
   <header>
     <div class="hdr-left">
       <div class="hdr-title-row">
-        <h1>Portfolio Backtester</h1>
+        <h1>Retirement Simulation</h1>
         <span class="badge">100% Client-Side SPA</span>
       </div>
       <div class="subhead">Sequential &amp; Random Simulation &bull; S&amp;P 500, MSCI ACWI / World, Bloomberg US &amp; Global Agg Bonds, NYU Stern (1928–2025)</div>
@@ -3489,7 +3489,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backtest_${mode}_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
+      a.download = `retirement_simulation_${mode}_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
       a.click();
       URL.revokeObjectURL(url);
     });
