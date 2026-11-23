@@ -1403,7 +1403,7 @@
             <div class="subhead" id="ddSubhead">Hover bars to inspect annual component returns</div>
           </div>
           <div class="chart-wrap">
-            <canvas id="ddCanvas" height="200"></canvas>
+            <canvas id="ddCanvas" height="235"></canvas>
             <div class="tooltip" id="ddTooltip"></div>
           </div>
         </div>
@@ -2585,11 +2585,24 @@
       }
 
       const bands = {
-        p10: [], p25: [], p50: [], p75: [], p90: [], mean: [], survRate: [],
+        p10: [], p25: [], p50: [], p75: [], p90: [], mean: [], survRate: [], survCount: [],
         ddP10: [], ddP50: [], ddP90: [], ddMean: [],
-        retMean: [], retP50: [], expMean: [], expP50: [],
+        retMean: [], retP50: [],
+        expMean: [], expP50: [], expP10: [], expP90: [],
+        cumExpP10: [], cumExpP25: [], cumExpP50: [], cumExpP75: [], cumExpP90: [], cumExpMean: [],
         infMean: [], infP50: [], cutRate: []
       };
+
+      // Precompute cumulative expense per run across steps 0..simYears
+      const runCumExps = runs.map(r => {
+        const arr = [0];
+        let acc = 0;
+        for (let i = 0; i < simYears; i++) {
+          acc += r.rows[i].expDisp;
+          arr.push(acc);
+        }
+        return arr;
+      });
 
       for (let s = 0; s <= simYears; s++) {
         const vals = runs.map(r => r.points[s].port).sort((a, b) => a - b);
@@ -2599,14 +2612,39 @@
         bands.p75.push(quantileSorted(vals, 0.75));
         bands.p90.push(quantileSorted(vals, 0.90));
         bands.mean.push(meanArray(vals));
-        const alive = runs.filter(r => r.points[s].port > 0).length;
+
+        // Survivor indices at step s (survived through year s, regardless of later years)
+        const survIdxs = [];
+        for (let rIdx = 0; rIdx < numRuns; rIdx++) {
+          if (runs[rIdx].points[s].port > 0) survIdxs.push(rIdx);
+        }
+        const alive = survIdxs.length;
+        bands.survCount.push(alive);
         bands.survRate.push((alive / numRuns) * 100);
+
+        if (alive > 0) {
+          const cExps = survIdxs.map(rIdx => runCumExps[rIdx][s]).sort((a, b) => a - b);
+          bands.cumExpP10.push(quantileSorted(cExps, 0.10));
+          bands.cumExpP25.push(quantileSorted(cExps, 0.25));
+          bands.cumExpP50.push(quantileSorted(cExps, 0.50));
+          bands.cumExpP75.push(quantileSorted(cExps, 0.75));
+          bands.cumExpP90.push(quantileSorted(cExps, 0.90));
+          bands.cumExpMean.push(meanArray(cExps));
+        } else {
+          bands.cumExpP10.push(0);
+          bands.cumExpP25.push(0);
+          bands.cumExpP50.push(0);
+          bands.cumExpP75.push(0);
+          bands.cumExpP90.push(0);
+          bands.cumExpMean.push(0);
+        }
       }
 
       for (let i = 0; i < simYears; i++) {
+        const step = i + 1;
+        const survRunsAtStep = runs.filter(r => r.points[step].port > 0);
         const dds = runs.map(r => r.rows[i].ddPct).sort((a, b) => a - b);
         const rets = runs.map(r => r.rows[i].portRetPct).sort((a, b) => a - b);
-        const exps = runs.map(r => r.rows[i].expDisp).sort((a, b) => a - b);
         const infs = runs.map(r => r.rows[i].infPct).sort((a, b) => a - b);
         bands.ddP10.push(quantileSorted(dds, 0.10));
         bands.ddP50.push(quantileSorted(dds, 0.50));
@@ -2614,24 +2652,40 @@
         bands.ddMean.push(meanArray(dds));
         bands.retP50.push(quantileSorted(rets, 0.50));
         bands.retMean.push(meanArray(rets));
-        bands.expP50.push(quantileSorted(exps, 0.50));
-        bands.expMean.push(meanArray(exps));
+        if (survRunsAtStep.length > 0) {
+          const exps = survRunsAtStep.map(r => r.rows[i].expDisp).sort((a, b) => a - b);
+          bands.expP10.push(quantileSorted(exps, 0.10));
+          bands.expP50.push(quantileSorted(exps, 0.50));
+          bands.expP90.push(quantileSorted(exps, 0.90));
+          bands.expMean.push(meanArray(exps));
+          const cutCnt = survRunsAtStep.filter(r => r.rows[i].expCutApplied).length;
+          bands.cutRate.push((cutCnt / survRunsAtStep.length) * 100);
+        } else {
+          bands.expP10.push(0);
+          bands.expP50.push(0);
+          bands.expP90.push(0);
+          bands.expMean.push(0);
+          bands.cutRate.push(0);
+        }
         bands.infP50.push(quantileSorted(infs, 0.50));
         bands.infMean.push(meanArray(infs));
-        const cutCnt = runs.filter(r => r.rows[i].expCutApplied).length;
-        bands.cutRate.push((cutCnt / numRuns) * 100);
       }
 
       const endVals = runs.map(r => r.endVal).sort((a, b) => a - b);
-      const expsTot = runs.map(r => r.totalExpenseDisp).sort((a, b) => a - b);
+      const survivedRuns = runs.filter(r => r.survived);
+      const expsTot = survivedRuns.length > 0
+        ? survivedRuns.map(r => r.totalExpenseDisp).sort((a, b) => a - b)
+        : [0];
+      const cutYrsArr = survivedRuns.length > 0
+        ? survivedRuns.map(r => r.cutYearsCount).sort((a, b) => a - b)
+        : [0];
       const twwrs = runs.map(r => r.twwr).sort((a, b) => a - b);
       const vols = runs.map(r => r.vol).sort((a, b) => a - b);
       const sharpes = runs.map(r => r.sharpe).sort((a, b) => a - b);
       const maxDDs = runs.map(r => r.maxDDPct).sort((a, b) => a - b);
       const avgInfs = runs.map(r => r.avgInfPct).sort((a, b) => a - b);
-      const cutYrsArr = runs.map(r => r.cutYearsCount).sort((a, b) => a - b);
 
-      const survivedCount = runs.filter(r => r.survived).length;
+      const survivedCount = survivedRuns.length;
       const grewCount = runs.filter(r => r.endVal >= cfg.initialAsset).length;
 
       return {
@@ -2646,8 +2700,8 @@
         endMedian: quantileSorted(endVals, 0.50),
         endP10: quantileSorted(endVals, 0.10),
         endP90: quantileSorted(endVals, 0.90),
-        expMean: meanArray(expsTot),
-        expMedian: quantileSorted(expsTot, 0.50),
+        expMean: survivedCount > 0 ? meanArray(expsTot) : 0,
+        expMedian: survivedCount > 0 ? quantileSorted(expsTot, 0.50) : 0,
         twwrMean: meanArray(twwrs),
         twwrMedian: quantileSorted(twwrs, 0.50),
         volMean: meanArray(vols),
@@ -2659,8 +2713,8 @@
         maxDDP10: quantileSorted(maxDDs, 0.10),
         infMean: meanArray(avgInfs),
         infMedian: quantileSorted(avgInfs, 0.50),
-        cutYrsMean: meanArray(cutYrsArr),
-        cutYrsMedian: quantileSorted(cutYrsArr, 0.50),
+        cutYrsMean: survivedCount > 0 ? meanArray(cutYrsArr) : 0,
+        cutYrsMedian: survivedCount > 0 ? quantileSorted(cutYrsArr) : 0,
         expenseFloorPct: cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100,
         bands
       };
@@ -2806,7 +2860,7 @@
       canvas._chartMeta = { kind: "random", batch, ptsLen: simYears + 1, pad, cw, ch, mapX, mapY, w, h };
     }
 
-    function drawRandomDDChart(batch, hoverBar = state.hoverBarIdx) {
+    function drawRandomDDChart(batch, hoverStep = state.hoverBarIdx) {
       const canvas = document.getElementById("ddCanvas");
       const { ctx, w, h } = setupCanvas(canvas);
       const C = getThemeColors();
@@ -2816,24 +2870,21 @@
       if (simYears <= 0) return;
 
       const useMean = state.centerStat === "mean";
-      const retArr = useMean ? bands.retMean : bands.retP50;
-      const ddArr = useMean ? bands.ddMean : bands.ddP50;
-      const infArr = useMean ? bands.infMean : bands.infP50;
+      const primaryArr = useMean ? bands.cumExpMean : bands.cumExpP50;
+      const secondaryArr = useMean ? bands.cumExpP50 : bands.cumExpMean;
 
-      const pad = { l: 74, r: 22, t: 14, b: 28 };
+      const pad = { l: 74, r: 22, t: 16, b: 28 };
       const cw = w - pad.l - pad.r;
       const ch = h - pad.t - pad.b;
 
-      const vals = [...retArr, ...bands.ddP10, ...bands.ddP90, ...infArr, 0];
-      const rawMin = Math.min(-10, Math.min(...vals) * 1.08);
-      const rawMax = Math.max(10, Math.max(...vals) * 1.08);
-      const yTicks = computeNiceLinearTicks(rawMin, rawMax, 4);
+      const allVals = [...bands.cumExpP90, ...bands.cumExpMean, 100];
+      const rawMax = Math.max(100, ...allVals) * 1.06;
+      const yTicks = computeNiceLinearTicks(0, rawMax, 4);
       const minV = yTicks[0];
       const maxV = yTicks[yTicks.length - 1];
 
-      const mapX = i => pad.l + ((i + 0.5) / simYears) * cw;
+      const mapX = s => pad.l + (s / simYears) * cw;
       const mapY = v => pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
-      const yZero = mapY(0);
 
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
@@ -2842,71 +2893,69 @@
       ctx.textAlign = "right";
       yTicks.forEach(v => {
         const y = mapY(v);
+        if (y < pad.t - 4 || y > pad.t + ch + 4) return;
         ctx.beginPath();
         ctx.moveTo(pad.l, y);
         ctx.lineTo(w - pad.r, y);
         ctx.stroke();
-        ctx.fillText((v > 0 ? "+" : "") + v.toFixed(0) + "%", pad.l - 8, y + 4);
+        ctx.fillText(fmtCompactMoney(v), pad.l - 8, y + 4);
       });
 
-      // Drawdown P10-P90 band polygon
+      ctx.textAlign = "center";
+      computeStepXTicks(simYears, 9).forEach(s => {
+        ctx.fillText(s === 0 ? "Start" : `Yr ${s}`, mapX(s), h - 8);
+      });
+
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const expOuterBand = isDark ? "rgba(251, 191, 36, 0.11)" : "rgba(180, 83, 9, 0.10)";
+      const expInnerBand = isDark ? "rgba(251, 191, 36, 0.24)" : "rgba(180, 83, 9, 0.22)";
+
+      // 1. Outer 10th-90th cumulative expense band
       ctx.beginPath();
-      for (let i = 0; i < simYears; i++) {
-        const x = mapX(i), y = mapY(bands.ddP90[i]);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      for (let s = 0; s <= simYears; s++) {
+        const x = mapX(s), y = mapY(bands.cumExpP90[s]);
+        if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
-      for (let i = simYears - 1; i >= 0; i--) {
-        ctx.lineTo(mapX(i), mapY(bands.ddP10[i]));
+      for (let s = simYears; s >= 0; s--) {
+        ctx.lineTo(mapX(s), mapY(bands.cumExpP10[s]));
       }
       ctx.closePath();
-      ctx.fillStyle = C.ddBand;
+      ctx.fillStyle = expOuterBand;
       ctx.fill();
 
-      ctx.strokeStyle = C.zeroLine;
+      // 2. Inner 25th-75th cumulative expense band
       ctx.beginPath();
-      ctx.moveTo(pad.l, yZero);
-      ctx.lineTo(w - pad.r, yZero);
-      ctx.stroke();
+      for (let s = 0; s <= simYears; s++) {
+        const x = mapX(s), y = mapY(bands.cumExpP75[s]);
+        if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      for (let s = simYears; s >= 0; s--) {
+        ctx.lineTo(mapX(s), mapY(bands.cumExpP25[s]));
+      }
+      ctx.closePath();
+      ctx.fillStyle = expInnerBand;
+      ctx.fill();
 
-      const barW = Math.max(2, Math.min(18, (cw / simYears) * 0.62));
-      retArr.forEach((ret, i) => {
-        const x = mapX(i) - barW / 2;
-        const y = mapY(ret);
-        const isHover = hoverBar === i;
-        ctx.fillStyle = ret >= 0 ? (isHover ? C.accent : C.barPos) : (isHover ? C.danger : C.barNeg);
-        ctx.fillRect(x, Math.min(y, yZero), barW, Math.abs(y - yZero));
-      });
+      function strokeExpCurve(arr, color, width, dash = []) {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        arr.forEach((v, s) => {
+          const x = mapX(s), y = mapY(v);
+          if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
-      ctx.beginPath();
-      ctx.strokeStyle = C.danger;
-      ctx.lineWidth = 2;
-      ddArr.forEach((dd, i) => {
-        const x = mapX(i), y = mapY(dd);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
+      strokeExpCurve(bands.cumExpP90, C.inflation, 1.3);
+      strokeExpCurve(bands.cumExpP10, C.accent, 1.3);
+      strokeExpCurve(secondaryArr, C.equity, 1.6, [4, 3]);
+      strokeExpCurve(primaryArr, C.expense, 2.8);
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.strokeStyle = C.inflation;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 3]);
-      infArr.forEach((inf, i) => {
-        const x = mapX(i), y = mapY(inf);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.fillStyle = C.muted;
-      ctx.textAlign = "center";
-      const xTicks = computeStepXTicks(simYears, 9).filter(s => s >= 1);
-      xTicks.forEach(stepNum => {
-        ctx.fillText(`Yr ${stepNum}`, mapX(stepNum - 1), h - 8);
-      });
-
-      if (hoverBar !== null && hoverBar >= 0 && hoverBar < simYears) {
-        const hx = mapX(hoverBar);
+      if (hoverStep !== null && hoverStep >= 0 && hoverStep <= simYears) {
+        const hx = mapX(hoverStep);
         ctx.save();
         ctx.strokeStyle = C.crosshair;
         ctx.lineWidth = 1;
@@ -2918,11 +2967,13 @@
         ctx.restore();
 
         [
-          { y: mapY(ddArr[hoverBar]), color: C.danger },
-          { y: mapY(infArr[hoverBar]), color: C.inflation }
+          { y: mapY(bands.cumExpP10[hoverStep]), color: C.accent, r: 3.8 },
+          { y: mapY(bands.cumExpP90[hoverStep]), color: C.inflation, r: 3.8 },
+          { y: mapY(secondaryArr[hoverStep]), color: C.equity, r: 4 },
+          { y: mapY(primaryArr[hoverStep]), color: C.expense, r: 5 }
         ].forEach(pt => {
           ctx.beginPath();
-          ctx.arc(hx, pt.y, 4.5, 0, Math.PI * 2);
+          ctx.arc(hx, pt.y, pt.r, 0, Math.PI * 2);
           ctx.fillStyle = pt.color;
           ctx.fill();
           ctx.lineWidth = 2;
@@ -2931,13 +2982,15 @@
         });
       }
 
-      canvas._ddMeta = { kind: "random", batch, len: simYears, pad, cw, ch, mapX, mapY, w, h };
+      canvas._ddMeta = { kind: "random_exp", batch, ptsLen: simYears + 1, pad, cw, ch, mapX, mapY, w, h };
     }
 
     function renderRandomSummaryTable(batch) {
       document.getElementById("ledgerTitle").textContent = `Simulated Year-by-Year Distribution (${batch.numRuns} Random Runs)`;
       document.getElementById("ledgerFilters").style.display = "none";
       const hasCut = batch.expenseFloorPct < 100;
+      const useMean = state.centerStat === "mean";
+      const expStatHdr = useMean ? "Avg" : "Med";
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
           <th>Sim Yr</th>
@@ -2948,8 +3001,9 @@
           <th>25th Pct</th>
           <th>75th Pct</th>
           <th>90th Pct</th>
-          <th>Avg Expense Out</th>
-          ${hasCut ? "<th>Cut Runs %</th>" : ""}
+          <th title="Among runs surviving through this year">${expStatHdr} Yr Expense</th>
+          <th title="Cumulative total expense among runs surviving through this year">${expStatHdr} Total Expense</th>
+          ${hasCut ? '<th title="Among runs surviving through this year">Cut Runs %</th>' : ""}
           <th>Avg US Inflation</th>
           <th>Med Drawdown</th>
         </tr>
@@ -2960,6 +3014,9 @@
       for (let s = 1; s <= batch.simYears; s++) {
         const tr = document.createElement("tr");
         const surv = b.survRate[s];
+        const hasSurv = b.survCount[s] > 0;
+        const yrExp = useMean ? b.expMean[s - 1] : b.expP50[s - 1];
+        const cumExp = useMean ? b.cumExpMean[s] : b.cumExpP50[s];
         tr.innerHTML = `
           <td><strong>Yr ${s}</strong></td>
           <td class="${surv >= 90 ? 'pos' : (surv < 70 ? 'neg' : '')}"><strong>${surv.toFixed(1)}%</strong></td>
@@ -2969,8 +3026,9 @@
           <td class="muted">${fmtExactMoney(b.p25[s])}</td>
           <td class="muted">${fmtExactMoney(b.p75[s])}</td>
           <td class="pos">${fmtExactMoney(b.p90[s])}</td>
-          <td class="exp-col">${b.expMean[s - 1] > 0 ? "-" + fmtExactMoney(b.expMean[s - 1]) : '<span class="muted">$0</span>'}</td>
-          ${hasCut ? `<td class="exp-col">${b.cutRate[s - 1].toFixed(1)}%</td>` : ""}
+          <td class="exp-col">${!hasSurv ? '<span class="muted">—</span>' : (yrExp > 0 ? "-" + fmtExactMoney(yrExp) : '<span class="muted">$0</span>')}</td>
+          <td class="exp-col"><strong>${hasSurv ? fmtExactMoney(cumExp) : '<span class="muted">—</span>'}</strong></td>
+          ${hasCut ? `<td class="exp-col">${hasSurv ? b.cutRate[s - 1].toFixed(1) + "%" : '<span class="muted">—</span>'}</td>` : ""}
           <td class="inf-col">${fmtPct(b.infMean[s - 1], 2, false)}</td>
           <td class="${b.ddP50[s - 1] < -0.05 ? 'neg' : 'muted'}">${fmtPct(b.ddP50[s - 1], 2, false)}</td>
         `;
@@ -3544,9 +3602,9 @@
         const rndInfLbl = inflationSource === "historical" ? "US CPI" : "Fixed";
         const centerCutYrs = useMean ? batch.cutYrsMean : batch.cutYrsMedian;
         const rndCutText = (expenseFloorPct < 100 && initialExpense > 0)
-          ? `${statShort} Cut Yrs: ${centerCutYrs.toFixed(1)}/${simYears}`
-          : `${simYears} yrs`;
-        setKpi(4, `Total Expense (${statShort})`, fmtCompactMoney(centerExp), `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}%/yr`, "kpi-val exp-col");
+          ? `Cut Yrs: ${centerCutYrs.toFixed(1)}/${simYears}`
+          : `${batch.survivedCount} survived`;
+        setKpi(4, `Total Expense (${statShort})`, batch.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}%/yr`, "kpi-val exp-col");
         setKpi(5, `Port. TWWR (${statShort})`, fmtPct(centerTwwr), `Vol ${centerVol.toFixed(2)}% • Sharpe ${centerSharpe.toFixed(2)}`, "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
         setKpi(6, `Max Drawdown (${statShort})`, fmtPct(centerDD, 2, false), `Severe (P10): ${fmtPct(batch.maxDDP10, 1, false)}`, "kpi-val neg");
 
@@ -3557,13 +3615,16 @@
           <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>10th–90th Band</span></div>
         `;
         document.getElementById("chartSubhead").textContent = `Bootstrap w/ replacement from ${poolYears[0]}–${poolYears[poolYears.length - 1]} (${cfg.inflationSource === "historical" ? "Matched US CPI" : cfg.fixedInfPct + "% Fixed Inflation"})`;
+        const isDarkTheme = document.documentElement.dataset.theme === "dark";
+        const expInnerSwatch = isDarkTheme ? "rgba(251, 191, 36, 0.30)" : "rgba(180, 83, 9, 0.25)";
+        const expOuterSwatch = isDarkTheme ? "rgba(251, 191, 36, 0.14)" : "rgba(180, 83, 9, 0.12)";
         document.getElementById("ddLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span>${statLong} Annual Return (%)</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>${statLong} Drawdown (%)</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--dd-band); height:8px;"></span><span>10th–90th Drawdown Band</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--inflation);"></span><span>${statLong} US Inflation (%)</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>Total Expense ${statLong} (Survivors at Yr)</strong></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? "Median (P50)" : "Average (Mean)"}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:${expInnerSwatch}; height:9px;"></span><span>25th–75th Band</span></div>
+          <div class="legend-item"><span class="swatch" style="background:${expOuterSwatch}; height:9px;"></span><span>10th–90th Band</span></div>
         `;
-        document.getElementById("ddSubhead").textContent = `Hover to inspect ${statLong.toLowerCase()} return, drawdown band, US inflation, and expense`;
+        document.getElementById("ddSubhead").textContent = `Cumulative spending among runs still surviving at each year (${basisTag}) • Hover to inspect`;
 
         if (state.tab === "random") {
           renderRandomSummaryTable(batch);
@@ -3851,19 +3912,20 @@
       }
     });
 
-    // Drawdown / Return Chart Hover + Crosshair (Sequential & Random)
+    // Second Chart Hover + Crosshair (Sequential Drawdown/Return & Random Cumulative Total Expense)
     const ddCanvas = document.getElementById("ddCanvas");
     const ddTip = document.getElementById("ddTooltip");
     ddCanvas.addEventListener("mousemove", e => {
       const m = ddCanvas._ddMeta;
-      const totalLen = m ? (m.kind === "random" ? m.len : m.rows.length) : 0;
+      const isRandExp = m && m.kind === "random_exp";
+      const totalLen = m ? (isRandExp ? m.ptsLen : m.rows.length) : 0;
       if (!m || !totalLen) return;
       const rect = ddCanvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const scaleX = rect.width / m.w;
       const padLVis = m.pad.l * scaleX;
       const cwVis = m.cw * scaleX;
-      const redraw = hIdx => m.kind === "random" ? drawRandomDDChart(m.batch, hIdx) : drawDDChart(m.sim, hIdx);
+      const redraw = hIdx => isRandExp ? drawRandomDDChart(m.batch, hIdx) : drawDDChart(m.sim, hIdx);
       if (mx < padLVis || mx > rect.width - m.pad.r * scaleX) {
         if (state.hoverBarIdx !== null) {
           state.hoverBarIdx = null;
@@ -3872,22 +3934,31 @@
         ddTip.style.display = "none";
         return;
       }
-      const idx = Math.max(0, Math.min(totalLen - 1, Math.floor(((mx - padLVis) / cwVis) * totalLen)));
+      const idx = isRandExp
+        ? Math.max(0, Math.min(totalLen - 1, Math.round(((mx - padLVis) / cwVis) * (totalLen - 1))))
+        : Math.max(0, Math.min(totalLen - 1, Math.floor(((mx - padLVis) / cwVis) * totalLen)));
       if (state.hoverBarIdx !== idx) {
         state.hoverBarIdx = idx;
         redraw(idx);
       }
       const hxVis = m.mapX(idx) * scaleX;
-      if (m.kind === "random") {
+      if (isRandExp) {
         const b = m.batch.bands;
-        ddTip.innerHTML = `
-          <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">Sim Yr ${idx + 1} (${m.batch.numRuns} runs)</div>
-          <div class="tip-row"><span style="color:var(--accent);">Avg Return:</span><strong>${fmtPct(b.retMean[idx])}</strong></div>
-          <div class="tip-row"><span style="color:var(--accent);">Med Return:</span><span>${fmtPct(b.retP50[idx])}</span></div>
-          <div class="tip-row"><span style="color:var(--danger);">Med Drawdown:</span><span>${fmtPct(b.ddP50[idx], 2, false)}</span></div>
-          <div class="tip-row"><span style="color:var(--danger);">Severe DD (P10):</span><span>${fmtPct(b.ddP10[idx], 2, false)}</span></div>
-          <div class="tip-row"><span style="color:var(--inflation);">Avg / Med Inflation:</span><span>${fmtPct(b.infMean[idx], 2, false)} / ${fmtPct(b.infP50[idx], 2, false)}</span></div>
-          <div class="tip-row"><span style="color:var(--expense);">Avg Expense:</span><span>-${fmtExactMoney(b.expMean[idx])}${m.batch.expenseFloorPct < 100 ? ` (${b.cutRate[idx].toFixed(0)}% cut)` : ""}</span></div>
+        const survN = b.survCount[idx];
+        const hdr = idx === 0
+          ? `Initial Start (Yr 0 • ${survN}/${m.batch.numRuns} runs)`
+          : `Thru Yr ${idx} (${survN}/${m.batch.numRuns} survived Yr ${idx})`;
+        ddTip.innerHTML = survN > 0 ? `
+          <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
+          <div class="tip-row"><span style="color:var(--expense);">Median Total (P50):</span><strong>${fmtExactMoney(b.cumExpP50[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--equity);">Average Total:</span><strong>${fmtExactMoney(b.cumExpMean[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--inflation);">90th Pct Total:</span><span>${fmtExactMoney(b.cumExpP90[idx])}</span></div>
+          <div class="tip-row"><span>25th–75th Band:</span><span>${fmtCompactMoney(b.cumExpP25[idx])}–${fmtCompactMoney(b.cumExpP75[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--accent);">10th Pct Total:</span><span>${fmtExactMoney(b.cumExpP10[idx])}</span></div>
+          ${idx > 0 ? `<div class="tip-row" style="margin-top:3px; border-top:1px solid var(--border); padding-top:3px; color:var(--muted);"><span>Yr ${idx} Annual (Med / Avg):</span><span>${fmtExactMoney(b.expP50[idx - 1])} / ${fmtExactMoney(b.expMean[idx - 1])}${m.batch.expenseFloorPct < 100 ? ` (${b.cutRate[idx - 1].toFixed(0)}% cut)` : ""}</span></div>` : ""}
+        ` : `
+          <div style="font-weight:700; margin-bottom:4px;">${hdr}</div>
+          <div class="muted">No runs survived through Yr ${idx}.</div>
         `;
       } else {
         const r = m.rows[idx];
@@ -3908,7 +3979,7 @@
       if (state.hoverBarIdx !== null && ddCanvas._ddMeta) {
         const m = ddCanvas._ddMeta;
         state.hoverBarIdx = null;
-        if (m.kind === "random") drawRandomDDChart(m.batch, null);
+        if (m.kind === "random_exp") drawRandomDDChart(m.batch, null);
         else drawDDChart(m.sim, null);
       }
     });
@@ -3990,10 +4061,11 @@
       if (mode === "random") {
         const { batch } = state.lastRun;
         const b = batch.bands;
-        lines = ["SimYear,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,AvgExpenseOut,MedExpenseOut,CutRunsPct,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
+        lines = ["SimYear,SurvivedRuns,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,SurvAvgYrExpense,SurvMedYrExpense,SurvAvgCumExpense,SurvMedCumExpense,SurvCumExpP10,SurvCumExpP90,SurvCutRunsPct,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
         for (let s = 1; s <= batch.simYears; s++) {
           lines.push([
             s,
+            b.survCount[s],
             b.survRate[s].toFixed(2),
             b.mean[s].toFixed(2),
             b.p50[s].toFixed(2),
@@ -4003,6 +4075,10 @@
             b.p90[s].toFixed(2),
             b.expMean[s - 1].toFixed(2),
             b.expP50[s - 1].toFixed(2),
+            b.cumExpMean[s].toFixed(2),
+            b.cumExpP50[s].toFixed(2),
+            b.cumExpP10[s].toFixed(2),
+            b.cumExpP90[s].toFixed(2),
             b.cutRate[s - 1].toFixed(2),
             b.infMean[s - 1].toFixed(2),
             b.infP50[s - 1].toFixed(2),
