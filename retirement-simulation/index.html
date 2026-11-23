@@ -1145,7 +1145,7 @@
         </div>
         <div class="notice subtle" id="simModeNotice" style="margin:-8px 0 14px;"></div>
 
-        <details class="sub-details">
+        <details class="sub-details" id="detailsIndices">
           <summary>Indices: <span id="sumIndices" class="sum-inline"></span></summary>
           <div class="control-group">
             <label for="equitySelect"><span>Stock index</span></label>
@@ -1176,7 +1176,7 @@
       </div>
 
       <!-- ============ 3. SPENDING RULES (collapsible) ============ -->
-      <details class="side-section">
+      <details class="side-section" id="detailsSpending">
         <summary>
           <div class="sec-text">
             <span class="sec-title">Spending Rules</span>
@@ -1629,7 +1629,7 @@
 
     let state = {
       scale: "linear",
-      tab: "single",
+      tab: "sequential",
       centerStat: "median",
       ledgerFilter: "all",
       seed: 20261123,
@@ -3498,12 +3498,10 @@
         `;
         document.getElementById("ddSubhead").textContent = "Hover bars to inspect annual component returns & US inflation";
 
-        if (state.tab === "single") {
+        if (state.tab === "sequential") {
           renderLedger(sim);
           drawWealthChart(sim);
           drawDDChart(sim);
-        } else if (state.tab === "rolling") {
-          renderRollingCohorts(poolYears, simYears, cfg);
         } else if (state.tab === "data") {
           renderHistoricalDataTab(poolYears, cfg);
         }
@@ -4107,13 +4105,172 @@
       document.getElementById("tabMetaData").textContent = state.dataScope === "all" ? "1928–2025" : winRange;
       const scopeBtn = document.getElementById("btnScopeWindow");
       if (scopeBtn) scopeBtn.textContent = `Selected Window (${winRange})`;
+
+      saveSettingsToStorage();
     }
+
+    // ---- LocalStorage Persistence ----
+    const STORAGE_KEY = "retirement_sim_settings_v1";
+    let isRestoringSettings = false;
+
+    function hasSelectOption(selEl, val) {
+      return val !== undefined && val !== null && Array.from(selEl.options).some(o => o.value === String(val));
+    }
+
+    function saveSettingsToStorage() {
+      if (isRestoringSettings) return;
+      try {
+        const detInd = document.getElementById("detailsIndices");
+        const detSpd = document.getElementById("detailsSpending");
+        const payload = {
+          initialAsset: Math.max(100, Math.round(parseMoneyInput(elInitial) || 1000000)),
+          initialExpense: Math.max(0, Math.round(parseMoneyInput(elExpense))),
+          ratio: elRatioSelect.value,
+          rebalanceMode: elRebalance.value,
+          simYears: Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 30)),
+          preset: elPreset.value,
+          equity: elEquity.value,
+          bond: elBond.value,
+          startYear: parseInt(elStartYr.value, 10) || 1988,
+          endYear: parseInt(elEndYr.value, 10) || 2025,
+          expenseFloorPct: elExpFloorPct.value,
+          lastFloorPct,
+          badYearTrigger: elBadYearTrigger.value,
+          inflationSource: elInfSource.value,
+          fixedInflationPct: parseFloat(elFixedInfPct.value) || 0,
+          withdrawTiming: elWithdrawTiming.value,
+          displayBasis: elDisplayBasis.value,
+          tab: state.tab,
+          scale: state.scale,
+          centerStat: state.centerStat,
+          dataScope: state.dataScope,
+          ledgerFilter: state.ledgerFilter,
+          theme: document.documentElement.dataset.theme || "light",
+          openIndices: detInd ? detInd.open : false,
+          openSpending: detSpd ? detSpd.open : false
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (_) {
+        // Ignore storage quota / sandboxed iframe errors
+      }
+    }
+
+    function loadSettingsFromStorage() {
+      let saved = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) saved = JSON.parse(raw);
+      } catch (_) {
+        saved = null;
+      }
+      if (!saved || typeof saved !== "object") {
+        populateYearSelects(1988, 2025);
+        syncSimYrChips();
+        return;
+      }
+
+      isRestoringSettings = true;
+      try {
+        if (typeof saved.initialAsset === "number" && isFinite(saved.initialAsset)) {
+          formatMoneyInput(elInitial, Math.max(100, saved.initialAsset));
+        }
+        if (typeof saved.initialExpense === "number" && isFinite(saved.initialExpense)) {
+          formatMoneyInput(elExpense, Math.max(0, saved.initialExpense));
+        }
+        if (hasSelectOption(elRatioSelect, saved.ratio)) elRatioSelect.value = String(saved.ratio);
+        if (hasSelectOption(elRebalance, saved.rebalanceMode)) elRebalance.value = String(saved.rebalanceMode);
+        if (typeof saved.simYears === "number" && isFinite(saved.simYears)) {
+          elSimYears.value = String(Math.max(1, Math.min(250, Math.round(saved.simYears))));
+        }
+
+        if (hasSelectOption(elPreset, saved.preset)) elPreset.value = String(saved.preset);
+        if (hasSelectOption(elEquity, saved.equity)) elEquity.value = String(saved.equity);
+        if (hasSelectOption(elBond, saved.bond)) elBond.value = String(saved.bond);
+
+        const p = PRESETS[elPreset.value] || PRESETS.all_country;
+        const wantStart = (typeof saved.startYear === "number" && isFinite(saved.startYear)) ? saved.startYear : p.start;
+        const wantEnd = (typeof saved.endYear === "number" && isFinite(saved.endYear)) ? saved.endYear : p.end;
+        populateYearSelects(wantStart, wantEnd);
+
+        if (saved.lastFloorPct && hasSelectOption(elExpFloorPct, saved.lastFloorPct) && String(saved.lastFloorPct) !== "100") {
+          lastFloorPct = String(saved.lastFloorPct);
+        }
+        if (hasSelectOption(elExpFloorPct, saved.expenseFloorPct)) {
+          elExpFloorPct.value = String(saved.expenseFloorPct);
+          if (elExpFloorPct.value !== "100") lastFloorPct = elExpFloorPct.value;
+        }
+        if (hasSelectOption(elBadYearTrigger, saved.badYearTrigger)) elBadYearTrigger.value = String(saved.badYearTrigger);
+        if (hasSelectOption(elInfSource, saved.inflationSource)) elInfSource.value = String(saved.inflationSource);
+        if (typeof saved.fixedInflationPct === "number" && isFinite(saved.fixedInflationPct)) {
+          elFixedInfPct.value = String(Math.max(-10, Math.min(50, saved.fixedInflationPct)));
+          document.querySelectorAll("#infChips .chip").forEach(c => {
+            c.classList.toggle("active", parseFloat(c.dataset.inf) === parseFloat(elFixedInfPct.value));
+          });
+        }
+        if (hasSelectOption(elWithdrawTiming, saved.withdrawTiming)) elWithdrawTiming.value = String(saved.withdrawTiming);
+        if (hasSelectOption(elDisplayBasis, saved.displayBasis)) elDisplayBasis.value = String(saved.displayBasis);
+
+        if (saved.scale === "linear" || saved.scale === "log") {
+          state.scale = saved.scale;
+          document.querySelectorAll("#scaleToggleWrap .scale-btn").forEach(b => {
+            b.classList.toggle("active", b.dataset.scale === state.scale);
+          });
+        }
+        if (saved.centerStat === "median" || saved.centerStat === "mean") {
+          state.centerStat = saved.centerStat;
+          elCenterStat.value = state.centerStat;
+          document.querySelectorAll("#centerToggleWrap .scale-btn").forEach(b => {
+            b.classList.toggle("active", b.dataset.center === state.centerStat);
+          });
+        }
+        if (saved.dataScope === "window" || saved.dataScope === "all") {
+          state.dataScope = saved.dataScope;
+          document.querySelectorAll("#dataScopeWrap .scale-btn").forEach(b => {
+            b.classList.toggle("active", b.dataset.scope === state.dataScope);
+          });
+        }
+        if (["all", "neg", "dd10", "cut"].includes(saved.ledgerFilter)) {
+          state.ledgerFilter = saved.ledgerFilter;
+          document.querySelectorAll("#ledgerFilters .filter-pill").forEach(b => {
+            b.classList.toggle("active", b.dataset.filter === state.ledgerFilter);
+          });
+        }
+        if (saved.theme === "dark" || saved.theme === "light") {
+          document.documentElement.dataset.theme = saved.theme;
+          elBtnTheme.innerHTML = saved.theme === "dark" ? "&#9788; Light Mode" : "&#9790; Dark Mode";
+        }
+        const detInd = document.getElementById("detailsIndices");
+        const detSpd = document.getElementById("detailsSpending");
+        if (detInd && typeof saved.openIndices === "boolean") detInd.open = saved.openIndices;
+        if (detSpd && typeof saved.openSpending === "boolean") detSpd.open = saved.openSpending;
+
+        syncSimYrChips();
+
+        if (["sequential", "random", "data"].includes(saved.tab)) {
+          state.tab = saved.tab;
+          const isSimTab = state.tab === "sequential" || state.tab === "random";
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === state.tab));
+          document.getElementById("tabSingle").style.display = isSimTab ? "block" : "none";
+          const rollEl = document.getElementById("tabRolling");
+          if (rollEl) rollEl.style.display = "none";
+          document.getElementById("tabData").style.display = state.tab === "data" ? "block" : "none";
+          document.getElementById("scaleToggleWrap").style.display = isSimTab ? "inline-flex" : "none";
+          document.getElementById("basisWrap").style.display = state.tab === "data" ? "none" : "inline-flex";
+        }
+      } finally {
+        isRestoringSettings = false;
+      }
+    }
+
+    ["detailsIndices", "detailsSpending"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("toggle", saveSettingsToStorage);
+    });
 
     window.addEventListener("resize", () => updateAll());
 
-    // Initialize default (1988-2025 All-Country Modern, $1,000,000, $40,000 expense [4%], Matched US CPI, 30 yrs)
-    populateYearSelects(1988, 2025);
-    syncSimYrChips();
+    // Initialize (restore saved settings from localStorage if present, else defaults)
+    loadSettingsFromStorage();
     updateAll({ forceResample: true });
   </script>
 </body>
