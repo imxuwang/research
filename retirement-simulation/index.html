@@ -712,6 +712,211 @@
       font-weight: 700;
       vertical-align: middle;
     }
+
+    /* ===== SIDEBAR REDESIGN ===== */
+    .sidebar { gap: 14px; }
+    .side-section { padding: 14px 16px; }
+    .sidebar .control-group { margin-bottom: 16px; }
+    .sidebar .control-group:last-child { margin-bottom: 0; }
+    .sidebar label { font-size: 12px; color: var(--text); margin-bottom: 6px; }
+    .sidebar .label-hint {
+      font-family: var(--font);
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .sidebar .chips { margin-top: 6px; }
+    #triggerStateHint { display: none; }
+    .sum-inline { color: var(--muted); font-weight: 500; }
+    .sub-details:last-child { margin-bottom: 0; }
+    .sub-details:not([open]) > summary { margin-bottom: 0; }
+
+    .sec-head-static { margin-bottom: 14px; }
+    .sec-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+    details.side-section > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+    details.side-section > summary::-webkit-details-marker { display: none; }
+    details.side-section[open] > summary { margin-bottom: 14px; }
+    .sec-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .sec-summary {
+      font-size: 11.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    details[open] > summary .sec-summary { display: none; }
+    .chev {
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+    details[open] > summary .chev { transform: rotate(90deg); }
+    details.side-section > summary:hover .sec-title { color: var(--accent); }
+
+    .sub-details { margin-bottom: 16px; }
+    .sub-details > summary {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .sub-details[open] {
+      border-left: 2px solid var(--border-strong);
+      padding-left: 10px;
+    }
+
+    .sub-panel {
+      margin-top: 10px;
+      padding: 10px 0 0 10px;
+      border-left: 2px solid var(--accent-soft);
+    }
+    #randomControlsGroup.sub-panel { margin: -6px 0 16px; padding-top: 6px; }
+
+    /* Segmented control (replaces 2-option dropdowns) */
+    .seg-ctl {
+      display: flex;
+      background: var(--seg-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .seg-ctl button {
+      flex: 1 1 0;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font);
+      transition: all 0.12s;
+    }
+    .seg-ctl button:hover { color: var(--text); }
+    .seg-ctl button.active {
+      background: var(--seg-active);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    /* Number input + inline chips on one row */
+    .input-with-chips {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .input-with-chips .chips { margin-top: 0; }
+
+    /* Allocation slider styled as the equity/bond bar */
+    .ratio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      margin: 6px 0 2px;
+      background: linear-gradient(to right, var(--equity) 0 var(--pct, 60%), var(--bond) var(--pct, 60%) 100%);
+      outline: none;
+      cursor: pointer;
+    }
+    .ratio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--text-soft);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+    }
+    .ratio-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--text-soft);
+    }
+    .ratio-slider:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* Toggle switch */
+    .switch-row { cursor: pointer; margin-bottom: 0 !important; }
+    .switch {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 34px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--border-strong);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      margin: 0;
+    }
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: left 0.15s;
+    }
+    .switch:checked { background: var(--accent); }
+    .switch:checked::after { left: 16px; }
+
+    /* Info tooltip marker */
+    .info {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      margin-left: 4px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      color: var(--muted);
+      font-size: 9.5px;
+      font-weight: 700;
+      font-style: italic;
+      font-family: Georgia, serif;
+      cursor: help;
+      vertical-align: middle;
+    }
+
+    /* Subtle hint (replaces blue info boxes) */
+    .notice.subtle {
+      background: none;
+      border: none;
+      border-left: 2px solid var(--border-strong);
+      border-radius: 0;
+      padding: 1px 0 1px 8px;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
   </style>
 </head>
 <body>
@@ -733,17 +938,17 @@
   <main class="layout">
     <!-- LEFT SIDEBAR CONTROLS -->
     <aside class="sidebar">
-      <div class="side-section">
-        <div class="section-head"><span class="step-num">01</span> Initial Asset &amp; Allocation</div>
+      <!-- ============ 1. YOUR PLAN (always open) ============ -->
+      <div class="side-section plan-section">
+        <div class="sec-head-static"><span class="sec-title">Your Plan</span></div>
 
         <div class="control-group">
-          <label for="initialAsset"><span>Initial Asset (USD)</span></label>
+          <label for="initialAsset"><span>Starting portfolio</span></label>
           <div class="currency-field">
             <span class="currency-prefix">$</span>
             <input type="text" id="initialAsset" inputmode="numeric" value="1,000,000" />
           </div>
           <div class="chips" id="assetChips">
-            <button type="button" class="chip" data-val="100000">$100k</button>
             <button type="button" class="chip" data-val="500000">$500k</button>
             <button type="button" class="chip active" data-val="1000000">$1M</button>
             <button type="button" class="chip" data-val="2000000">$2M</button>
@@ -752,250 +957,264 @@
         </div>
 
         <div class="control-group">
-          <label for="ratioSelect"><span>Equity / Bond Ratio (10% Steps)</span></label>
-          <select id="ratioSelect">
-            <option value="100">100% Equity / 0% Bond</option>
-            <option value="90">90% Equity / 10% Bond</option>
-            <option value="80">80% Equity / 20% Bond</option>
-            <option value="70">70% Equity / 30% Bond</option>
-            <option value="60" selected>60% Equity / 40% Bond</option>
-            <option value="50">50% Equity / 50% Bond</option>
-            <option value="40">40% Equity / 60% Bond</option>
-            <option value="30">30% Equity / 70% Bond</option>
-            <option value="20">20% Equity / 80% Bond</option>
-            <option value="10">10% Equity / 90% Bond</option>
-            <option value="0">0% Equity / 100% Bond</option>
-          </select>
-          <div class="ratio-bar">
-            <div class="ratio-eq" id="barEq" style="width:60%"></div>
-            <div class="ratio-bd" id="barBd" style="width:40%"></div>
-          </div>
-          <div class="ratio-labels">
-            <span class="eq-lbl" id="lblEqPct">60% Equity</span>
-            <span class="bd-lbl" id="lblBdPct">40% Bond</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-section">
-        <div class="section-head"><span class="step-num">02</span> Annual Expense &amp; US Inflation</div>
-
-        <div class="control-group">
           <label for="initialExpense">
-            <span>Initial Annual Expense (USD)</span>
-            <span class="label-hint" id="wrHint">4.00% of initial</span>
+            <span>Annual spending <span class="info" title="First-year withdrawal. It grows with inflation each year after.">i</span></span>
+            <span class="label-hint" id="wrHint">4.00% withdrawal rate</span>
           </label>
           <div class="currency-field">
             <span class="currency-prefix">$</span>
             <input type="text" id="initialExpense" inputmode="numeric" value="40,000" />
           </div>
           <div class="chips" id="expChips">
-            <button type="button" class="chip" data-wr="0">$0</button>
             <button type="button" class="chip" data-wr="3">3%</button>
+            <button type="button" class="chip" data-wr="3.5">3.5%</button>
             <button type="button" class="chip active" data-wr="4">4%</button>
             <button type="button" class="chip" data-wr="5">5%</button>
-            <button type="button" class="chip" data-wr="6">6%</button>
           </div>
         </div>
 
         <div class="control-group">
-          <label for="expenseFloorPct">
-            <span>Expense Range (Bad-Yr Min – 100%)</span>
-            <span class="label-hint" id="expFloorHint">Fixed 100%</span>
+          <label for="ratioSlider">
+            <span>Stocks / bonds</span>
+            <span class="label-hint" id="ratioHint">60 / 40</span>
           </label>
-          <select id="expenseFloorPct">
-            <option value="100" selected>100% — Fixed (No Bad-Year Reduction)</option>
-            <option value="95">95% – 100% (Reduce to 95% in Bad Yrs)</option>
-            <option value="90">90% – 100% (Reduce to 90% in Bad Yrs)</option>
-            <option value="85">85% – 100% (Reduce to 85% in Bad Yrs)</option>
-            <option value="80">80% – 100% (Reduce to 80% in Bad Yrs)</option>
-            <option value="75">75% – 100% (Reduce to 75% in Bad Yrs)</option>
-            <option value="70">70% – 100% (Reduce to 70% in Bad Yrs)</option>
-            <option value="65">65% – 100% (Reduce to 65% in Bad Yrs)</option>
-            <option value="60">60% – 100% (Reduce to 60% in Bad Yrs)</option>
-            <option value="55">55% – 100% (Reduce to 55% in Bad Yrs)</option>
-            <option value="50">50% – 100% (Reduce to 50% in Bad Yrs)</option>
-            <option value="40">40% – 100% (Reduce to 40% in Bad Yrs)</option>
-            <option value="25">25% – 100% (Reduce to 25% in Bad Yrs)</option>
-            <option value="0">0% – 100% (Skip Expense in Bad Yrs)</option>
-          </select>
-          <div class="chips" id="expFloorChips">
-            <button type="button" class="chip active" data-floor="100">100%</button>
-            <button type="button" class="chip" data-floor="90">90%</button>
-            <button type="button" class="chip" data-floor="80">80%</button>
-            <button type="button" class="chip" data-floor="75">75%</button>
-            <button type="button" class="chip" data-floor="60">60%</button>
-            <button type="button" class="chip" data-floor="50">50%</button>
+          <input type="range" id="ratioSlider" class="ratio-slider" min="0" max="100" step="10" value="60" />
+          <div class="ratio-labels">
+            <span class="eq-lbl" id="lblEqPct">60% Equity</span>
+            <span class="bd-lbl" id="lblBdPct">40% Bond</span>
           </div>
-        </div>
-
-        <div class="control-group" id="badYearTriggerGroup">
-          <label for="badYearTrigger">
-            <span>Bad-Year Reduction Trigger</span>
-            <span class="label-hint" id="triggerStateHint">Select &lt;100%</span>
-          </label>
-          <select id="badYearTrigger">
-            <option value="neg_return" selected>Negative Portfolio Return (&lt; 0%)</option>
-            <option value="below_initial">Balance Below Initial Asset</option>
-            <option value="below_real_initial">Balance Below Inflation-Adj. Initial</option>
-            <option value="in_drawdown">Balance Below Prior Peak (In Drawdown)</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="inflationSource"><span>Expense Inflation Method</span></label>
-          <select id="inflationSource">
-            <option value="historical" selected>Historical US CPI (Matched with Return Year)</option>
-            <option value="fixed">Custom Fixed Annual Inflation (%)</option>
-          </select>
-          <div class="notice" id="inflationPoolNotice" style="display:block; margin-top:6px;">
-            <span id="inflationPoolText"></span>
-            <button type="button" class="link-btn" id="btnJumpToData" style="margin-left:6px;">Inspect US CPI Table &rarr;</button>
-          </div>
-        </div>
-
-        <div class="control-group" id="fixedInfGroup" style="display:none;">
-          <label for="fixedInflationPct"><span>Fixed Annual Inflation Rate (%)</span></label>
-          <input type="number" id="fixedInflationPct" value="3.0" min="-10" max="50" step="0.1" />
-          <div class="chips" id="infChips">
-            <button type="button" class="chip" data-inf="0">0%</button>
-            <button type="button" class="chip" data-inf="2.5">2.5%</button>
-            <button type="button" class="chip active" data-inf="3.0">3.0%</button>
-            <button type="button" class="chip" data-inf="4.0">4.0%</button>
+          <!-- legacy bar kept (hidden) for script compatibility -->
+          <div class="ratio-bar" style="display:none;">
+            <div class="ratio-eq" id="barEq" style="width:60%"></div>
+            <div class="ratio-bd" id="barBd" style="width:40%"></div>
           </div>
         </div>
 
         <div class="control-group">
-          <label for="withdrawTiming"><span>Expense Withdrawal Timing</span></label>
-          <select id="withdrawTiming">
-            <option value="start" selected>Start of Year (Yr 1 = Initial Expense)</option>
-            <option value="end">End of Year (After Annual Return &amp; Inflation)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="side-section">
-        <div class="section-head"><span class="step-num">03</span> Simulation Method &amp; Horizon</div>
-
-        <div class="control-group">
-          <label for="simMode"><span>Sampling Method</span></label>
-          <select id="simMode">
-            <option value="sequential" selected>Sequential (Chronological, Cyclic Repeat)</option>
-            <option value="random">Random (With Replacement)</option>
-          </select>
+          <label><span>Rebalancing</span></label>
+          <div class="seg-ctl" data-for="rebalanceMode">
+            <button type="button" data-v="annual" class="active">Every year</button>
+            <button type="button" data-v="drift">Never (let drift)</button>
+          </div>
         </div>
 
         <div class="control-group">
           <label for="simYears">
-            <span>Years to Simulate</span>
-            <button type="button" class="link-btn" id="btnMatchWindow" title="Set simulation length equal to selected historical data window">Match Data Window</button>
+            <span>Years in retirement</span>
+            <button type="button" class="link-btn" id="btnMatchWindow" title="Set years equal to the length of the selected historical data window">Match data length</button>
           </label>
-          <input type="number" id="simYears" value="30" min="1" max="250" step="1" />
-          <div class="chips" id="simYrChips">
-            <button type="button" class="chip" data-yrs="15">15y</button>
-            <button type="button" class="chip" data-yrs="20">20y</button>
-            <button type="button" class="chip active" data-yrs="30">30y</button>
-            <button type="button" class="chip" data-yrs="40">40y</button>
-            <button type="button" class="chip" data-yrs="50">50y</button>
-          </div>
-          <div class="notice" id="simModeNotice"></div>
-        </div>
-
-        <div id="randomControlsGroup" style="display:none; padding-top:4px; border-top:1px dashed var(--border);">
-          <div class="control-group" style="margin-top:8px;">
-            <label for="numRuns"><span>Number of Random Runs</span></label>
-            <input type="number" id="numRuns" value="500" min="10" max="5000" step="50" />
-            <div class="chips" id="runCountChips">
-              <button type="button" class="chip" data-runs="100">100</button>
-              <button type="button" class="chip" data-runs="250">250</button>
-              <button type="button" class="chip active" data-runs="500">500</button>
-              <button type="button" class="chip" data-runs="1000">1k</button>
-              <button type="button" class="chip" data-runs="2000">2k</button>
+          <div class="input-with-chips">
+            <input type="number" id="simYears" value="30" min="1" max="250" step="1" />
+            <div class="chips" id="simYrChips">
+              <button type="button" class="chip" data-yrs="20">20</button>
+              <button type="button" class="chip active" data-yrs="30">30</button>
+              <button type="button" class="chip" data-yrs="40">40</button>
+              <button type="button" class="chip" data-yrs="50">50</button>
             </div>
-          </div>
-
-          <div class="control-group">
-            <label for="centerStat"><span>Chart Center Curve</span></label>
-            <select id="centerStat">
-              <option value="median" selected>Median (50th Percentile)</option>
-              <option value="mean">Average (Arithmetic Mean)</option>
-            </select>
-          </div>
-
-          <div class="control-group">
-            <button type="button" class="btn btn-accent" id="btnReroll" style="width:100%; justify-content:center; padding:8px 12px;">
-              &#8635; Re-Run Random Simulation
-            </button>
           </div>
         </div>
       </div>
 
+      <!-- ============ 2. MARKET HISTORY (always open: data window + how years are drawn) ============ -->
       <div class="side-section">
-        <div class="section-head"><span class="step-num">04</span> Historical Data Pool &amp; Rules</div>
+        <div class="sec-head-static"><span class="sec-title">Market History</span></div>
 
         <div class="control-group">
-          <label for="presetSelect"><span>Dataset Preset</span></label>
+          <label for="presetSelect"><span>Dataset</span></label>
           <select id="presetSelect">
-            <option value="all_country" selected>1. 1988–2025 All-Country Modern (38 yrs)</option>
-            <option value="world">2. 1976–2025 World Modern (50 yrs)</option>
-            <option value="global_agg">3. 1990–2025 Global Aggregate Bond Era (36 yrs)</option>
-            <option value="nyu_full">4. 1928–2025 NYU Stern US Long-Run (98 yrs)</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="equitySelect"><span>Equity Index Series</span></label>
-          <select id="equitySelect">
-            <option value="MSCI_ACWI_Gross_USD_pct" selected>MSCI ACWI (All-Country, 1988–2025)</option>
-            <option value="SP500_Official_TR_pct">S&amp;P 500 Official Total Return (1976–2025)</option>
-            <option value="MSCI_World_Gross_USD_pct">MSCI World (Developed, 1976–2025)</option>
-            <option value="MSCI_World_ex_USA_Gross_USD_pct">MSCI World ex-USA (1976–2025)</option>
-            <option value="MSCI_EM_Gross_USD_pct">MSCI Emerging Markets (1988–2025)</option>
-            <option value="NYU_SP500_pct">NYU Stern S&amp;P 500 (1928–2025)</option>
-            <option value="NYU_US_Small_Cap_pct">NYU Stern US Small Cap (1928–2025)</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="bondSelect"><span>Bond Index Series</span></label>
-          <select id="bondSelect">
-            <option value="Bloomberg_US_Agg_Bond_pct" selected>Bloomberg US Aggregate Bond (1976–2025)</option>
-            <option value="Bloomberg_Global_Agg_USD_Hedged_pct">Bloomberg Global Aggregate USD Hedged (1990–2025)</option>
-            <option value="Bloomberg_Global_Agg_ex_USD_Hedged_pct">Bloomberg Global Agg ex-USD Hedged (1990–2025)</option>
-            <option value="NYU_US_10Y_TBond_pct">NYU Stern 10-Year US Treasury (1928–2025)</option>
-            <option value="NYU_US_Baa_Corp_Bond_pct">NYU Stern US Baa Corporate Bond (1928–2025)</option>
-            <option value="NYU_US_3M_TBill_pct">NYU Stern 3-Month US T-Bill (1928–2025)</option>
+            <option value="all_country" selected>1988–2025 · All-Country (38 yrs)</option>
+            <option value="world">1976–2025 · World Developed (50 yrs)</option>
+            <option value="global_agg">1990–2025 · Global Agg Bonds (36 yrs)</option>
+            <option value="nyu_full">1928–2025 · US Long-Run, NYU Stern (98 yrs)</option>
           </select>
           <div class="notice warn" id="rangeNotice"></div>
         </div>
 
         <div class="control-group row-2">
           <div>
-            <label for="startYear"><span>Data Start Year</span></label>
+            <label for="startYear"><span>Data from</span></label>
             <select id="startYear"></select>
           </div>
           <div>
-            <label for="endYear"><span>Data End Year</span></label>
+            <label for="endYear"><span>Data to</span></label>
             <select id="endYear"></select>
           </div>
         </div>
 
-        <div class="control-group row-2">
-          <div>
-            <label for="rebalanceMode"><span>Rebalancing</span></label>
-            <select id="rebalanceMode">
-              <option value="annual" selected>Annual Rebalance</option>
-              <option value="drift">Buy &amp; Hold (Drift)</option>
+        <div class="control-group">
+          <label><span>Return order <span class="info" title="Historical order: replay years chronologically (repeats the window if needed). Random: bootstrap many runs by drawing years at random with replacement.">i</span></span></label>
+          <div class="seg-ctl" data-for="simMode">
+            <button type="button" data-v="sequential" class="active">Historical order</button>
+            <button type="button" data-v="random">Random (many runs)</button>
+          </div>
+          <div class="notice subtle" id="simModeNotice"></div>
+        </div>
+
+        <div id="randomControlsGroup" class="sub-panel" style="display:none;">
+          <div class="control-group">
+            <label for="numRuns"><span>Number of runs</span></label>
+            <div class="input-with-chips">
+              <input type="number" id="numRuns" value="500" min="10" max="5000" step="50" />
+              <div class="chips" id="runCountChips">
+                <button type="button" class="chip" data-runs="250">250</button>
+                <button type="button" class="chip active" data-runs="500">500</button>
+                <button type="button" class="chip" data-runs="1000">1k</button>
+                <button type="button" class="chip" data-runs="2000">2k</button>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-accent" id="btnReroll" style="width:100%; justify-content:center; padding:8px 12px;">
+            &#8635; Re-run random simulation
+          </button>
+        </div>
+
+        <details class="sub-details">
+          <summary>Indices: <span id="sumIndices" class="sum-inline"></span></summary>
+          <div class="control-group">
+            <label for="equitySelect"><span>Stock index</span></label>
+            <select id="equitySelect">
+              <option value="MSCI_ACWI_Gross_USD_pct" selected>MSCI ACWI (All-Country, 1988–2025)</option>
+              <option value="SP500_Official_TR_pct">S&amp;P 500 Total Return (1976–2025)</option>
+              <option value="MSCI_World_Gross_USD_pct">MSCI World (Developed, 1976–2025)</option>
+              <option value="MSCI_World_ex_USA_Gross_USD_pct">MSCI World ex-USA (1976–2025)</option>
+              <option value="MSCI_EM_Gross_USD_pct">MSCI Emerging Markets (1988–2025)</option>
+              <option value="NYU_SP500_pct">NYU Stern S&amp;P 500 (1928–2025)</option>
+              <option value="NYU_US_Small_Cap_pct">NYU Stern US Small Cap (1928–2025)</option>
             </select>
           </div>
-          <div>
-            <label for="displayBasis"><span>Display Dollars</span></label>
-            <select id="displayBasis">
-              <option value="nominal" selected>Nominal ($ USD)</option>
-              <option value="real">Real (Start-Year $)</option>
+
+          <div class="control-group">
+            <label for="bondSelect"><span>Bond index</span></label>
+            <select id="bondSelect">
+              <option value="Bloomberg_US_Agg_Bond_pct" selected>Bloomberg US Aggregate (1976–2025)</option>
+              <option value="Bloomberg_Global_Agg_USD_Hedged_pct">Bloomberg Global Agg, USD Hedged (1990–2025)</option>
+              <option value="Bloomberg_Global_Agg_ex_USD_Hedged_pct">Bloomberg Global Agg ex-USD, Hedged (1990–2025)</option>
+              <option value="NYU_US_10Y_TBond_pct">NYU Stern 10-Year Treasury (1928–2025)</option>
+              <option value="NYU_US_Baa_Corp_Bond_pct">NYU Stern Baa Corporate (1928–2025)</option>
+              <option value="NYU_US_3M_TBill_pct">NYU Stern 3-Month T-Bill (1928–2025)</option>
             </select>
+          </div>
+
+        </details>
+      </div>
+
+      <!-- ============ 3. SPENDING RULES (collapsible) ============ -->
+      <details class="side-section">
+        <summary>
+          <div class="sec-text">
+            <span class="sec-title">Spending Rules</span>
+            <span class="sec-summary" id="sumSpending"></span>
+          </div>
+          <span class="chev">&#9656;</span>
+        </summary>
+
+        <div class="control-group">
+          <label class="switch-row">
+            <span>Cut spending in bad years <span class="info" title="When a bad year is detected, withdraw only a percentage of the planned (inflation-adjusted) spending.">i</span></span>
+            <input type="checkbox" id="badYearToggle" class="switch" />
+          </label>
+          <div id="badYearDetails" class="sub-panel" style="display:none;">
+            <div class="control-group">
+              <label>
+                <span>Cut to</span>
+                <span class="label-hint" id="expFloorHint">Fixed 100%</span>
+              </label>
+              <div class="chips" id="expFloorChips">
+                <button type="button" class="chip" data-floor="95">95%</button>
+                <button type="button" class="chip" data-floor="90">90%</button>
+                <button type="button" class="chip" data-floor="80">80%</button>
+                <button type="button" class="chip" data-floor="70">70%</button>
+                <button type="button" class="chip" data-floor="60">60%</button>
+                <button type="button" class="chip" data-floor="50">50%</button>
+              </div>
+            </div>
+            <div class="control-group" id="badYearTriggerGroup">
+              <label for="badYearTrigger">
+                <span>A "bad year" is when</span>
+                <span class="label-hint" id="triggerStateHint"></span>
+              </label>
+              <select id="badYearTrigger">
+                <option value="neg_return" selected>Portfolio return is negative</option>
+                <option value="below_initial">Balance is below starting amount</option>
+                <option value="below_real_initial">Balance is below inflation-adjusted start</option>
+                <option value="in_drawdown">Balance is below its prior peak</option>
+              </select>
+            </div>
           </div>
         </div>
+
+        <div class="control-group">
+          <label><span>Inflation</span></label>
+          <div class="seg-ctl" data-for="inflationSource">
+            <button type="button" data-v="historical" class="active">Historical CPI</button>
+            <button type="button" data-v="fixed">Fixed rate</button>
+          </div>
+          <div class="notice subtle" id="inflationPoolNotice" style="display:block;">
+            <span id="inflationPoolText"></span>
+            <button type="button" class="link-btn" id="btnJumpToData" style="margin-left:4px;">View CPI table &rarr;</button>
+          </div>
+        </div>
+
+        <div class="control-group" id="fixedInfGroup" style="display:none;">
+          <label for="fixedInflationPct"><span>Fixed inflation rate (%/yr)</span></label>
+          <div class="input-with-chips">
+            <input type="number" id="fixedInflationPct" value="3.0" min="-10" max="50" step="0.1" />
+            <div class="chips" id="infChips">
+              <button type="button" class="chip" data-inf="2.5">2.5%</button>
+              <button type="button" class="chip active" data-inf="3.0">3%</button>
+              <button type="button" class="chip" data-inf="4.0">4%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label><span>Withdraw at <span class="info" title="Start: spending comes out before the year's return. End: spending comes out after the year's return &amp; inflation.">i</span></span></label>
+          <div class="seg-ctl" data-for="withdrawTiming">
+            <button type="button" data-v="start" class="active">Start of year</button>
+            <button type="button" data-v="end">End of year</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Hidden source-of-truth selects (driven by the controls above; read by the simulation script) -->
+      <div hidden>
+        <select id="ratioSelect">
+          <option value="100">100</option><option value="90">90</option><option value="80">80</option>
+          <option value="70">70</option><option value="60" selected>60</option><option value="50">50</option>
+          <option value="40">40</option><option value="30">30</option><option value="20">20</option>
+          <option value="10">10</option><option value="0">0</option>
+        </select>
+        <select id="expenseFloorPct">
+          <option value="100" selected>100</option><option value="95">95</option><option value="90">90</option>
+          <option value="85">85</option><option value="80">80</option><option value="75">75</option>
+          <option value="70">70</option><option value="65">65</option><option value="60">60</option>
+          <option value="55">55</option><option value="50">50</option><option value="40">40</option>
+          <option value="25">25</option><option value="0">0</option>
+        </select>
+        <select id="inflationSource">
+          <option value="historical" selected>historical</option>
+          <option value="fixed">fixed</option>
+        </select>
+        <select id="withdrawTiming">
+          <option value="start" selected>start</option>
+          <option value="end">end</option>
+        </select>
+        <select id="simMode">
+          <option value="sequential" selected>sequential</option>
+          <option value="random">random</option>
+        </select>
+        <select id="rebalanceMode">
+          <option value="annual" selected>annual</option>
+          <option value="drift">drift</option>
+        </select>
+        <select id="displayBasis">
+          <option value="nominal" selected>nominal</option>
+          <option value="real">real</option>
+        </select>
+        <select id="centerStat">
+          <option value="median" selected>median</option>
+          <option value="mean">mean</option>
+        </select>
       </div>
     </aside>
 
@@ -1043,6 +1262,10 @@
           <button type="button" class="tab-btn" data-tab="data">Historical Data &amp; US CPI (1928–2025)</button>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div class="seg-group" data-for="displayBasis" title="Show dollars as nominal, or inflation-adjusted to start-year dollars">
+            <button type="button" class="scale-btn active" data-v="nominal">Nominal $</button>
+            <button type="button" class="scale-btn" data-v="real">Real $</button>
+          </div>
           <div id="centerToggleWrap" class="seg-group" style="display:none;">
             <button type="button" class="scale-btn active" data-center="median">Median</button>
             <button type="button" class="scale-btn" data-center="mean">Average</button>
@@ -1894,13 +2117,20 @@
 
     function setupCanvas(canvas) {
       const dpr = window.devicePixelRatio || 1;
+      // Remember the logical (CSS px) height from the original HTML attribute exactly once.
+      // Setting canvas.height below overwrites that attribute with the device-pixel size,
+      // so re-reading it would compound by dpr on every redraw (runaway "zoom" on hover).
+      if (!canvas.dataset.baseHeight) {
+        canvas.dataset.baseHeight = canvas.getAttribute("height") || "300";
+      }
+      const h = parseInt(canvas.dataset.baseHeight, 10);
+      canvas.style.height = h + "px";
       const rect = canvas.getBoundingClientRect();
       const w = Math.max(300, rect.width);
-      const h = parseInt(canvas.getAttribute("height"), 10);
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       const ctx = canvas.getContext("2d");
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       return { ctx, w, h };
     }
 
@@ -2974,15 +3204,15 @@
       }
       if (mode === "sequential" && simYears > W) {
         const cycles = (simYears / W).toFixed(2).replace(/\.00$/, "");
-        elSimModeNotice.className = "notice";
+        elSimModeNotice.className = "notice subtle";
         elSimModeNotice.style.display = "block";
         elSimModeNotice.textContent =
-          `Cyclic Sequential: Data window ${poolYears[0]}–${poolYears[W - 1]} (${W} yrs) repeats ${cycles}x to cover ${simYears} simulated years.`;
+          `Data ${poolYears[0]}–${poolYears[W - 1]} (${W} yrs) repeats ${cycles}× to cover ${simYears} years.`;
       } else if (mode === "sequential" && simYears < W) {
-        elSimModeNotice.className = "notice";
+        elSimModeNotice.className = "notice subtle";
         elSimModeNotice.style.display = "block";
         elSimModeNotice.textContent =
-          `Sequential Subset: Uses first ${simYears} years (${poolYears[0]}–${poolYears[simYears - 1]}) of ${poolYears[0]}–${poolYears[W - 1]}.`;
+          `Uses ${poolYears[0]}–${poolYears[simYears - 1]} (first ${simYears} of ${W} data years).`;
       } else {
         elSimModeNotice.style.display = "none";
       }
@@ -2992,7 +3222,7 @@
       const initVal = Math.max(1, parseMoneyInput(elInitial));
       const expVal = Math.max(0, parseMoneyInput(elExpense));
       const wr = (expVal / initVal) * 100;
-      elWrHint.textContent = `${wr.toFixed(2)}% of initial`;
+      elWrHint.textContent = `${wr.toFixed(2)}% withdrawal rate`;
       document.querySelectorAll("#expChips .chip").forEach(c => {
         const targetWr = parseFloat(c.dataset.wr);
         c.classList.toggle("active", Math.abs(wr - targetWr) < 0.005);
@@ -3068,6 +3298,7 @@
       syncAssetChips();
       syncWrHint();
       syncExpFloorUI();
+      syncSidebarUI();
 
       const poolYears = getPoolYears();
       updateModeNotices(poolYears, simYears, mode);
@@ -3087,8 +3318,8 @@
         const cagrCpi = (Math.pow(cpiProd, 1 / poolYears.length) - 1) * 100;
         infNoticeEl.style.display = "block";
         infTextEl.textContent = inflationSource === "historical"
-          ? `Pool US CPI (${poolYears[0]}–${poolYears[poolYears.length - 1]}): ${cagrCpi.toFixed(2)}%/yr compound • Min ${fmtPct(minV, 2, false)} (${minY}), Max ${fmtPct(maxV, 2, false)} (${maxY}).`
-          : `Using custom ${fixedInfPct.toFixed(1)}%/yr inflation. Pool US CPI (${poolYears[0]}–${poolYears[poolYears.length - 1]}) avg is ${cagrCpi.toFixed(2)}%/yr.`;
+          ? `US CPI ${poolYears[0]}–${poolYears[poolYears.length - 1]}: avg ${cagrCpi.toFixed(2)}%/yr (low ${fmtPct(minV, 2, false)} in ${minY}, high ${fmtPct(maxV, 2, false)} in ${maxY}).`
+          : `Historical CPI avg for ${poolYears[0]}–${poolYears[poolYears.length - 1]} was ${cagrCpi.toFixed(2)}%/yr.`;
       } else {
         infNoticeEl.style.display = "none";
       }
@@ -3695,6 +3926,66 @@
       a.click();
       URL.revokeObjectURL(url);
     });
+
+    // ---- Sidebar UX layer ----
+    // The original <select> elements remain the single source of truth (hidden in the DOM).
+    // Segmented controls, the allocation slider, and the bad-year toggle simply write to them
+    // and dispatch "change", so all existing listeners & simulation logic stay untouched.
+    document.querySelectorAll("[data-for]").forEach(group => {
+      const target = document.getElementById(group.dataset.for);
+      if (!target) return;
+      group.querySelectorAll("button[data-v]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (target.value === btn.dataset.v) return;
+          target.value = btn.dataset.v;
+          target.dispatchEvent(new Event("change"));
+        });
+      });
+    });
+
+    const elRatioSlider = document.getElementById("ratioSlider");
+    elRatioSlider.addEventListener("input", () => {
+      elRatioSelect.value = elRatioSlider.value;
+      elRatioSelect.dispatchEvent(new Event("change"));
+    });
+
+    const elBadYearToggle = document.getElementById("badYearToggle");
+    let lastFloorPct = "90";
+    elBadYearToggle.addEventListener("change", () => {
+      if (!elBadYearToggle.checked && elExpFloorPct.value !== "100") lastFloorPct = elExpFloorPct.value;
+      elExpFloorPct.value = elBadYearToggle.checked ? lastFloorPct : "100";
+      elExpFloorPct.dispatchEvent(new Event("change"));
+    });
+
+    function syncSidebarUI() {
+      // Segmented controls
+      document.querySelectorAll("[data-for]").forEach(group => {
+        const target = document.getElementById(group.dataset.for);
+        if (!target) return;
+        group.querySelectorAll("button[data-v]").forEach(b => b.classList.toggle("active", b.dataset.v === target.value));
+      });
+
+      // Allocation slider
+      const eqPct = parseInt(elRatioSelect.value, 10);
+      elRatioSlider.value = eqPct;
+      elRatioSlider.style.setProperty("--pct", eqPct + "%");
+      document.getElementById("ratioHint").textContent = `${eqPct} / ${100 - eqPct}`;
+
+      // Bad-year spending cut (progressive disclosure)
+      const floorPct = parseInt(elExpFloorPct.value, 10);
+      const cutOn = floorPct < 100;
+      elBadYearToggle.checked = cutOn;
+      document.getElementById("badYearDetails").style.display = cutOn ? "block" : "none";
+
+      // Collapsed-section summaries
+      const infTxt = elInfSource.value === "historical"
+        ? "Historical CPI"
+        : `${(parseFloat(elFixedInfPct.value) || 0).toFixed(1)}% inflation`;
+      document.getElementById("sumSpending").textContent =
+        `${cutOn ? `Cut to ${floorPct}% in bad years` : "Fixed spending"} · ${infTxt} · ${elWithdrawTiming.value === "start" ? "Start" : "End"} of year`;
+      document.getElementById("sumIndices").textContent =
+        `${SERIES_LABELS[elEquity.value] || ""} + ${SERIES_LABELS[elBond.value] || ""}`;
+    }
 
     window.addEventListener("resize", () => updateAll());
 
