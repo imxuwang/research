@@ -178,25 +178,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    .hdr-pills {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .summary-pill {
-      font-family: var(--mono);
-      font-variant-numeric: tabular-nums;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 9px;
-      border-radius: 6px;
-      background: var(--panel-alt);
-      border: 1px solid var(--border);
-      color: var(--text-soft);
-      white-space: nowrap;
-    }
-    .summary-pill strong { color: var(--accent); }
 
     /* APP-SHELL SPLIT LAYOUT */
     .layout {
@@ -235,7 +216,6 @@
     @media (max-width: 1099px) {
       .layout { grid-template-columns: 1fr; }
       .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-      .hdr-pills { display: none; }
     }
 
     /* CARDS & SIDEBAR SECTIONS */
@@ -1034,7 +1014,6 @@
       <div class="subhead" data-i18n="app_subhead">Sequential &amp; Random Simulation &bull; S&amp;P 500, MSCI ACWI / World, Bloomberg US &amp; Global Agg Bonds, NYU Stern (1928–2025)</div>
     </div>
     <div class="hdr-right">
-      <div class="hdr-pills" id="hdrSummaryPills"></div>
       <div class="seg-group" id="langSwitch" role="group" aria-label="Language">
         <button type="button" class="scale-btn active" data-lang="en-UK">EN</button>
         <button type="button" class="scale-btn" data-lang="zh-CN">中文</button>
@@ -1763,13 +1742,6 @@
       btn_linear: { "en-UK": "Linear", "zh-CN": "线性" },
       btn_log: { "en-UK": "Log", "zh-CN": "对数" },
 
-      // Header Summary Pills
-      pill_ratio: { "en-UK": "<strong>{eq}/{bd}</strong> Ratio", "zh-CN": "<strong>{eq}/{bd}</strong> 股债比" },
-      pill_seq: { "en-UK": "Sequential", "zh-CN": "顺序回测" },
-      pill_rand: { "en-UK": "Random ({runs} runs)", "zh-CN": "随机 ({runs} 次)" },
-      pill_sim_yrs: { "en-UK": "<strong>{yrs} yrs</strong> Sim", "zh-CN": "模拟 <strong>{yrs} 年</strong>" },
-      pill_exp_range: { "en-UK": "Exp <strong>{floor}%–100%</strong>", "zh-CN": "支出 <strong>{floor}%–100%</strong>" },
-
       // KPIs & Stats (Sequential & Random)
       basis_real: { "en-UK": "Real $", "zh-CN": "实际购买力 $" },
       basis_nominal: { "en-UK": "Nominal $", "zh-CN": "名义金额 $" },
@@ -2007,7 +1979,6 @@
     const elRebalance = document.getElementById("rebalanceMode");
     const elDisplayBasis = document.getElementById("displayBasis");
     const elNotice = document.getElementById("rangeNotice");
-    const elHdrPills = document.getElementById("hdrSummaryPills");
     const elBtnTheme = document.getElementById("btnThemeToggle");
 
     let state = {
@@ -3963,14 +3934,6 @@
         const sim = runSequence(state.sampledSequence, cfg);
         state.lastRun = { mode: "sequential", sim, eqPct, simYears, cfg };
 
-        elHdrPills.innerHTML = `
-          <span class="summary-pill">${t("pill_ratio", { eq: eqPct, bd: 100 - eqPct })}</span>
-          <span class="summary-pill">${t("pill_seq")}</span>
-          <span class="summary-pill">${t("pill_sim_yrs", { yrs: simYears })}</span>
-          <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
-          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">${t("pill_exp_range", { floor: expenseFloorPct })}</span>` : ""}
-        `;
-
         if (sim.survived) {
           setKpi(1, t("kpi_end_bal"), fmtCompactMoney(sim.endVal), `${fmtExactMoney(sim.endVal)} • ${sim.multiple.toFixed(2)}x (${basisTag})`);
         } else {
@@ -4029,14 +3992,6 @@
         const centerVol = useMean ? batch.volMean : batch.volMedian;
         const centerSharpe = useMean ? batch.sharpeMean : batch.sharpeMedian;
         const centerDD = useMean ? batch.maxDDMean : batch.maxDDMedian;
-
-        elHdrPills.innerHTML = `
-          <span class="summary-pill">${t("pill_ratio", { eq: eqPct, bd: 100 - eqPct })}</span>
-          <span class="summary-pill">${t("pill_rand", { runs: numRuns.toLocaleString("en-US") })}</span>
-          <span class="summary-pill">${t("pill_sim_yrs", { yrs: simYears })}</span>
-          <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
-          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">${t("pill_exp_range", { floor: expenseFloorPct })}</span>` : ""}
-        `;
 
         setKpi(1, t("kpi_end_bal_stat", { stat: statShort }), fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
         setKpi(2, t("kpi_survival"), `${batch.survivalPct.toFixed(1)}%`, t("sub_survival", { surv: batch.survivedCount, runs: numRuns, grew: batch.grewPct.toFixed(0) }), "kpi-val " + (batch.survivalPct >= 90 ? "pos" : (batch.survivalPct < 70 ? "neg" : "")));
