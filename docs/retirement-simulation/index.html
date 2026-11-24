@@ -1803,7 +1803,7 @@
       };
     }
 
-    function quantileSorted(sorted, q) {
+    function quantileSorted(sorted, q = 0.50) {
       if (!sorted.length) return 0;
       if (sorted.length === 1) return sorted[0];
       const pos = (sorted.length - 1) * q;
@@ -2714,7 +2714,7 @@
         infMean: meanArray(avgInfs),
         infMedian: quantileSorted(avgInfs, 0.50),
         cutYrsMean: survivedCount > 0 ? meanArray(cutYrsArr) : 0,
-        cutYrsMedian: survivedCount > 0 ? quantileSorted(cutYrsArr) : 0,
+        cutYrsMedian: survivedCount > 0 ? quantileSorted(cutYrsArr, 0.50) : 0,
         expenseFloorPct: cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100,
         bands
       };
