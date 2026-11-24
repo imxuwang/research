@@ -49,7 +49,7 @@
       --pill-text: #4338ca;
       --row-alt: rgba(15, 23, 42, 0.02);
       --row-hover: rgba(2, 132, 199, 0.06);
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Roboto, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       color-scheme: light;
     }
@@ -1026,17 +1026,21 @@
   <header>
     <div class="hdr-left">
       <div class="hdr-title-row">
-        <a href="../" style="color:var(--muted); text-decoration:none; font-size:13px; font-weight:600;" title="Back to Home">&larr; Home</a>
+        <a href="../" id="linkHome" style="color:var(--muted); text-decoration:none; font-size:13px; font-weight:600;" data-i18n="nav_home" data-i18n-title="nav_home_title" title="Back to Home">&larr; Home</a>
         <span style="color:var(--border-strong);">&middot;</span>
-        <h1>Retirement Simulation</h1>
-        <span class="badge">100% Client-Side SPA</span>
+        <h1 data-i18n="app_title">Retirement Simulation</h1>
+        <span class="badge" data-i18n="app_badge">100% Client-Side SPA</span>
       </div>
-      <div class="subhead">Sequential &amp; Random Simulation &bull; S&amp;P 500, MSCI ACWI / World, Bloomberg US &amp; Global Agg Bonds, NYU Stern (1928–2025)</div>
+      <div class="subhead" data-i18n="app_subhead">Sequential &amp; Random Simulation &bull; S&amp;P 500, MSCI ACWI / World, Bloomberg US &amp; Global Agg Bonds, NYU Stern (1928–2025)</div>
     </div>
     <div class="hdr-right">
       <div class="hdr-pills" id="hdrSummaryPills"></div>
-      <button type="button" class="btn" id="btnThemeToggle" title="Toggle Dark / Light Theme">&#9790; Dark Mode</button>
-      <button type="button" class="btn" id="btnExportCsv" title="Export simulated year-by-year ledger to CSV">&#8681; Export CSV</button>
+      <div class="seg-group" id="langSwitch" role="group" aria-label="Language">
+        <button type="button" class="scale-btn active" data-lang="en-UK">EN</button>
+        <button type="button" class="scale-btn" data-lang="zh-CN">中文</button>
+      </div>
+      <button type="button" class="btn" id="btnThemeToggle" data-i18n-title="theme_toggle_title" title="Toggle Dark / Light Theme">&#9790; Dark Mode</button>
+      <button type="button" class="btn" id="btnExportCsv" data-i18n="btn_export_csv" data-i18n-title="export_csv_title" title="Export simulated year-by-year ledger to CSV">&#8681; Export CSV</button>
     </div>
   </header>
 
@@ -1045,10 +1049,10 @@
     <aside class="sidebar">
       <!-- ============ 1. YOUR PLAN (always open) ============ -->
       <div class="side-section plan-section">
-        <div class="sec-head-static"><span class="sec-title">Your Plan</span></div>
+        <div class="sec-head-static"><span class="sec-title" data-i18n="sec_your_plan">Your Plan</span></div>
 
         <div class="control-group">
-          <label for="initialAsset"><span>Starting portfolio</span></label>
+          <label for="initialAsset"><span data-i18n="lbl_starting_portfolio">Starting portfolio</span></label>
           <div class="currency-field">
             <span class="currency-prefix">$</span>
             <input type="text" id="initialAsset" inputmode="numeric" value="1,000,000" />
@@ -1063,7 +1067,7 @@
 
         <div class="control-group">
           <label for="initialExpense">
-            <span>Annual spending <span class="info" title="First-year withdrawal. It grows with inflation each year after.">i</span></span>
+            <span><span data-i18n="lbl_annual_spending">Annual spending</span> <span class="info" data-i18n-title="tip_annual_spending" title="First-year withdrawal. It grows with inflation each year after.">i</span></span>
             <span class="label-hint" id="wrHint">4.00% withdrawal rate</span>
           </label>
           <div class="currency-field">
@@ -1080,7 +1084,7 @@
 
         <div class="control-group">
           <label for="ratioSlider">
-            <span>Stocks / bonds</span>
+            <span data-i18n="lbl_stocks_bonds">Stocks / bonds</span>
             <span class="label-hint" id="ratioHint">60 / 40</span>
           </label>
           <input type="range" id="ratioSlider" class="ratio-slider" min="0" max="100" step="10" value="60" />
@@ -1096,17 +1100,17 @@
         </div>
 
         <div class="control-group">
-          <label><span>Rebalancing</span></label>
+          <label><span data-i18n="lbl_rebalancing">Rebalancing</span></label>
           <div class="seg-ctl" data-for="rebalanceMode">
-            <button type="button" data-v="annual" class="active">Every year</button>
-            <button type="button" data-v="drift">Never (let drift)</button>
+            <button type="button" data-v="annual" class="active" data-i18n="opt_rebal_annual">Every year</button>
+            <button type="button" data-v="drift" data-i18n="opt_rebal_drift">Never (let drift)</button>
           </div>
         </div>
 
         <div class="control-group">
           <label for="simYears">
-            <span>Years in retirement</span>
-            <button type="button" class="link-btn" id="btnMatchWindow" title="Set years equal to the length of the selected historical data window">Match data length</button>
+            <span data-i18n="lbl_years_retirement">Years in retirement</span>
+            <button type="button" class="link-btn" id="btnMatchWindow" data-i18n="btn_match_window" data-i18n-title="tip_match_window" title="Set years equal to the length of the selected historical data window">Match data length</button>
           </label>
           <div class="input-with-chips">
             <input type="number" id="simYears" value="30" min="1" max="250" step="1" />
@@ -1122,55 +1126,55 @@
 
       <!-- ============ 2. MARKET HISTORY (always open: data window + how years are drawn) ============ -->
       <div class="side-section">
-        <div class="sec-head-static"><span class="sec-title">Market History</span></div>
+        <div class="sec-head-static"><span class="sec-title" data-i18n="sec_market_history">Market History</span></div>
 
         <div class="control-group">
-          <label for="presetSelect"><span>Dataset</span></label>
+          <label for="presetSelect"><span data-i18n="lbl_dataset">Dataset</span></label>
           <select id="presetSelect">
-            <option value="all_country" selected>1988–2025 · All-Country (38 yrs)</option>
-            <option value="world">1976–2025 · World Developed (50 yrs)</option>
-            <option value="global_agg">1990–2025 · Global Agg Bonds (36 yrs)</option>
-            <option value="nyu_full">1928–2025 · US Long-Run, NYU Stern (98 yrs)</option>
+            <option value="all_country" selected data-i18n="preset_all_country">1988–2025 · All-Country (38 yrs)</option>
+            <option value="world" data-i18n="preset_world">1976–2025 · World Developed (50 yrs)</option>
+            <option value="global_agg" data-i18n="preset_global_agg">1990–2025 · Global Agg Bonds (36 yrs)</option>
+            <option value="nyu_full" data-i18n="preset_nyu_full">1928–2025 · US Long-Run, NYU Stern (98 yrs)</option>
           </select>
           <div class="notice warn" id="rangeNotice"></div>
         </div>
 
         <div class="control-group row-2">
           <div>
-            <label for="startYear"><span>Data from</span></label>
+            <label for="startYear"><span data-i18n="lbl_data_from">Data from</span></label>
             <select id="startYear"></select>
           </div>
           <div>
-            <label for="endYear"><span>Data to</span></label>
+            <label for="endYear"><span data-i18n="lbl_data_to">Data to</span></label>
             <select id="endYear"></select>
           </div>
         </div>
         <div class="notice subtle" id="simModeNotice" style="margin:-8px 0 14px;"></div>
 
         <details class="sub-details" id="detailsIndices">
-          <summary>Indices: <span id="sumIndices" class="sum-inline"></span></summary>
+          <summary><span data-i18n="lbl_indices_prefix">Indices:</span> <span id="sumIndices" class="sum-inline"></span></summary>
           <div class="control-group">
-            <label for="equitySelect"><span>Stock index</span></label>
+            <label for="equitySelect"><span data-i18n="lbl_stock_index">Stock index</span></label>
             <select id="equitySelect">
-              <option value="MSCI_ACWI_Gross_USD_pct" selected>MSCI ACWI (All-Country, 1988–2025)</option>
-              <option value="SP500_Official_TR_pct">S&amp;P 500 Total Return (1976–2025)</option>
-              <option value="MSCI_World_Gross_USD_pct">MSCI World (Developed, 1976–2025)</option>
-              <option value="MSCI_World_ex_USA_Gross_USD_pct">MSCI World ex-USA (1976–2025)</option>
-              <option value="MSCI_EM_Gross_USD_pct">MSCI Emerging Markets (1988–2025)</option>
-              <option value="NYU_SP500_pct">NYU Stern S&amp;P 500 (1928–2025)</option>
-              <option value="NYU_US_Small_Cap_pct">NYU Stern US Small Cap (1928–2025)</option>
+              <option value="MSCI_ACWI_Gross_USD_pct" selected data-i18n="eq_opt_acwi">MSCI ACWI (All-Country, 1988–2025)</option>
+              <option value="SP500_Official_TR_pct" data-i18n="eq_opt_sp500">S&amp;P 500 Total Return (1976–2025)</option>
+              <option value="MSCI_World_Gross_USD_pct" data-i18n="eq_opt_world">MSCI World (Developed, 1976–2025)</option>
+              <option value="MSCI_World_ex_USA_Gross_USD_pct" data-i18n="eq_opt_world_exus">MSCI World ex-USA (1976–2025)</option>
+              <option value="MSCI_EM_Gross_USD_pct" data-i18n="eq_opt_em">MSCI Emerging Markets (1988–2025)</option>
+              <option value="NYU_SP500_pct" data-i18n="eq_opt_nyu_sp500">NYU Stern S&amp;P 500 (1928–2025)</option>
+              <option value="NYU_US_Small_Cap_pct" data-i18n="eq_opt_nyu_sc">NYU Stern US Small Cap (1928–2025)</option>
             </select>
           </div>
 
           <div class="control-group">
-            <label for="bondSelect"><span>Bond index</span></label>
+            <label for="bondSelect"><span data-i18n="lbl_bond_index">Bond index</span></label>
             <select id="bondSelect">
-              <option value="Bloomberg_US_Agg_Bond_pct" selected>Bloomberg US Aggregate (1976–2025)</option>
-              <option value="Bloomberg_Global_Agg_USD_Hedged_pct">Bloomberg Global Agg, USD Hedged (1990–2025)</option>
-              <option value="Bloomberg_Global_Agg_ex_USD_Hedged_pct">Bloomberg Global Agg ex-USD, Hedged (1990–2025)</option>
-              <option value="NYU_US_10Y_TBond_pct">NYU Stern 10-Year Treasury (1928–2025)</option>
-              <option value="NYU_US_Baa_Corp_Bond_pct">NYU Stern Baa Corporate (1928–2025)</option>
-              <option value="NYU_US_3M_TBill_pct">NYU Stern 3-Month T-Bill (1928–2025)</option>
+              <option value="Bloomberg_US_Agg_Bond_pct" selected data-i18n="bd_opt_us_agg">Bloomberg US Aggregate (1976–2025)</option>
+              <option value="Bloomberg_Global_Agg_USD_Hedged_pct" data-i18n="bd_opt_glob_agg">Bloomberg Global Agg, USD Hedged (1990–2025)</option>
+              <option value="Bloomberg_Global_Agg_ex_USD_Hedged_pct" data-i18n="bd_opt_glob_exus">Bloomberg Global Agg ex-USD, Hedged (1990–2025)</option>
+              <option value="NYU_US_10Y_TBond_pct" data-i18n="bd_opt_nyu_10y">NYU Stern 10-Year Treasury (1928–2025)</option>
+              <option value="NYU_US_Baa_Corp_Bond_pct" data-i18n="bd_opt_nyu_baa">NYU Stern Baa Corporate (1928–2025)</option>
+              <option value="NYU_US_3M_TBill_pct" data-i18n="bd_opt_nyu_3m">NYU Stern 3-Month T-Bill (1928–2025)</option>
             </select>
           </div>
 
@@ -1181,7 +1185,7 @@
       <details class="side-section" id="detailsSpending">
         <summary>
           <div class="sec-text">
-            <span class="sec-title">Spending Rules</span>
+            <span class="sec-title" data-i18n="sec_spending_rules">Spending Rules</span>
             <span class="sec-summary" id="sumSpending"></span>
           </div>
           <span class="chev">&#9656;</span>
@@ -1189,13 +1193,13 @@
 
         <div class="control-group">
           <label class="switch-row">
-            <span>Cut spending in bad years <span class="info" title="When a bad year is detected, withdraw only a percentage of the planned (inflation-adjusted) spending.">i</span></span>
+            <span><span data-i18n="lbl_cut_bad_yrs">Cut spending in bad years</span> <span class="info" data-i18n-title="tip_cut_bad_yrs" title="When a bad year is detected, withdraw only a percentage of the planned (inflation-adjusted) spending.">i</span></span>
             <input type="checkbox" id="badYearToggle" class="switch" />
           </label>
           <div id="badYearDetails" class="sub-panel" style="display:none;">
             <div class="control-group">
               <label>
-                <span>Cut to</span>
+                <span data-i18n="lbl_cut_to">Cut to</span>
                 <span class="label-hint" id="expFloorHint">Fixed 100%</span>
               </label>
               <div class="chips" id="expFloorChips">
@@ -1209,33 +1213,33 @@
             </div>
             <div class="control-group" id="badYearTriggerGroup">
               <label for="badYearTrigger">
-                <span>A "bad year" is when</span>
+                <span data-i18n="lbl_bad_yr_when">A "bad year" is when</span>
                 <span class="label-hint" id="triggerStateHint"></span>
               </label>
               <select id="badYearTrigger">
-                <option value="neg_return" selected>Portfolio return is negative</option>
-                <option value="below_initial">Balance is below starting amount</option>
-                <option value="below_real_initial">Balance is below inflation-adjusted start</option>
-                <option value="in_drawdown">Balance is below its prior peak</option>
+                <option value="neg_return" selected data-i18n="trig_neg_return">Portfolio return is negative</option>
+                <option value="below_initial" data-i18n="trig_below_initial">Balance is below starting amount</option>
+                <option value="below_real_initial" data-i18n="trig_below_real_initial">Balance is below inflation-adjusted start</option>
+                <option value="in_drawdown" data-i18n="trig_in_drawdown">Balance is below its prior peak</option>
               </select>
             </div>
           </div>
         </div>
 
         <div class="control-group">
-          <label><span>Inflation</span></label>
+          <label><span data-i18n="lbl_inflation">Inflation</span></label>
           <div class="seg-ctl" data-for="inflationSource">
-            <button type="button" data-v="historical" class="active">Historical CPI</button>
-            <button type="button" data-v="fixed">Fixed rate</button>
+            <button type="button" data-v="historical" class="active" data-i18n="opt_inf_historical">Historical CPI</button>
+            <button type="button" data-v="fixed" data-i18n="opt_inf_fixed">Fixed rate</button>
           </div>
           <div class="notice subtle" id="inflationPoolNotice" style="display:block;">
             <span id="inflationPoolText"></span>
-            <button type="button" class="link-btn" id="btnJumpToData" style="margin-left:4px;">View CPI table &rarr;</button>
+            <button type="button" class="link-btn" id="btnJumpToData" data-i18n="btn_view_cpi_table" style="margin-left:4px;">View CPI table &rarr;</button>
           </div>
         </div>
 
         <div class="control-group" id="fixedInfGroup" style="display:none;">
-          <label for="fixedInflationPct"><span>Fixed inflation rate (%/yr)</span></label>
+          <label for="fixedInflationPct"><span data-i18n="lbl_fixed_inf_rate">Fixed inflation rate (%/yr)</span></label>
           <div class="input-with-chips">
             <input type="number" id="fixedInflationPct" value="3.0" min="-10" max="50" step="0.1" />
             <div class="chips" id="infChips">
@@ -1247,10 +1251,10 @@
         </div>
 
         <div class="control-group">
-          <label><span>Withdraw at <span class="info" title="Start: spending comes out before the year's return. End: spending comes out after the year's return &amp; inflation.">i</span></span></label>
+          <label><span><span data-i18n="lbl_withdraw_at">Withdraw at</span> <span class="info" data-i18n-title="tip_withdraw_at" title="Start: spending comes out before the year's return. End: spending comes out after the year's return &amp; inflation.">i</span></span></label>
           <div class="seg-ctl" data-for="withdrawTiming">
-            <button type="button" data-v="start" class="active">Start of year</button>
-            <button type="button" data-v="end">End of year</button>
+            <button type="button" data-v="start" class="active" data-i18n="opt_timing_start">Start of year</button>
+            <button type="button" data-v="end" data-i18n="opt_timing_end">End of year</button>
           </div>
         </div>
       </details>
@@ -1339,47 +1343,47 @@
       <div class="results-shell">
         <div class="tabs-bar">
           <div class="tab-strip">
-            <button type="button" class="tab-btn active" data-tab="sequential" title="Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)">
-              <span>Sequential</span>
+            <button type="button" class="tab-btn active" data-tab="sequential" data-i18n-title="tip_tab_seq" title="Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)">
+              <span data-i18n="tab_sequential">Sequential</span>
               <span class="tab-meta" id="tabMetaSeq">1988 · 30y</span>
             </button>
-            <button type="button" class="tab-btn" data-tab="random" title="1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window">
-              <span>Random</span>
+            <button type="button" class="tab-btn" data-tab="random" data-i18n-title="tip_tab_rand" title="1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window">
+              <span data-i18n="tab_random">Random</span>
               <span class="tab-meta" id="tabMetaRand">1,000 runs · 30y</span>
             </button>
-            <button type="button" class="tab-btn" data-tab="data" title="Inspect annual historical equity/bond returns and US CPI inflation">
-              <span>Market &amp; CPI Data</span>
+            <button type="button" class="tab-btn" data-tab="data" data-i18n-title="tip_tab_data" title="Inspect annual historical equity/bond returns and US CPI inflation">
+              <span data-i18n="tab_data">Market &amp; CPI Data</span>
               <span class="tab-meta" id="tabMetaData">1988–2025</span>
             </button>
           </div>
           <div class="tabs-controls">
-            <button type="button" class="btn btn-accent" id="btnReroll" style="display:none; padding:4px 9px; font-size:11px;" title="Draw a fresh set of 1,000 random sequences">
+            <button type="button" class="btn btn-accent" id="btnReroll" data-i18n="btn_rerun" data-i18n-title="tip_rerun" style="display:none; padding:4px 9px; font-size:11px;" title="Draw a fresh set of 1,000 random sequences">
               &#8635; Re-run
             </button>
             <div class="basis-wrap" id="basisWrap">
               <div class="seg-group" data-for="displayBasis">
-                <button type="button" class="scale-btn active" data-v="nominal">Nominal $</button>
-                <button type="button" class="scale-btn" data-v="real">Real $</button>
+                <button type="button" class="scale-btn active" data-v="nominal" data-i18n="btn_nominal">Nominal $</button>
+                <button type="button" class="scale-btn" data-v="real" data-i18n="btn_real">Real $</button>
               </div>
               <button type="button" class="basis-help-btn" aria-label="What is Nominal $ vs Real $?">?</button>
               <div class="basis-popover" role="tooltip">
-                <div class="bp-item">
+                <div class="bp-item" data-i18n-html="popover_nominal_html">
                   <strong>Nominal $ (Future Dollars)</strong><br />
                   Actual dollar balance printed on your future account statement, <em>without</em> removing inflation.
                 </div>
-                <div class="bp-item">
+                <div class="bp-item" data-i18n-html="popover_real_html">
                   <strong>Real $ (Start-Year Purchasing Power)</strong><br />
                   Inflation-adjusted dollars showing what your future balance can actually buy in start-year money (deflated by cumulative CPI / inflation).
                 </div>
               </div>
             </div>
             <div id="centerToggleWrap" class="seg-group" style="display:none;">
-              <button type="button" class="scale-btn active" data-center="median">Median</button>
-              <button type="button" class="scale-btn" data-center="mean">Average</button>
+              <button type="button" class="scale-btn active" data-center="median" data-i18n="btn_median">Median</button>
+              <button type="button" class="scale-btn" data-center="mean" data-i18n="btn_average">Average</button>
             </div>
             <div id="scaleToggleWrap" class="seg-group">
-              <button type="button" class="scale-btn active" data-scale="linear">Linear</button>
-              <button type="button" class="scale-btn" data-scale="log">Log</button>
+              <button type="button" class="scale-btn active" data-scale="linear" data-i18n="btn_linear">Linear</button>
+              <button type="button" class="scale-btn" data-scale="log" data-i18n="btn_log">Log</button>
             </div>
           </div>
         </div>
@@ -1413,10 +1417,10 @@
             <span id="ledgerTitle">Simulated Year-by-Year Cashflow &amp; Balance Ledger</span>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <div class="filter-pills" id="ledgerFilters">
-                <button type="button" class="filter-pill active" data-filter="all">All Years</button>
-                <button type="button" class="filter-pill" data-filter="neg">Negative Return</button>
-                <button type="button" class="filter-pill" data-filter="dd10">Drawdown &gt; 10%</button>
-                <button type="button" class="filter-pill" id="filterCutBtn" data-filter="cut" style="display:none;">Reduced Expense</button>
+                <button type="button" class="filter-pill active" data-filter="all" data-i18n="flt_all">All Years</button>
+                <button type="button" class="filter-pill" data-filter="neg" data-i18n="flt_neg">Negative Return</button>
+                <button type="button" class="filter-pill" data-filter="dd10" data-i18n="flt_dd10">Drawdown &gt; 10%</button>
+                <button type="button" class="filter-pill" id="filterCutBtn" data-filter="cut" data-i18n="flt_cut" style="display:none;">Reduced Expense</button>
               </div>
               <span id="ledgerCount" style="font-family:var(--mono); font-weight:500;"></span>
             </div>
@@ -1500,33 +1504,33 @@
         <div class="card" style="margin-bottom:14px;">
           <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
             <div>
-              <div class="card-title" style="margin-bottom:2px;">Historical US CPI Inflation &amp; Asset Return Dataset</div>
+              <div class="card-title" style="margin-bottom:2px;" data-i18n="hist_card_title">Historical US CPI Inflation &amp; Asset Return Dataset</div>
               <div class="subhead" id="dataSubhead">Annual US CPI inflation (NYU Stern / FRED CPI-U) alongside embedded total-return equity and bond benchmarks.</div>
             </div>
             <div id="dataScopeWrap" class="seg-group">
               <button type="button" class="scale-btn active" data-scope="window" id="btnScopeWindow">Selected Window (1988–2025)</button>
-              <button type="button" class="scale-btn" data-scope="all">All 98 Years (1928–2025)</button>
+              <button type="button" class="scale-btn" data-scope="all" data-i18n="btn_scope_all">All 98 Years (1928–2025)</button>
             </div>
           </div>
 
           <div class="kpis" style="grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom:14px;">
             <div class="kpi kpi-inf">
-              <div class="kpi-label">Annualized US CPI</div>
+              <div class="kpi-label" data-i18n="hist_kpi_cpi">Annualized US CPI</div>
               <div class="kpi-val inf-col" id="histCpiCagr">—</div>
               <div class="kpi-sub" id="histCpiMean">—</div>
             </div>
             <div class="kpi kpi-exp">
-              <div class="kpi-label">Cumulative Price Level</div>
+              <div class="kpi-label" data-i18n="hist_kpi_cum">Cumulative Price Level</div>
               <div class="kpi-val exp-col" id="histCpiCum">—</div>
               <div class="kpi-sub" id="histCpiCumSub">—</div>
             </div>
             <div class="kpi kpi-dd">
-              <div class="kpi-label">Highest / Lowest CPI Yr</div>
+              <div class="kpi-label" data-i18n="hist_kpi_hl">Highest / Lowest CPI Yr</div>
               <div class="kpi-val" id="histCpiMinMax" style="font-size:16px;">—</div>
               <div class="kpi-sub" id="histCpiMinMaxYrs">—</div>
             </div>
             <div class="kpi kpi-bw">
-              <div class="kpi-label">Selected Equity (Real)</div>
+              <div class="kpi-label" data-i18n="hist_kpi_eq_real">Selected Equity (Real)</div>
               <div class="kpi-val pos" id="histEqRealCagr">—</div>
               <div class="kpi-sub" id="histEqNomSub">—</div>
             </div>
@@ -1534,10 +1538,10 @@
 
           <div class="legend">
             <div class="legend-items">
-              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px;"></span><span>Positive US CPI Inflation (%)</span></div>
-              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-neg); height:8px;"></span><span>Deflation (&lt; 0%)</span></div>
+              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px;"></span><span data-i18n="hist_leg_pos">Positive US CPI Inflation (%)</span></div>
+              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-neg); height:8px;"></span><span data-i18n="hist_leg_neg">Deflation (&lt; 0%)</span></div>
             </div>
-            <div class="subhead">Hover bars to inspect yearly US CPI, cumulative price index, and asset returns</div>
+            <div class="subhead" data-i18n="hist_chart_subhead">Hover bars to inspect yearly US CPI, cumulative price index, and asset returns</div>
           </div>
           <div class="chart-wrap">
             <canvas id="histCpiCanvas" height="220"></canvas>
@@ -1547,7 +1551,7 @@
 
         <div class="card">
           <div class="card-title">
-            <span>Year-by-Year Historical US CPI Inflation &amp; Index Total Returns (% in USD)</span>
+            <span data-i18n="hist_table_title">Year-by-Year Historical US CPI Inflation &amp; Index Total Returns (% in USD)</span>
             <span id="histRowCount" style="font-family:var(--mono); font-weight:500;"></span>
           </div>
           <div class="table-container">
@@ -1570,20 +1574,397 @@
     const DATA_BY_YEAR = {};
     RAW_DATA.forEach(r => { DATA_BY_YEAR[r.Year] = r; });
 
-    const SERIES_LABELS = {
-      SP500_Official_TR_pct: "S&P 500 Official TR",
-      MSCI_ACWI_Gross_USD_pct: "MSCI ACWI (Gross USD)",
-      MSCI_World_Gross_USD_pct: "MSCI World (Gross USD)",
-      MSCI_World_ex_USA_Gross_USD_pct: "MSCI World ex-USA",
-      MSCI_EM_Gross_USD_pct: "MSCI Emerging Markets",
-      NYU_SP500_pct: "NYU S&P 500",
-      NYU_US_Small_Cap_pct: "NYU US Small Cap",
-      Bloomberg_US_Agg_Bond_pct: "Bloomberg US Agg Bond",
-      Bloomberg_Global_Agg_USD_Hedged_pct: "Bloomberg Global Agg (Hedged)",
-      Bloomberg_Global_Agg_ex_USD_Hedged_pct: "Bloomberg Global Agg ex-USD (Hdg)",
-      NYU_US_10Y_TBond_pct: "NYU 10Y US Treasury",
-      NYU_US_Baa_Corp_Bond_pct: "NYU US Baa Corp Bond",
-      NYU_US_3M_TBill_pct: "NYU 3M US T-Bill"
+    const LANG_STORAGE_KEY = "site_lang_v1";
+
+    // Translation dictionary: key -> { languageCode: text }
+    const I18N = {
+      // Header & Navigation
+      nav_home: { "en-UK": "← Home", "zh-CN": "← 首页" },
+      nav_home_title: { "en-UK": "Back to Home", "zh-CN": "返回首页" },
+      app_title: { "en-UK": "Retirement Simulation", "zh-CN": "退休资产模拟" },
+      app_badge: { "en-UK": "100% Client-Side SPA", "zh-CN": "纯前端本地运行" },
+      app_subhead: {
+        "en-UK": "Sequential & Random Simulation • S&P 500, MSCI ACWI / World, Bloomberg US & Global Agg Bonds, NYU Stern (1928–2025)",
+        "zh-CN": "顺序回测与随机蒙特卡洛模拟 • 标普 500、MSCI 全球/发达市场、彭博美国及全球综合债、NYU Stern (1928–2025)"
+      },
+      theme_toggle_title: { "en-UK": "Toggle Dark / Light Theme", "zh-CN": "切换深色 / 浅色主题" },
+      theme_dark_mode: { "en-UK": "☾ Dark Mode", "zh-CN": "☾ 深色模式" },
+      theme_light_mode: { "en-UK": "☀ Light Mode", "zh-CN": "☀ 浅色模式" },
+      btn_export_csv: { "en-UK": "⇩ Export CSV", "zh-CN": "⇩ 导出 CSV" },
+      export_csv_title: { "en-UK": "Export simulated year-by-year ledger to CSV", "zh-CN": "导出逐年模拟明细为 CSV" },
+
+      // Sidebar 1: Your Plan
+      sec_your_plan: { "en-UK": "Your Plan", "zh-CN": "退休计划" },
+      lbl_starting_portfolio: { "en-UK": "Starting portfolio", "zh-CN": "初始资产" },
+      lbl_annual_spending: { "en-UK": "Annual spending", "zh-CN": "首年支出" },
+      tip_annual_spending: {
+        "en-UK": "First-year withdrawal. It grows with inflation each year after.",
+        "zh-CN": "第一年的提取金额，之后每年随通胀率调整。"
+      },
+      hint_wr: { "en-UK": "{wr}% withdrawal rate", "zh-CN": "初始提取率 {wr}%" },
+      lbl_stocks_bonds: { "en-UK": "Stocks / bonds", "zh-CN": "股票 / 债券比例" },
+      lbl_eq_pct: { "en-UK": "{pct}% Equity", "zh-CN": "{pct}% 股票" },
+      lbl_bd_pct: { "en-UK": "{pct}% Bond", "zh-CN": "{pct}% 债券" },
+      lbl_rebalancing: { "en-UK": "Rebalancing", "zh-CN": "再平衡策略" },
+      opt_rebal_annual: { "en-UK": "Every year", "zh-CN": "每年再平衡" },
+      opt_rebal_drift: { "en-UK": "Never (let drift)", "zh-CN": "从不（自然漂移）" },
+      lbl_years_retirement: { "en-UK": "Years in retirement", "zh-CN": "退休模拟年数" },
+      btn_match_window: { "en-UK": "Match data length", "zh-CN": "匹配数据年数" },
+      tip_match_window: {
+        "en-UK": "Set years equal to the length of the selected historical data window",
+        "zh-CN": "将退休模拟年数设为与所选历史数据窗口相同的年数"
+      },
+
+      // Sidebar 2: Market History
+      sec_market_history: { "en-UK": "Market History", "zh-CN": "历史市场数据" },
+      lbl_dataset: { "en-UK": "Dataset", "zh-CN": "预设数据集" },
+      preset_all_country: { "en-UK": "1988–2025 · All-Country (38 yrs)", "zh-CN": "1988–2025 · 全球全市场 (38 年)" },
+      preset_world: { "en-UK": "1976–2025 · World Developed (50 yrs)", "zh-CN": "1976–2025 · 全球发达市场 (50 年)" },
+      preset_global_agg: { "en-UK": "1990–2025 · Global Agg Bonds (36 yrs)", "zh-CN": "1990–2025 · 全球综合债券 (36 年)" },
+      preset_nyu_full: { "en-UK": "1928–2025 · US Long-Run, NYU Stern (98 yrs)", "zh-CN": "1928–2025 · 美国长周期 NYU Stern (98 年)" },
+      lbl_data_from: { "en-UK": "Data from", "zh-CN": "起始年份" },
+      lbl_data_to: { "en-UK": "Data to", "zh-CN": "结束年份" },
+      lbl_indices_prefix: { "en-UK": "Indices:", "zh-CN": "指数：" },
+      lbl_stock_index: { "en-UK": "Stock index", "zh-CN": "股票指数" },
+      eq_opt_acwi: { "en-UK": "MSCI ACWI (All-Country, 1988–2025)", "zh-CN": "MSCI ACWI 全球全市场 (1988–2025)" },
+      eq_opt_sp500: { "en-UK": "S&P 500 Total Return (1976–2025)", "zh-CN": "标普 500 全收益 (1976–2025)" },
+      eq_opt_world: { "en-UK": "MSCI World (Developed, 1976–2025)", "zh-CN": "MSCI World 全球发达市场 (1976–2025)" },
+      eq_opt_world_exus: { "en-UK": "MSCI World ex-USA (1976–2025)", "zh-CN": "MSCI World 除美国发达市场 (1976–2025)" },
+      eq_opt_em: { "en-UK": "MSCI Emerging Markets (1988–2025)", "zh-CN": "MSCI 新兴市场 (1988–2025)" },
+      eq_opt_nyu_sp500: { "en-UK": "NYU Stern S&P 500 (1928–2025)", "zh-CN": "NYU Stern 标普 500 (1928–2025)" },
+      eq_opt_nyu_sc: { "en-UK": "NYU Stern US Small Cap (1928–2025)", "zh-CN": "NYU Stern 美国小盘股 (1928–2025)" },
+      lbl_bond_index: { "en-UK": "Bond index", "zh-CN": "债券指数" },
+      bd_opt_us_agg: { "en-UK": "Bloomberg US Aggregate (1976–2025)", "zh-CN": "彭博美国综合债 (1976–2025)" },
+      bd_opt_glob_agg: { "en-UK": "Bloomberg Global Agg, USD Hedged (1990–2025)", "zh-CN": "彭博全球综合债·美元对冲 (1990–2025)" },
+      bd_opt_glob_exus: { "en-UK": "Bloomberg Global Agg ex-USD, Hedged (1990–2025)", "zh-CN": "彭博全球除美元综合债·对冲 (1990–2025)" },
+      bd_opt_nyu_10y: { "en-UK": "NYU Stern 10-Year Treasury (1928–2025)", "zh-CN": "NYU Stern 10 年期美国国债 (1928–2025)" },
+      bd_opt_nyu_baa: { "en-UK": "NYU Stern Baa Corporate (1928–2025)", "zh-CN": "NYU Stern Baa 级企业债 (1928–2025)" },
+      bd_opt_nyu_3m: { "en-UK": "NYU Stern 3-Month T-Bill (1928–2025)", "zh-CN": "NYU Stern 3 个月美国国库券 (1928–2025)" },
+      range_notice: {
+        "en-UK": "Note: {eq} + {bd} joint data begins in {min}. Start year adjusted to {min}.",
+        "zh-CN": "提示：{eq} 与 {bd} 的共同数据始于 {min} 年，起始年份已自动调整为 {min} 年。"
+      },
+      notice_seq_repeat: {
+        "en-UK": "Sequential repeats {y0}–{y1} ({w} yrs) {cycles}× to cover {sim} years.",
+        "zh-CN": "顺序回测将循环重复 {y0}–{y1}（共 {w} 年）{cycles} 次，以覆盖 {sim} 年模拟期。"
+      },
+      notice_seq_subset: {
+        "en-UK": "Sequential uses {y0}–{yEnd} (first {sim} of {w} yrs); Random draws from all {w} yrs.",
+        "zh-CN": "顺序回测使用 {y0}–{yEnd}（前 {sim} 年 / 共 {w} 年）；随机模拟从全部 {w} 年中抽样。"
+      },
+
+      // Series Short Labels
+      series_SP500_Official_TR_pct: { "en-UK": "S&P 500 Official TR", "zh-CN": "标普 500 全收益" },
+      series_MSCI_ACWI_Gross_USD_pct: { "en-UK": "MSCI ACWI (Gross USD)", "zh-CN": "MSCI ACWI 全球" },
+      series_MSCI_World_Gross_USD_pct: { "en-UK": "MSCI World (Gross USD)", "zh-CN": "MSCI World 发达" },
+      series_MSCI_World_ex_USA_Gross_USD_pct: { "en-UK": "MSCI World ex-USA", "zh-CN": "MSCI 除美国发达" },
+      series_MSCI_EM_Gross_USD_pct: { "en-UK": "MSCI Emerging Markets", "zh-CN": "MSCI 新兴市场" },
+      series_NYU_SP500_pct: { "en-UK": "NYU S&P 500", "zh-CN": "NYU 标普 500" },
+      series_NYU_US_Small_Cap_pct: { "en-UK": "NYU US Small Cap", "zh-CN": "NYU 美国小盘股" },
+      series_Bloomberg_US_Agg_Bond_pct: { "en-UK": "Bloomberg US Agg Bond", "zh-CN": "彭博美国综合债" },
+      series_Bloomberg_Global_Agg_USD_Hedged_pct: { "en-UK": "Bloomberg Global Agg (Hedged)", "zh-CN": "彭博全球综合债(对冲)" },
+      series_Bloomberg_Global_Agg_ex_USD_Hedged_pct: { "en-UK": "Bloomberg Global Agg ex-USD (Hdg)", "zh-CN": "彭博除美元综合债(对冲)" },
+      series_NYU_US_10Y_TBond_pct: { "en-UK": "NYU 10Y US Treasury", "zh-CN": "NYU 10年期美债" },
+      series_NYU_US_Baa_Corp_Bond_pct: { "en-UK": "NYU US Baa Corp Bond", "zh-CN": "NYU Baa企业债" },
+      series_NYU_US_3M_TBill_pct: { "en-UK": "NYU 3M US T-Bill", "zh-CN": "NYU 3个月国库券" },
+
+      // Historical Table Column Headers
+      hcol_SP500_Official_TR_pct: { "en-UK": "S&P 500 TR", "zh-CN": "标普500全收益" },
+      hcol_NYU_SP500_pct: { "en-UK": "NYU S&P 500", "zh-CN": "NYU标普500" },
+      hcol_NYU_US_Small_Cap_pct: { "en-UK": "US Small Cap", "zh-CN": "美国小盘股" },
+      hcol_MSCI_ACWI_Gross_USD_pct: { "en-UK": "MSCI ACWI", "zh-CN": "MSCI全球" },
+      hcol_MSCI_World_Gross_USD_pct: { "en-UK": "MSCI World", "zh-CN": "MSCI发达" },
+      hcol_MSCI_World_ex_USA_Gross_USD_pct: { "en-UK": "World ex-US", "zh-CN": "除美发达" },
+      hcol_MSCI_EM_Gross_USD_pct: { "en-UK": "MSCI EM", "zh-CN": "新兴市场" },
+      hcol_Bloomberg_US_Agg_Bond_pct: { "en-UK": "US Agg Bond", "zh-CN": "美国综合债" },
+      hcol_Bloomberg_Global_Agg_USD_Hedged_pct: { "en-UK": "Global Agg", "zh-CN": "全球综合债" },
+      hcol_Bloomberg_Global_Agg_ex_USD_Hedged_pct: { "en-UK": "Global ex-US", "zh-CN": "除美综合债" },
+      hcol_NYU_US_10Y_TBond_pct: { "en-UK": "10Y Treasury", "zh-CN": "10年美债" },
+      hcol_NYU_US_Baa_Corp_Bond_pct: { "en-UK": "Baa Corp", "zh-CN": "Baa企业债" },
+      hcol_NYU_US_3M_TBill_pct: { "en-UK": "3M T-Bill", "zh-CN": "3月国库券" },
+
+      // Sidebar 3: Spending Rules
+      sec_spending_rules: { "en-UK": "Spending Rules", "zh-CN": "支出与通胀规则" },
+      lbl_cut_bad_yrs: { "en-UK": "Cut spending in bad years", "zh-CN": "在市场不佳年份缩减支出" },
+      tip_cut_bad_yrs: {
+        "en-UK": "When a bad year is detected, withdraw only a percentage of the planned (inflation-adjusted) spending.",
+        "zh-CN": "当触发不佳年份条件时，当年仅提取计划（经通胀调整后）支出的一定比例。"
+      },
+      lbl_cut_to: { "en-UK": "Cut to", "zh-CN": "缩减至" },
+      hint_zero_exp: { "en-UK": "$0 expense", "zh-CN": "$0 支出" },
+      hint_fixed_100: { "en-UK": "Fixed 100% ({amt})", "zh-CN": "固定 100% ({amt})" },
+      hint_cut_to: { "en-UK": "Cut to {pct}%", "zh-CN": "缩减至 {pct}%" },
+      hint_select_lt100: { "en-UK": "Select <100%", "zh-CN": "请选择 <100%" },
+      lbl_bad_yr_when: { "en-UK": "A \"bad year\" is when", "zh-CN": "“不佳年份”触发条件" },
+      trig_neg_return: { "en-UK": "Portfolio return is negative", "zh-CN": "投资组合当年收益为负" },
+      trig_below_initial: { "en-UK": "Balance is below starting amount", "zh-CN": "资产低于初始本金" },
+      trig_below_real_initial: { "en-UK": "Balance is below inflation-adjusted start", "zh-CN": "资产低于通胀调整后初始本金" },
+      trig_in_drawdown: { "en-UK": "Balance is below its prior peak", "zh-CN": "资产低于历史峰值（处于回撤中）" },
+      lbl_inflation: { "en-UK": "Inflation", "zh-CN": "通胀来源" },
+      opt_inf_historical: { "en-UK": "Historical CPI", "zh-CN": "历史 CPI" },
+      opt_inf_fixed: { "en-UK": "Fixed rate", "zh-CN": "固定通胀率" },
+      btn_view_cpi_table: { "en-UK": "View CPI table →", "zh-CN": "查看 CPI 数据表 →" },
+      inf_pool_hist: {
+        "en-UK": "US CPI {y0}–{y1}: avg {avg}%/yr (low {min} in {minY}, high {max} in {maxY}).",
+        "zh-CN": "{y0}–{y1} 美国 CPI：年均 {avg}%（最低 {minY} 年 {min}，最高 {maxY} 年 {max}）。"
+      },
+      inf_pool_fixed: {
+        "en-UK": "Historical CPI avg for {y0}–{y1} was {avg}%/yr.",
+        "zh-CN": "{y0}–{y1} 期间历史 CPI 年化均值为 {avg}%/年。"
+      },
+      lbl_fixed_inf_rate: { "en-UK": "Fixed inflation rate (%/yr)", "zh-CN": "固定年化通胀率 (%/年)" },
+      lbl_withdraw_at: { "en-UK": "Withdraw at", "zh-CN": "每年提取时点" },
+      tip_withdraw_at: {
+        "en-UK": "Start: spending comes out before the year's return. End: spending comes out after the year's return & inflation.",
+        "zh-CN": "年初提取：支出在当年投资收益计算前扣除；年末提取：支出在当年投资收益与通胀计算后扣除。"
+      },
+      opt_timing_start: { "en-UK": "Start of year", "zh-CN": "年初提取" },
+      opt_timing_end: { "en-UK": "End of year", "zh-CN": "年末提取" },
+      sum_inf_hist: { "en-UK": "Historical CPI", "zh-CN": "历史 CPI" },
+      sum_inf_fixed: { "en-UK": "{rate}% inflation", "zh-CN": "{rate}% 固定通胀" },
+      sum_cut_bad: { "en-UK": "Cut to {pct}% in bad years", "zh-CN": "不佳年份缩减至 {pct}%" },
+      sum_fixed_spend: { "en-UK": "Fixed spending", "zh-CN": "固定支出" },
+      sum_start_yr: { "en-UK": "Start of year", "zh-CN": "年初提取" },
+      sum_end_yr: { "en-UK": "End of year", "zh-CN": "年末提取" },
+
+      // Tabs & Toolbar Controls
+      tab_sequential: { "en-UK": "Sequential", "zh-CN": "顺序回测" },
+      tip_tab_seq: {
+        "en-UK": "Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)",
+        "zh-CN": "从起始年份按历史时间顺序逐年回测（若退休年数长于数据窗口则循环重复）"
+      },
+      meta_seq: { "en-UK": "{yr} · {sim}y", "zh-CN": "{yr}起 · {sim}年" },
+      tab_random: { "en-UK": "Random", "zh-CN": "随机模拟" },
+      tip_tab_rand: {
+        "en-UK": "1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window",
+        "zh-CN": "从所选历史数据窗口中有放回随机抽样，进行 1,000 次蒙特卡洛模拟"
+      },
+      meta_rand: { "en-UK": "1,000 runs · {sim}y", "zh-CN": "1,000次 · {sim}年" },
+      tab_data: { "en-UK": "Market & CPI Data", "zh-CN": "市场与 CPI 数据" },
+      tip_tab_data: {
+        "en-UK": "Inspect annual historical equity/bond returns and US CPI inflation",
+        "zh-CN": "查看历年股票/债券收益率及美国 CPI 通胀数据"
+      },
+      btn_rerun: { "en-UK": "↻ Re-run", "zh-CN": "↻ 重新模拟" },
+      tip_rerun: { "en-UK": "Draw a fresh set of 1,000 random sequences", "zh-CN": "重新随机抽取 1,000 组模拟序列" },
+      btn_nominal: { "en-UK": "Nominal $", "zh-CN": "名义金额 $" },
+      btn_real: { "en-UK": "Real $", "zh-CN": "实际购买力 $" },
+      basis_help_aria: { "en-UK": "What is Nominal $ vs Real $?", "zh-CN": "什么是名义金额与实际购买力？" },
+      popover_nominal_html: {
+        "en-UK": "<strong>Nominal $ (Future Dollars)</strong><br />Actual dollar balance printed on your future account statement, <em>without</em> removing inflation.",
+        "zh-CN": "<strong>名义金额 $（未来账面金额）</strong><br />未来账户账单上显示的实际美元数字，<em>未扣除</em>通货膨胀影响。"
+      },
+      popover_real_html: {
+        "en-UK": "<strong>Real $ (Start-Year Purchasing Power)</strong><br />Inflation-adjusted dollars showing what your future balance can actually buy in start-year money (deflated by cumulative CPI / inflation).",
+        "zh-CN": "<strong>实际购买力 $（起始年购买力）</strong><br />扣除累计 CPI / 通胀后的金额，反映未来资产折算为退休起始年货币的实际购买力。"
+      },
+      btn_median: { "en-UK": "Median", "zh-CN": "中位数" },
+      btn_average: { "en-UK": "Average", "zh-CN": "平均值" },
+      btn_linear: { "en-UK": "Linear", "zh-CN": "线性" },
+      btn_log: { "en-UK": "Log", "zh-CN": "对数" },
+
+      // Header Summary Pills
+      pill_ratio: { "en-UK": "<strong>{eq}/{bd}</strong> Ratio", "zh-CN": "<strong>{eq}/{bd}</strong> 股债比" },
+      pill_seq: { "en-UK": "Sequential", "zh-CN": "顺序回测" },
+      pill_rand: { "en-UK": "Random ({runs} runs)", "zh-CN": "随机 ({runs} 次)" },
+      pill_sim_yrs: { "en-UK": "<strong>{yrs} yrs</strong> Sim", "zh-CN": "模拟 <strong>{yrs} 年</strong>" },
+      pill_exp_range: { "en-UK": "Exp <strong>{floor}%–100%</strong>", "zh-CN": "支出 <strong>{floor}%–100%</strong>" },
+
+      // KPIs & Stats (Sequential & Random)
+      basis_real: { "en-UK": "Real $", "zh-CN": "实际购买力 $" },
+      basis_nominal: { "en-UK": "Nominal $", "zh-CN": "名义金额 $" },
+      stat_avg_short: { "en-UK": "Avg", "zh-CN": "均值" },
+      stat_med_short: { "en-UK": "Med", "zh-CN": "中位" },
+      stat_avg_long: { "en-UK": "Average", "zh-CN": "平均值" },
+      stat_med_long: { "en-UK": "Median", "zh-CN": "中位数" },
+      kpi_end_bal: { "en-UK": "Ending Balance", "zh-CN": "期末资产" },
+      kpi_end_bal_stat: { "en-UK": "Ending Balance ({stat})", "zh-CN": "期末资产（{stat}）" },
+      val_depleted: { "en-UK": "$0 (Depleted)", "zh-CN": "$0（已耗尽）" },
+      sub_depleted_yr: { "en-UK": "Depleted Yr {step} ({yr})", "zh-CN": "第 {step} 年耗尽 ({yr})" },
+      kpi_tot_exp: { "en-UK": "Total Expense", "zh-CN": "累计总支出" },
+      kpi_tot_exp_stat: { "en-UK": "Total Expense ({stat})", "zh-CN": "累计总支出（{stat}）" },
+      inf_lbl_seq_cpi: { "en-UK": "Avg US CPI", "zh-CN": "年均 CPI" },
+      inf_lbl_seq_fix: { "en-UK": "Fixed Infl", "zh-CN": "固定通胀" },
+      sub_cut_seq: { "en-UK": "Cut ({floor}%) in {cut}/{act} yrs", "zh-CN": "{act} 年中有 {cut} 年缩减 ({floor}%)" },
+      sub_last_yr_exp: { "en-UK": "Last Yr: {amt}", "zh-CN": "末年支出：{amt}" },
+      sub_no_exp: { "en-UK": "No expense ($0)", "zh-CN": "无支出 ($0)" },
+      per_yr_unit: { "en-UK": "%/yr", "zh-CN": "%/年" },
+      kpi_port_twwr: { "en-UK": "Portfolio TWWR", "zh-CN": "组合年化收益率" },
+      kpi_port_twwr_stat: { "en-UK": "Port. TWWR ({stat})", "zh-CN": "组合年化收益（{stat}）" },
+      sub_ann_vol: { "en-UK": "Ann. Vol: {vol}%", "zh-CN": "年化波动率：{vol}%" },
+      sub_vol_sharpe: { "en-UK": "Vol {vol}% • Sharpe {sharpe}", "zh-CN": "波动率 {vol}% • 夏普 {sharpe}" },
+      kpi_sharpe: { "en-UK": "Sharpe Ratio", "zh-CN": "夏普比率" },
+      sub_vs_tbill: { "en-UK": "vs. 3M US T-Bill", "zh-CN": "对比 3 个月美国国库券" },
+      kpi_max_dd: { "en-UK": "Max Drawdown", "zh-CN": "最大回撤" },
+      kpi_max_dd_stat: { "en-UK": "Max Drawdown ({stat})", "zh-CN": "最大回撤（{stat}）" },
+      sub_dd_peak_trough: { "en-UK": "Peak Yr {p} → Yr {t}", "zh-CN": "峰值第 {p} 年 → 第 {t} 年" },
+      sub_no_dd: { "en-UK": "No year-end drawdown", "zh-CN": "无年末回撤" },
+      sub_severe_p10: { "en-UK": "Severe (P10): {dd}", "zh-CN": "较差情形 (P10)：{dd}" },
+      kpi_best_worst: { "en-UK": "Best / Worst Yr", "zh-CN": "最佳 / 最差年份" },
+      sub_best_worst_yrs: { "en-UK": "Yr {bStep} ({bYr}) • Yr {wStep} ({wYr})", "zh-CN": "第 {bStep} 年 ({bYr}) • 第 {wStep} 年 ({wYr})" },
+      kpi_survival: { "en-UK": "Survival Rate (> $0)", "zh-CN": "资产存活率 (> $0)" },
+      sub_survival: { "en-UK": "{surv}/{runs} runs • {grew}% ≥ initial", "zh-CN": "{surv}/{runs} 次存活 • {grew}% ≥ 初始本金" },
+      kpi_p10_p90_end: { "en-UK": "10th–90th Pct End", "zh-CN": "期末 10%–90% 分位" },
+      sub_conf_band: { "en-UK": "80% confidence band at Yr {yrs}", "zh-CN": "第 {yrs} 年 80% 置信区间" },
+      inf_lbl_rnd_cpi: { "en-UK": "US CPI", "zh-CN": "CPI" },
+      inf_lbl_rnd_fix: { "en-UK": "Fixed", "zh-CN": "固定通胀" },
+      sub_cut_rnd: { "en-UK": "Cut Yrs: {cut}/{yrs}", "zh-CN": "缩减年数：{cut}/{yrs}" },
+      sub_survived_cnt: { "en-UK": "{cnt} survived", "zh-CN": "{cnt} 次存活" },
+
+      // Charts, Axes & Legends
+      axis_start: { "en-UK": "Start", "zh-CN": "起点" },
+      axis_yr: { "en-UK": "Yr {n}", "zh-CN": "第{n}年" },
+      leg_port_seq: { "en-UK": "Portfolio ({eq}/{bd}, Seq)", "zh-CN": "投资组合 ({eq}/{bd}，顺序)" },
+      sub_wealth_seq: {
+        "en-UK": "Hover to inspect exact balances • Same initial asset & spending rule applied to all 3 curves",
+        "zh-CN": "悬停查看精确余额 • 三条曲线均采用相同的初始本金与支出规则"
+      },
+      leg_port_ret: { "en-UK": "Portfolio Investment Return (%)", "zh-CN": "组合年度投资收益率 (%)" },
+      leg_dd_peak: { "en-UK": "Wealth Drawdown from Peak (%)", "zh-CN": "资产相对峰值回撤 (%)" },
+      leg_us_inf: { "en-UK": "US Inflation (%)", "zh-CN": "美国通胀率 (%)" },
+      sub_dd_seq: {
+        "en-UK": "Hover bars to inspect annual component returns & US inflation",
+        "zh-CN": "悬停柱状图可查看各年度分类资产收益与美国通胀率"
+      },
+      leg_port_rand: { "en-UK": "Portfolio {stat} ({runs} runs)", "zh-CN": "投资组合{stat}（{runs} 次模拟）" },
+      leg_med_p50: { "en-UK": "Median (P50)", "zh-CN": "中位数 (P50)" },
+      leg_avg_mean: { "en-UK": "Average (Mean)", "zh-CN": "平均值 (Mean)" },
+      leg_band_25_75: { "en-UK": "25th–75th Band", "zh-CN": "25%–75% 分位区间" },
+      leg_band_10_90: { "en-UK": "10th–90th Band", "zh-CN": "10%–90% 分位区间" },
+      sub_wealth_rand_hist: {
+        "en-UK": "Bootstrap w/ replacement from {y0}–{y1} (Matched US CPI)",
+        "zh-CN": "基于 {y0}–{y1} 历史数据有放回随机抽样（匹配当年美国 CPI）"
+      },
+      sub_wealth_rand_fix: {
+        "en-UK": "Bootstrap w/ replacement from {y0}–{y1} ({rate}% Fixed Inflation)",
+        "zh-CN": "基于 {y0}–{y1} 历史数据有放回随机抽样（{rate}% 固定通胀率）"
+      },
+      leg_exp_rand: {
+        "en-UK": "Total Expense {stat} (Survivors at Yr)",
+        "zh-CN": "累计总支出{stat}（截至当年仍存活序列）"
+      },
+      sub_exp_rand: {
+        "en-UK": "Cumulative spending among runs still surviving at each year ({basis}) • Hover to inspect",
+        "zh-CN": "截至各年度仍存活模拟序列的累计总支出（{basis}）• 悬停查看详情"
+      },
+
+      // Ledger & Summary Tables
+      flt_all: { "en-UK": "All Years", "zh-CN": "全部年份" },
+      flt_neg: { "en-UK": "Negative Return", "zh-CN": "负收益年份" },
+      flt_dd10: { "en-UK": "Drawdown > 10%", "zh-CN": "回撤 > 10%" },
+      flt_cut: { "en-UK": "Reduced Expense", "zh-CN": "缩减支出年份" },
+      ledger_title_seq: {
+        "en-UK": "Simulated Year-by-Year Cashflow & Balance Ledger",
+        "zh-CN": "逐年现金流与期末资产模拟明细表"
+      },
+      ledger_title_rand: {
+        "en-UK": "Simulated Year-by-Year Distribution ({runs} Random Runs)",
+        "zh-CN": "逐年模拟结果分布表（{runs} 次随机模拟）"
+      },
+      th_sim_yr: { "en-UK": "Sim Yr", "zh-CN": "模拟年" },
+      th_hist_yr: { "en-UK": "Hist. Yr", "zh-CN": "历史年" },
+      th_start_bal: { "en-UK": "Start Balance", "zh-CN": "期初资产" },
+      th_exp_out: { "en-UK": "Expense Out", "zh-CN": "当年支出" },
+      th_us_inf: { "en-UK": "US Inflation", "zh-CN": "美国通胀" },
+      th_eq_ret: { "en-UK": "Equity Ret", "zh-CN": "股票收益" },
+      th_bd_ret: { "en-UK": "Bond Ret", "zh-CN": "债券收益" },
+      th_port_ret: { "en-UK": "Port. Ret", "zh-CN": "组合收益" },
+      th_end_eq: { "en-UK": "End Equity", "zh-CN": "期末股票" },
+      th_end_bd: { "en-UK": "End Bond", "zh-CN": "期末债券" },
+      th_end_bal: { "en-UK": "End Balance", "zh-CN": "期末资产" },
+      th_drawdown: { "en-UK": "Drawdown", "zh-CN": "回撤" },
+      row_yr: { "en-UK": "Yr {n}", "zh-CN": "第 {n} 年" },
+      cnt_steps_all: { "en-UK": "{total} steps", "zh-CN": "共 {total} 年" },
+      cnt_steps_filtered: { "en-UK": "{shown} / {total} steps", "zh-CN": "显示 {shown} / {total} 年" },
+      th_surv_pct: { "en-UK": "Survival %", "zh-CN": "存活率 %" },
+      th_avg_bal: { "en-UK": "Average Balance", "zh-CN": "平均资产" },
+      th_med_p50: { "en-UK": "Median (P50)", "zh-CN": "中位数 (P50)" },
+      th_p10: { "en-UK": "10th Pct", "zh-CN": "10% 分位" },
+      th_p25: { "en-UK": "25th Pct", "zh-CN": "25% 分位" },
+      th_p75: { "en-UK": "75th Pct", "zh-CN": "75% 分位" },
+      th_p90: { "en-UK": "90th Pct", "zh-CN": "90% 分位" },
+      th_yr_exp: { "en-UK": "{stat} Yr Expense", "zh-CN": "当年支出({stat})" },
+      th_tot_exp: { "en-UK": "{stat} Total Expense", "zh-CN": "累计总支出({stat})" },
+      th_cut_runs_pct: { "en-UK": "Cut Runs %", "zh-CN": "缩减比例 %" },
+      th_avg_us_inf: { "en-UK": "Avg US Inflation", "zh-CN": "平均通胀" },
+      th_med_dd: { "en-UK": "Med Drawdown", "zh-CN": "中位回撤" },
+      tip_surv_yr: { "en-UK": "Among runs surviving through this year", "zh-CN": "仅统计截至该年仍存活的模拟序列" },
+      tip_surv_cum: { "en-UK": "Cumulative total expense among runs surviving through this year", "zh-CN": "截至该年仍存活模拟序列的累计总支出" },
+      cnt_steps_runs: { "en-UK": "{steps} steps • {runs} runs", "zh-CN": "{steps} 年 • {runs} 次模拟" },
+
+      // Historical Data Tab
+      hist_card_title: {
+        "en-UK": "Historical US CPI Inflation & Asset Return Dataset",
+        "zh-CN": "美国历史 CPI 通胀与资产全收益数据集"
+      },
+      btn_scope_win: { "en-UK": "Selected Window ({range})", "zh-CN": "所选区间 ({range})" },
+      btn_scope_all: { "en-UK": "All 98 Years (1928–2025)", "zh-CN": "全部 98 年 (1928–2025)" },
+      hist_subhead_dyn: {
+        "en-UK": "Showing {n} annual observations ({y0}–{y1}) • US CPI Inflation (NYU Stern / FRED CPI-U) alongside dividend-inclusive Equity & Bond Total Returns.",
+        "zh-CN": "当前显示 {n} 个年度样本 ({y0}–{y1}) • 美国 CPI 通胀率 (NYU Stern / FRED CPI-U) 与含分红股票及债券全收益率。"
+      },
+      hist_kpi_cpi: { "en-UK": "Annualized US CPI", "zh-CN": "年化美国 CPI" },
+      hist_cpi_mean: { "en-UK": "Arith. Mean: {mean}%/yr ({n} yrs)", "zh-CN": "算术均值：{mean}%/年（共 {n} 年）" },
+      hist_kpi_cum: { "en-UK": "Cumulative Price Level", "zh-CN": "累计物价水平" },
+      hist_kpi_hl: { "en-UK": "Highest / Lowest CPI Yr", "zh-CN": "最高 / 最低 CPI 年份" },
+      hist_peak_low: { "en-UK": "Peak {maxY} • Low {minY}", "zh-CN": "最高 {maxY} 年 • 最低 {minY} 年" },
+      hist_kpi_eq_real: { "en-UK": "Selected Equity (Real)", "zh-CN": "所选股票（实际年化）" },
+      hist_no_eq: { "en-UK": "No equity observations", "zh-CN": "无有效股票数据" },
+      hist_nom_sub: { "en-UK": "Nominal: {nom} ({y0}–{y1})", "zh-CN": "名义年化：{nom} ({y0}–{y1})" },
+      hist_leg_pos: { "en-UK": "Positive US CPI Inflation (%)", "zh-CN": "正通胀年份 (%)" },
+      hist_leg_neg: { "en-UK": "Deflation (< 0%)", "zh-CN": "通缩年份 (< 0%)" },
+      hist_chart_subhead: {
+        "en-UK": "Hover bars to inspect yearly US CPI, cumulative price index, and asset returns",
+        "zh-CN": "悬停柱状图可查看历年美国 CPI、累计物价指数及资产收益率"
+      },
+      hist_table_title: {
+        "en-UK": "Year-by-Year Historical US CPI Inflation & Index Total Returns (% in USD)",
+        "zh-CN": "历年美国 CPI 通胀与各指数全收益率明细（美元计价 %）"
+      },
+      th_year: { "en-UK": "Year", "zh-CN": "年份" },
+      th_us_cpi: { "en-UK": "US CPI Infl", "zh-CN": "美国 CPI" },
+      th_cum_cpi: { "en-UK": "Cum. CPI ($100)", "zh-CN": "累计物价 ($100)" },
+      tag_eq: { "en-UK": " [Eq]", "zh-CN": " [股]" },
+      tag_bd: { "en-UK": " [Bd]", "zh-CN": " [债]" },
+      cnt_hist_yrs: { "en-UK": "{n} years ({y0}–{y1})", "zh-CN": "共 {n} 年 ({y0}–{y1})" },
+
+      // Hover Tooltips
+      tip_w_rand_init: { "en-UK": "Initial Start (Yr 0 • {runs} runs)", "zh-CN": "初始起点（第 0 年 • {runs} 次模拟）" },
+      tip_w_rand_yr: { "en-UK": "Simulated Year {yr} ({runs} runs)", "zh-CN": "模拟第 {yr} 年（{runs} 次模拟）" },
+      tip_med_50: { "en-UK": "Median (50th):", "zh-CN": "中位数 (P50)：" },
+      tip_avg_mean: { "en-UK": "Average (Mean):", "zh-CN": "平均值 (Mean)：" },
+      tip_p90: { "en-UK": "90th Pct:", "zh-CN": "90% 分位：" },
+      tip_p75: { "en-UK": "75th Pct:", "zh-CN": "75% 分位：" },
+      tip_p25: { "en-UK": "25th Pct:", "zh-CN": "25% 分位：" },
+      tip_p10: { "en-UK": "10th Pct:", "zh-CN": "10% 分位：" },
+      tip_avg_inf: { "en-UK": "Avg US Inflation:", "zh-CN": "平均美国通胀：" },
+      tip_surv_gt0: { "en-UK": "Survival (> $0):", "zh-CN": "存活率 (> $0)：" },
+      tip_w_seq_init: { "en-UK": "Initial Start (Yr 0)", "zh-CN": "初始起点（第 0 年）" },
+      tip_w_seq_yr: { "en-UK": "Sim Yr {step} (Hist: {yr})", "zh-CN": "模拟第 {step} 年（历史：{yr}）" },
+      tip_portfolio: { "en-UK": "Portfolio:", "zh-CN": "投资组合：" },
+      tip_expense: { "en-UK": "Expense:", "zh-CN": "当年支出：" },
+      tip_100_eq: { "en-UK": "100% Equity:", "zh-CN": "100% 股票：" },
+      tip_100_bd: { "en-UK": "100% Bond:", "zh-CN": "100% 债券：" },
+      tip_us_inf: { "en-UK": "US Inflation:", "zh-CN": "美国通胀：" },
+      tip_drawdown: { "en-UK": "Drawdown:", "zh-CN": "资产回撤：" },
+      tip_exp_rand_init: { "en-UK": "Initial Start (Yr 0 • {surv}/{runs} runs)", "zh-CN": "初始起点（第 0 年 • {surv}/{runs} 次存活）" },
+      tip_exp_rand_yr: { "en-UK": "Thru Yr {yr} ({surv}/{runs} survived Yr {yr})", "zh-CN": "截至第 {yr} 年（{surv}/{runs} 次在第 {yr} 年存活）" },
+      tip_med_tot: { "en-UK": "Median Total (P50):", "zh-CN": "累计中位数 (P50)：" },
+      tip_avg_tot: { "en-UK": "Average Total:", "zh-CN": "累计平均值：" },
+      tip_p90_tot: { "en-UK": "90th Pct Total:", "zh-CN": "累计 90% 分位：" },
+      tip_band_25_75: { "en-UK": "25th–75th Band:", "zh-CN": "25%–75% 区间：" },
+      tip_p10_tot: { "en-UK": "10th Pct Total:", "zh-CN": "累计 10% 分位：" },
+      tip_yr_ann: { "en-UK": "Yr {yr} Annual (Med / Avg):", "zh-CN": "第 {yr} 年单年（中位 / 均值）：" },
+      tip_cut_pct: { "en-UK": " ({pct}% cut)", "zh-CN": "（{pct}% 缩减）" },
+      tip_no_surv: { "en-UK": "No runs survived through Yr {yr}.", "zh-CN": "无模拟序列存活至第 {yr} 年。" },
+      tip_port_ret: { "en-UK": "Port. Return:", "zh-CN": "组合收益：" },
+      tip_eq_ret: { "en-UK": "Equity Ret:", "zh-CN": "股票收益：" },
+      tip_bd_ret: { "en-UK": "Bond Ret:", "zh-CN": "债券收益：" },
+      tip_exp_out: { "en-UK": "Expense Out:", "zh-CN": "当年支出：" },
+      tip_hist_hdr: { "en-UK": "Year {yr} Historical Data", "zh-CN": "{yr} 年历史市场数据" },
+      tip_us_cpi_inf: { "en-UK": "US CPI Inflation:", "zh-CN": "美国 CPI 通胀：" },
+      tip_cum_cpi_100: { "en-UK": "Cum. CPI ($100 start):", "zh-CN": "累计物价（$100 起点）：" },
+      tip_3m_tbill: { "en-UK": "3M US T-Bill:", "zh-CN": "3个月美国国库券：" }
     };
 
     const PRESETS = {
@@ -1630,6 +2011,8 @@
     const elBtnTheme = document.getElementById("btnThemeToggle");
 
     let state = {
+      lang: "en-UK",
+      clampedMinYear: null,
       scale: "linear",
       tab: "sequential",
       centerStat: "median",
@@ -1646,6 +2029,60 @@
       hoverBarIdx: null,
       hoverHistIdx: null
     };
+
+    function t(key, vars) {
+      const entry = I18N[key];
+      let str = entry ? (entry[state.lang] !== undefined ? entry[state.lang] : entry["en-UK"]) : key;
+      if (vars) {
+        for (const [k, v] of Object.entries(vars)) {
+          str = str.replaceAll(`{${k}}`, String(v));
+        }
+      }
+      return str;
+    }
+
+    function getSeriesLabel(seriesKey) {
+      return t("series_" + seriesKey);
+    }
+
+    function syncRangeNoticeText() {
+      if (state.clampedMinYear !== null) {
+        elNotice.style.display = "block";
+        elNotice.textContent = t("range_notice", {
+          eq: getSeriesLabel(elEquity.value),
+          bd: getSeriesLabel(elBond.value),
+          min: state.clampedMinYear
+        });
+      } else {
+        elNotice.style.display = "none";
+      }
+    }
+
+    function syncThemeButtonLabel() {
+      const isDark = document.documentElement.dataset.theme === "dark";
+      elBtnTheme.textContent = isDark ? t("theme_light_mode") : t("theme_dark_mode");
+    }
+
+    function applyStaticI18n() {
+      document.documentElement.lang = state.lang === "zh-CN" ? "zh-CN" : "en-GB";
+      document.title = t("app_title");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach(el => {
+        el.setAttribute("title", t(el.dataset.i18nTitle));
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+      });
+      const helpBtn = document.querySelector(".basis-help-btn");
+      if (helpBtn) helpBtn.setAttribute("aria-label", t("basis_help_aria"));
+      document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === state.lang);
+      });
+      syncThemeButtonLabel();
+      syncRangeNoticeText();
+    }
 
     // Money Input Helpers (always parse stripped commas so parseFloat("1,000,000") never yields 1)
     function parseMoneyInput(el) {
@@ -1870,12 +2307,8 @@
         elEndYr.appendChild(o2);
       });
 
-      if (desiredStart !== undefined && desiredStart < bounds.min) {
-        elNotice.style.display = "block";
-        elNotice.textContent = `Note: ${SERIES_LABELS[eqKey]} + ${SERIES_LABELS[bdKey]} joint data begins in ${bounds.min}. Start year adjusted to ${bounds.min}.`;
-      } else {
-        elNotice.style.display = "none";
-      }
+      state.clampedMinYear = (desiredStart !== undefined && desiredStart < bounds.min) ? bounds.min : null;
+      syncRangeNoticeText();
     }
 
     function getPoolYears() {
@@ -2291,7 +2724,7 @@
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.fillStyle = C.muted;
-      ctx.font = "11px ui-monospace, monospace";
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
       ctx.textAlign = "right";
 
       yTicks.forEach(val => {
@@ -2310,7 +2743,7 @@
       const xTicks = computeStepXTicks(totalSteps, 9);
       xTicks.forEach(idx => {
         const x = mapX(idx);
-        ctx.fillText(idx === 0 ? "Start" : `Yr ${pts[idx].step}`, x, h - 9);
+        ctx.fillText(idx === 0 ? t("axis_start") : t("axis_yr", { n: pts[idx].step }), x, h - 9);
       });
 
       function strokeLine(key, color, width, dash = []) {
@@ -2418,7 +2851,7 @@
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.fillStyle = C.muted;
-      ctx.font = "11px ui-monospace, monospace";
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
       ctx.textAlign = "right";
 
       yTicks.forEach(v => {
@@ -2477,7 +2910,7 @@
       ctx.textAlign = "center";
       const xTicks = computeStepXTicks(rows.length, 9).filter(s => s >= 1);
       xTicks.forEach(stepNum => {
-        ctx.fillText(`Yr ${stepNum}`, mapX(stepNum - 1), h - 8);
+        ctx.fillText(t("axis_yr", { n: stepNum }), mapX(stepNum - 1), h - 8);
       });
 
       if (hoverBar !== null && hoverBar >= 0 && hoverBar < rows.length) {
@@ -2511,22 +2944,22 @@
     }
 
     function renderLedger(sim) {
-      document.getElementById("ledgerTitle").textContent = "Simulated Year-by-Year Cashflow & Balance Ledger";
+      document.getElementById("ledgerTitle").textContent = t("ledger_title_seq");
       document.getElementById("ledgerFilters").style.display = "inline-flex";
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
-          <th>Sim Yr</th>
-          <th>Hist. Yr</th>
-          <th>Start Balance</th>
-          <th>Expense Out</th>
-          <th>US Inflation</th>
-          <th>Equity Ret</th>
-          <th>Bond Ret</th>
-          <th>Port. Ret</th>
-          <th>End Equity</th>
-          <th>End Bond</th>
-          <th>End Balance</th>
-          <th>Drawdown</th>
+          <th>${t("th_sim_yr")}</th>
+          <th>${t("th_hist_yr")}</th>
+          <th>${t("th_start_bal")}</th>
+          <th>${t("th_exp_out")}</th>
+          <th>${t("th_us_inf")}</th>
+          <th>${t("th_eq_ret")}</th>
+          <th>${t("th_bd_ret")}</th>
+          <th>${t("th_port_ret")}</th>
+          <th>${t("th_end_eq")}</th>
+          <th>${t("th_end_bd")}</th>
+          <th>${t("th_end_bal")}</th>
+          <th>${t("th_drawdown")}</th>
         </tr>
       `;
       const tbody = document.querySelector("#ledgerTable tbody");
@@ -2546,11 +2979,11 @@
         tr.className = classes.join(" ");
 
         const endStr = r.depleted
-          ? '<span class="neg"><strong>$0 (Depleted)</strong></span>'
+          ? `<span class="neg"><strong>${t("val_depleted")}</strong></span>`
           : `<strong>${fmtExactMoney(r.endDisp)}</strong>`;
 
         tr.innerHTML = `
-          <td><strong>Yr ${r.step}</strong></td>
+          <td><strong>${t("row_yr", { n: r.step })}</strong></td>
           <td><span class="year-pill">${r.histYear}</span></td>
           <td>${fmtExactMoney(r.startDisp)}</td>
           <td class="exp-col">${(() => {
@@ -2571,8 +3004,8 @@
       tbody.innerHTML = "";
       tbody.appendChild(frag);
       const countText = filter === "all"
-        ? `${sim.rows.length} steps`
-        : `${filtered.length} / ${sim.rows.length} steps`;
+        ? t("cnt_steps_all", { total: sim.rows.length })
+        : t("cnt_steps_filtered", { shown: filtered.length, total: sim.rows.length });
       document.getElementById("ledgerCount").textContent = countText;
     }
 
@@ -2768,7 +3201,7 @@
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.fillStyle = C.muted;
-      ctx.font = "11px ui-monospace, monospace";
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
       ctx.textAlign = "right";
       yTicks.forEach(v => {
         const y = mapY(v);
@@ -2782,7 +3215,7 @@
 
       ctx.textAlign = "center";
       computeStepXTicks(simYears, 9).forEach(s => {
-        ctx.fillText(s === 0 ? "Start" : `Yr ${s}`, mapX(s), h - 9);
+        ctx.fillText(s === 0 ? t("axis_start") : t("axis_yr", { n: s }), mapX(s), h - 9);
       });
 
       // 1. Outer 10th-90th band polygon + subtle edge strokes
@@ -2889,7 +3322,7 @@
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.fillStyle = C.muted;
-      ctx.font = "11px ui-monospace, monospace";
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
       ctx.textAlign = "right";
       yTicks.forEach(v => {
         const y = mapY(v);
@@ -2903,7 +3336,7 @@
 
       ctx.textAlign = "center";
       computeStepXTicks(simYears, 9).forEach(s => {
-        ctx.fillText(s === 0 ? "Start" : `Yr ${s}`, mapX(s), h - 8);
+        ctx.fillText(s === 0 ? t("axis_start") : t("axis_yr", { n: s }), mapX(s), h - 8);
       });
 
       const isDark = document.documentElement.dataset.theme === "dark";
@@ -2986,26 +3419,26 @@
     }
 
     function renderRandomSummaryTable(batch) {
-      document.getElementById("ledgerTitle").textContent = `Simulated Year-by-Year Distribution (${batch.numRuns} Random Runs)`;
+      document.getElementById("ledgerTitle").textContent = t("ledger_title_rand", { runs: batch.numRuns.toLocaleString("en-US") });
       document.getElementById("ledgerFilters").style.display = "none";
       const hasCut = batch.expenseFloorPct < 100;
       const useMean = state.centerStat === "mean";
-      const expStatHdr = useMean ? "Avg" : "Med";
+      const expStatHdr = useMean ? t("stat_avg_short") : t("stat_med_short");
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
-          <th>Sim Yr</th>
-          <th>Survival %</th>
-          <th>Average Balance</th>
-          <th>Median (P50)</th>
-          <th>10th Pct</th>
-          <th>25th Pct</th>
-          <th>75th Pct</th>
-          <th>90th Pct</th>
-          <th title="Among runs surviving through this year">${expStatHdr} Yr Expense</th>
-          <th title="Cumulative total expense among runs surviving through this year">${expStatHdr} Total Expense</th>
-          ${hasCut ? '<th title="Among runs surviving through this year">Cut Runs %</th>' : ""}
-          <th>Avg US Inflation</th>
-          <th>Med Drawdown</th>
+          <th>${t("th_sim_yr")}</th>
+          <th>${t("th_surv_pct")}</th>
+          <th>${t("th_avg_bal")}</th>
+          <th>${t("th_med_p50")}</th>
+          <th>${t("th_p10")}</th>
+          <th>${t("th_p25")}</th>
+          <th>${t("th_p75")}</th>
+          <th>${t("th_p90")}</th>
+          <th title="${t("tip_surv_yr")}">${t("th_yr_exp", { stat: expStatHdr })}</th>
+          <th title="${t("tip_surv_cum")}">${t("th_tot_exp", { stat: expStatHdr })}</th>
+          ${hasCut ? `<th title="${t("tip_surv_yr")}">${t("th_cut_runs_pct")}</th>` : ""}
+          <th>${t("th_avg_us_inf")}</th>
+          <th>${t("th_med_dd")}</th>
         </tr>
       `;
       const tbody = document.querySelector("#ledgerTable tbody");
@@ -3018,7 +3451,7 @@
         const yrExp = useMean ? b.expMean[s - 1] : b.expP50[s - 1];
         const cumExp = useMean ? b.cumExpMean[s] : b.cumExpP50[s];
         tr.innerHTML = `
-          <td><strong>Yr ${s}</strong></td>
+          <td><strong>${t("row_yr", { n: s })}</strong></td>
           <td class="${surv >= 90 ? 'pos' : (surv < 70 ? 'neg' : '')}"><strong>${surv.toFixed(1)}%</strong></td>
           <td><strong>${fmtExactMoney(b.mean[s])}</strong></td>
           <td><strong>${fmtExactMoney(b.p50[s])}</strong></td>
@@ -3036,7 +3469,7 @@
       }
       tbody.innerHTML = "";
       tbody.appendChild(frag);
-      document.getElementById("ledgerCount").textContent = `${batch.simYears} steps • ${batch.numRuns} runs`;
+      document.getElementById("ledgerCount").textContent = t("cnt_steps_runs", { steps: batch.simYears, runs: batch.numRuns.toLocaleString("en-US") });
     }
 
     function renderRollingCohorts(poolYears, simYears, cfg) {
@@ -3169,20 +3602,22 @@
     }
 
     const HIST_TABLE_COLS = [
-      { key: "SP500_Official_TR_pct", label: "S&P 500 TR" },
-      { key: "NYU_SP500_pct", label: "NYU S&P 500" },
-      { key: "NYU_US_Small_Cap_pct", label: "US Small Cap" },
-      { key: "MSCI_ACWI_Gross_USD_pct", label: "MSCI ACWI" },
-      { key: "MSCI_World_Gross_USD_pct", label: "MSCI World" },
-      { key: "MSCI_World_ex_USA_Gross_USD_pct", label: "World ex-US" },
-      { key: "MSCI_EM_Gross_USD_pct", label: "MSCI EM" },
-      { key: "Bloomberg_US_Agg_Bond_pct", label: "US Agg Bond" },
-      { key: "Bloomberg_Global_Agg_USD_Hedged_pct", label: "Global Agg" },
-      { key: "Bloomberg_Global_Agg_ex_USD_Hedged_pct", label: "Global ex-US" },
-      { key: "NYU_US_10Y_TBond_pct", label: "10Y Treasury" },
-      { key: "NYU_US_Baa_Corp_Bond_pct", label: "Baa Corp" },
-      { key: "NYU_US_3M_TBill_pct", label: "3M T-Bill" }
+      "SP500_Official_TR_pct",
+      "NYU_SP500_pct",
+      "NYU_US_Small_Cap_pct",
+      "MSCI_ACWI_Gross_USD_pct",
+      "MSCI_World_Gross_USD_pct",
+      "MSCI_World_ex_USA_Gross_USD_pct",
+      "MSCI_EM_Gross_USD_pct",
+      "Bloomberg_US_Agg_Bond_pct",
+      "Bloomberg_Global_Agg_USD_Hedged_pct",
+      "Bloomberg_Global_Agg_ex_USD_Hedged_pct",
+      "NYU_US_10Y_TBond_pct",
+      "NYU_US_Baa_Corp_Bond_pct",
+      "NYU_US_3M_TBill_pct"
     ];
+
+    const CANVAS_FONT = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
 
     function drawHistCpiChart(histRows, cumSeries, cfg, hoverIdx = state.hoverHistIdx) {
       const canvas = document.getElementById("histCpiCanvas");
@@ -3211,7 +3646,7 @@
       ctx.strokeStyle = C.grid;
       ctx.lineWidth = 1;
       ctx.fillStyle = C.muted;
-      ctx.font = "11px ui-monospace, monospace";
+      ctx.font = CANVAS_FONT;
       ctx.textAlign = "right";
       yTicks.forEach(v => {
         const y = mapY(v);
@@ -3279,7 +3714,7 @@
       const yStart = histRows[0].Year;
       const yEnd = histRows[histRows.length - 1].Year;
       document.getElementById("dataSubhead").textContent =
-        `Showing ${histRows.length} annual observations (${yStart}–${yEnd}) • US CPI Inflation (NYU Stern / FRED CPI-U) alongside dividend-inclusive Equity & Bond Total Returns.`;
+        t("hist_subhead_dyn", { n: histRows.length, y0: yStart, y1: yEnd });
 
       let cumCpi = 100.0;
       let sumCpi = 0;
@@ -3299,7 +3734,7 @@
       const cpiMean = sumCpi / histRows.length;
       const eqValid = histRows.filter(r => r[cfg.eqKey] !== null && r[cfg.eqKey] !== undefined);
       let eqRealCagrStr = "—";
-      let eqNomSubStr = "No equity observations";
+      let eqNomSubStr = t("hist_no_eq");
       if (eqValid.length > 0) {
         let eqNomProd = 1.0, eqRealProd = 1.0;
         eqValid.forEach(r => {
@@ -3311,26 +3746,26 @@
         const eqNomCagr = (Math.pow(eqNomProd, 1 / eqValid.length) - 1) * 100;
         const eqRealCagr = (Math.pow(eqRealProd, 1 / eqValid.length) - 1) * 100;
         eqRealCagrStr = fmtPct(eqRealCagr);
-        eqNomSubStr = `Nominal: ${fmtPct(eqNomCagr)} (${eqValid[0].Year}–${eqValid[eqValid.length - 1].Year})`;
+        eqNomSubStr = t("hist_nom_sub", { nom: fmtPct(eqNomCagr), y0: eqValid[0].Year, y1: eqValid[eqValid.length - 1].Year });
       }
 
-      document.getElementById("histCpiCagr").textContent = `${cpiCagr.toFixed(2)}%/yr`;
-      document.getElementById("histCpiMean").textContent = `Arith. Mean: ${cpiMean.toFixed(2)}%/yr (${histRows.length} yrs)`;
+      document.getElementById("histCpiCagr").textContent = `${cpiCagr.toFixed(2)}${t("per_yr_unit")}`;
+      document.getElementById("histCpiMean").textContent = t("hist_cpi_mean", { mean: cpiMean.toFixed(2), n: histRows.length });
       document.getElementById("histCpiCum").textContent = `${(cumCpi / 100).toFixed(2)}x`;
       document.getElementById("histCpiCumSub").textContent = `$100 → $${Math.round(cumCpi).toLocaleString("en-US")} (+${Math.round(cumCpi - 100).toLocaleString("en-US")}%)`;
       document.getElementById("histCpiMinMax").innerHTML = `<span class="inf-col">${fmtPct(maxCpiRow.NYU_US_CPI_Inflation_pct, 2, false)}</span> / <span style="color:var(--accent);">${fmtPct(minCpiRow.NYU_US_CPI_Inflation_pct, 2, false)}</span>`;
-      document.getElementById("histCpiMinMaxYrs").textContent = `Peak ${maxCpiRow.Year} • Low ${minCpiRow.Year}`;
+      document.getElementById("histCpiMinMaxYrs").textContent = t("hist_peak_low", { maxY: maxCpiRow.Year, minY: minCpiRow.Year });
       document.getElementById("histEqRealCagr").textContent = eqRealCagrStr;
       document.getElementById("histEqNomSub").textContent = eqNomSubStr;
 
       document.getElementById("histDataHead").innerHTML = `
         <tr>
-          <th>Year</th>
-          <th>US CPI Infl</th>
-          <th>Cum. CPI ($100)</th>
-          ${HIST_TABLE_COLS.map(c => {
-            const tag = c.key === cfg.eqKey ? " [Eq]" : (c.key === cfg.bdKey ? " [Bd]" : "");
-            return `<th>${c.label}${tag}</th>`;
+          <th>${t("th_year")}</th>
+          <th>${t("th_us_cpi")}</th>
+          <th>${t("th_cum_cpi")}</th>
+          ${HIST_TABLE_COLS.map(colKey => {
+            const tag = colKey === cfg.eqKey ? t("tag_eq") : (colKey === cfg.bdKey ? t("tag_bd") : "");
+            return `<th>${t("hcol_" + colKey)}${tag}</th>`;
           }).join("")}
         </tr>
       `;
@@ -3340,8 +3775,8 @@
       histRows.forEach((r, idx) => {
         const cpi = r.NYU_US_CPI_Inflation_pct;
         const tr = document.createElement("tr");
-        const cellsHtml = HIST_TABLE_COLS.map(c => {
-          const v = r[c.key];
+        const cellsHtml = HIST_TABLE_COLS.map(colKey => {
+          const v = r[colKey];
           if (v === null || v === undefined) return '<td class="muted">—</td>';
           return `<td class="${v >= 0 ? 'pos' : 'neg'}">${fmtPct(v)}</td>`;
         }).join("");
@@ -3355,7 +3790,7 @@
       });
       tbody.innerHTML = "";
       tbody.appendChild(frag);
-      document.getElementById("histRowCount").textContent = `${histRows.length} years (${yStart}–${yEnd})`;
+      document.getElementById("histRowCount").textContent = t("cnt_hist_yrs", { n: histRows.length, y0: yStart, y1: yEnd });
 
       // Draw CPI chart AFTER table DOM updates so width/scrollbar geometry is finalized
       drawHistCpiChart(histRows, cumSeries, cfg);
@@ -3375,13 +3810,15 @@
         const cycles = (simYears / W).toFixed(2).replace(/\.00$/, "");
         elSimModeNotice.className = "notice subtle";
         elSimModeNotice.style.display = "block";
-        elSimModeNotice.textContent =
-          `Sequential repeats ${poolYears[0]}–${poolYears[W - 1]} (${W} yrs) ${cycles}× to cover ${simYears} years.`;
+        elSimModeNotice.textContent = t("notice_seq_repeat", {
+          y0: poolYears[0], y1: poolYears[W - 1], w: W, cycles, sim: simYears
+        });
       } else if (state.tab === "sequential" && simYears < W) {
         elSimModeNotice.className = "notice subtle";
         elSimModeNotice.style.display = "block";
-        elSimModeNotice.textContent =
-          `Sequential uses ${poolYears[0]}–${poolYears[simYears - 1]} (first ${simYears} of ${W} yrs); Random draws from all ${W} yrs.`;
+        elSimModeNotice.textContent = t("notice_seq_subset", {
+          y0: poolYears[0], yEnd: poolYears[simYears - 1], sim: simYears, w: W
+        });
       } else {
         elSimModeNotice.style.display = "none";
       }
@@ -3391,7 +3828,7 @@
       const initVal = Math.max(1, parseMoneyInput(elInitial));
       const expVal = Math.max(0, parseMoneyInput(elExpense));
       const wr = (expVal / initVal) * 100;
-      elWrHint.textContent = `${wr.toFixed(2)}% withdrawal rate`;
+      elWrHint.textContent = t("hint_wr", { wr: wr.toFixed(2) });
       document.querySelectorAll("#expChips .chip").forEach(c => {
         const targetWr = parseFloat(c.dataset.wr);
         c.classList.toggle("active", Math.abs(wr - targetWr) < 0.005);
@@ -3413,14 +3850,14 @@
         c.classList.toggle("active", c.dataset.floor === elExpFloorPct.value);
       });
       if (initExp <= 0) {
-        elExpFloorHint.textContent = "$0 expense";
+        elExpFloorHint.textContent = t("hint_zero_exp");
       } else if (floorPct >= 100) {
-        elExpFloorHint.textContent = `Fixed 100% (${fmtCompactMoney(initExp)})`;
+        elExpFloorHint.textContent = t("hint_fixed_100", { amt: fmtCompactMoney(initExp) });
       } else {
         elExpFloorHint.textContent = `${fmtCompactMoney(initExp * floorPct / 100)} – ${fmtCompactMoney(initExp)}`;
       }
       elBadYearTriggerGroup.style.opacity = active ? "1" : "0.55";
-      elTriggerStateHint.textContent = active ? `Cut to ${floorPct}%` : "Select <100%";
+      elTriggerStateHint.textContent = active ? t("hint_cut_to", { pct: floorPct }) : t("hint_select_lt100");
       const filterCutBtn = document.getElementById("filterCutBtn");
       if (filterCutBtn) {
         filterCutBtn.style.display = active ? "inline-block" : "none";
@@ -3462,9 +3899,10 @@
 
       elBarEq.style.width = eqPct + "%";
       elBarBd.style.width = (100 - eqPct) + "%";
-      elLblEqPct.textContent = `${eqPct}% Equity`;
-      elLblBdPct.textContent = `${100 - eqPct}% Bond`;
+      elLblEqPct.textContent = t("lbl_eq_pct", { pct: eqPct });
+      elLblBdPct.textContent = t("lbl_bd_pct", { pct: 100 - eqPct });
       elFixedInfGroup.style.display = inflationSource === "fixed" ? "block" : "none";
+      syncRangeNoticeText();
       syncAssetChips();
       syncWrHint();
       syncExpFloorUI();
@@ -3488,8 +3926,13 @@
         const cagrCpi = (Math.pow(cpiProd, 1 / poolYears.length) - 1) * 100;
         infNoticeEl.style.display = "block";
         infTextEl.textContent = inflationSource === "historical"
-          ? `US CPI ${poolYears[0]}–${poolYears[poolYears.length - 1]}: avg ${cagrCpi.toFixed(2)}%/yr (low ${fmtPct(minV, 2, false)} in ${minY}, high ${fmtPct(maxV, 2, false)} in ${maxY}).`
-          : `Historical CPI avg for ${poolYears[0]}–${poolYears[poolYears.length - 1]} was ${cagrCpi.toFixed(2)}%/yr.`;
+          ? t("inf_pool_hist", {
+              y0: poolYears[0], y1: poolYears[poolYears.length - 1],
+              avg: cagrCpi.toFixed(2), min: fmtPct(minV, 2, false), minY, max: fmtPct(maxV, 2, false), maxY
+            })
+          : t("inf_pool_fixed", {
+              y0: poolYears[0], y1: poolYears[poolYears.length - 1], avg: cagrCpi.toFixed(2)
+            });
       } else {
         infNoticeEl.style.display = "none";
       }
@@ -3509,7 +3952,7 @@
         displayBasis
       };
 
-      const basisTag = displayBasis === "real" ? "Real $" : "Nominal $";
+      const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
 
       if (mode === "sequential") {
         const seqKey = `${poolYears[0]}-${poolYears[poolYears.length - 1]}-${poolYears.length}-${simYears}-seq`;
@@ -3521,42 +3964,42 @@
         state.lastRun = { mode: "sequential", sim, eqPct, simYears, cfg };
 
         elHdrPills.innerHTML = `
-          <span class="summary-pill"><strong>${eqPct}/${100 - eqPct}</strong> Ratio</span>
-          <span class="summary-pill">Sequential</span>
-          <span class="summary-pill"><strong>${simYears} yrs</strong> Sim</span>
+          <span class="summary-pill">${t("pill_ratio", { eq: eqPct, bd: 100 - eqPct })}</span>
+          <span class="summary-pill">${t("pill_seq")}</span>
+          <span class="summary-pill">${t("pill_sim_yrs", { yrs: simYears })}</span>
           <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
-          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">Exp <strong>${expenseFloorPct}%–100%</strong></span>` : ""}
+          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">${t("pill_exp_range", { floor: expenseFloorPct })}</span>` : ""}
         `;
 
         if (sim.survived) {
-          setKpi(1, "Ending Balance", fmtCompactMoney(sim.endVal), `${fmtExactMoney(sim.endVal)} • ${sim.multiple.toFixed(2)}x (${basisTag})`);
+          setKpi(1, t("kpi_end_bal"), fmtCompactMoney(sim.endVal), `${fmtExactMoney(sim.endVal)} • ${sim.multiple.toFixed(2)}x (${basisTag})`);
         } else {
-          setKpi(1, "Ending Balance", "$0 (Depleted)", `Depleted Yr ${sim.depletedStep} (${sim.depletedHistYear})`, "kpi-val neg");
+          setKpi(1, t("kpi_end_bal"), t("val_depleted"), t("sub_depleted_yr", { step: sim.depletedStep, yr: sim.depletedHistYear }), "kpi-val neg");
         }
-        const seqInfLbl = inflationSource === "historical" ? "Avg US CPI" : "Fixed Infl";
+        const seqInfLbl = inflationSource === "historical" ? t("inf_lbl_seq_cpi") : t("inf_lbl_seq_fix");
         const seqCutText = (expenseFloorPct < 100 && initialExpense > 0)
-          ? `Cut (${expenseFloorPct}%) in ${sim.cutYearsCount}/${sim.activeYearsCount} yrs`
-          : (initialExpense > 0 ? `Last Yr: ${fmtExactMoney(sim.finalExpDisp)}` : "No expense ($0)");
-        setKpi(2, "Total Expense", fmtCompactMoney(sim.totalExpenseDisp), `${seqCutText} • ${seqInfLbl}: ${sim.avgInfPct.toFixed(2)}%/yr`, "kpi-val exp-col");
-        setKpi(3, "Portfolio TWWR", fmtPct(sim.twwr), `Ann. Vol: ${sim.vol.toFixed(2)}%`, "kpi-val " + (sim.twwr >= 0 ? "pos" : "neg"));
-        setKpi(4, "Sharpe Ratio", sim.sharpe.toFixed(2), "vs. 3M US T-Bill");
-        setKpi(5, "Max Drawdown", fmtPct(sim.maxDDPct, 2, false), sim.maxDDPct < 0 ? `Peak Yr ${sim.maxDDPeakStep} → Yr ${sim.maxDDTroughStep}` : "No year-end drawdown", "kpi-val neg");
+          ? t("sub_cut_seq", { floor: expenseFloorPct, cut: sim.cutYearsCount, act: sim.activeYearsCount })
+          : (initialExpense > 0 ? t("sub_last_yr_exp", { amt: fmtExactMoney(sim.finalExpDisp) }) : t("sub_no_exp"));
+        setKpi(2, t("kpi_tot_exp"), fmtCompactMoney(sim.totalExpenseDisp), `${seqCutText} • ${seqInfLbl}: ${sim.avgInfPct.toFixed(2)}${t("per_yr_unit")}`, "kpi-val exp-col");
+        setKpi(3, t("kpi_port_twwr"), fmtPct(sim.twwr), t("sub_ann_vol", { vol: sim.vol.toFixed(2) }), "kpi-val " + (sim.twwr >= 0 ? "pos" : "neg"));
+        setKpi(4, t("kpi_sharpe"), sim.sharpe.toFixed(2), t("sub_vs_tbill"));
+        setKpi(5, t("kpi_max_dd"), fmtPct(sim.maxDDPct, 2, false), sim.maxDDPct < 0 ? t("sub_dd_peak_trough", { p: sim.maxDDPeakStep, t: sim.maxDDTroughStep }) : t("sub_no_dd"), "kpi-val neg");
         if (sim.bestRow && sim.worstRow) {
-          setKpi(6, "Best / Worst Yr", `<span class="pos">${fmtPct(sim.bestRow.portRetPct, 1)}</span> / <span class="neg">${fmtPct(sim.worstRow.portRetPct, 1)}</span>`, `Yr ${sim.bestRow.step} (${sim.bestRow.histYear}) • Yr ${sim.worstRow.step} (${sim.worstRow.histYear})`);
+          setKpi(6, t("kpi_best_worst"), `<span class="pos">${fmtPct(sim.bestRow.portRetPct, 1)}</span> / <span class="neg">${fmtPct(sim.worstRow.portRetPct, 1)}</span>`, t("sub_best_worst_yrs", { bStep: sim.bestRow.step, bYr: sim.bestRow.histYear, wStep: sim.worstRow.step, wYr: sim.worstRow.histYear }));
         }
 
         document.getElementById("wealthLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>Portfolio (${eqPct}/${100 - eqPct}, Seq)</strong></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>100% ${SERIES_LABELS[eqKey]}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--bond)"></span><span>100% ${SERIES_LABELS[bdKey]}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>${t("leg_port_seq", { eq: eqPct, bd: 100 - eqPct })}</strong></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>100% ${getSeriesLabel(eqKey)}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--bond)"></span><span>100% ${getSeriesLabel(bdKey)}</span></div>
         `;
-        document.getElementById("chartSubhead").textContent = "Hover to inspect exact balances • Same initial asset & spending rule applied to all 3 curves";
+        document.getElementById("chartSubhead").textContent = t("sub_wealth_seq");
         document.getElementById("ddLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span>Portfolio Investment Return (%)</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>Wealth Drawdown from Peak (%)</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--inflation);"></span><span>US Inflation (%)</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span>${t("leg_port_ret")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>${t("leg_dd_peak")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--inflation);"></span><span>${t("leg_us_inf")}</span></div>
         `;
-        document.getElementById("ddSubhead").textContent = "Hover bars to inspect annual component returns & US inflation";
+        document.getElementById("ddSubhead").textContent = t("sub_dd_seq");
 
         if (state.tab === "sequential") {
           renderLedger(sim);
@@ -3576,11 +4019,11 @@
         state.lastRun = { mode: "random", batch, eqPct, simYears, cfg };
 
         const useMean = centerStat === "mean";
-        const statShort = useMean ? "Avg" : "Med";
-        const statLong = useMean ? "Average" : "Median";
+        const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
+        const statLong = useMean ? t("stat_avg_long") : t("stat_med_long");
         const centerEnd = useMean ? batch.endMean : batch.endMedian;
         const otherEnd = useMean ? batch.endMedian : batch.endMean;
-        const otherShort = useMean ? "Med" : "Avg";
+        const otherShort = useMean ? t("stat_med_short") : t("stat_avg_short");
         const centerExp = useMean ? batch.expMean : batch.expMedian;
         const centerTwwr = useMean ? batch.twwrMean : batch.twwrMedian;
         const centerVol = useMean ? batch.volMean : batch.volMedian;
@@ -3588,43 +4031,45 @@
         const centerDD = useMean ? batch.maxDDMean : batch.maxDDMedian;
 
         elHdrPills.innerHTML = `
-          <span class="summary-pill"><strong>${eqPct}/${100 - eqPct}</strong> Ratio</span>
-          <span class="summary-pill">Random (${numRuns} runs)</span>
-          <span class="summary-pill"><strong>${simYears} yrs</strong> Sim</span>
+          <span class="summary-pill">${t("pill_ratio", { eq: eqPct, bd: 100 - eqPct })}</span>
+          <span class="summary-pill">${t("pill_rand", { runs: numRuns.toLocaleString("en-US") })}</span>
+          <span class="summary-pill">${t("pill_sim_yrs", { yrs: simYears })}</span>
           <span class="summary-pill">${poolYears[0]}–${poolYears[poolYears.length - 1]}</span>
-          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">Exp <strong>${expenseFloorPct}%–100%</strong></span>` : ""}
+          ${(expenseFloorPct < 100 && initialExpense > 0) ? `<span class="summary-pill">${t("pill_exp_range", { floor: expenseFloorPct })}</span>` : ""}
         `;
 
-        setKpi(1, `Ending Balance (${statShort})`, fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
-        setKpi(2, "Survival Rate (> $0)", `${batch.survivalPct.toFixed(1)}%`, `${batch.survivedCount}/${numRuns} runs • ${batch.grewPct.toFixed(0)}% ≥ initial`, "kpi-val " + (batch.survivalPct >= 90 ? "pos" : (batch.survivalPct < 70 ? "neg" : "")));
-        setKpi(3, "10th–90th Pct End", `${fmtCompactMoney(batch.endP10)}–${fmtCompactMoney(batch.endP90)}`, `80% confidence band at Yr ${simYears}`);
+        setKpi(1, t("kpi_end_bal_stat", { stat: statShort }), fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
+        setKpi(2, t("kpi_survival"), `${batch.survivalPct.toFixed(1)}%`, t("sub_survival", { surv: batch.survivedCount, runs: numRuns, grew: batch.grewPct.toFixed(0) }), "kpi-val " + (batch.survivalPct >= 90 ? "pos" : (batch.survivalPct < 70 ? "neg" : "")));
+        setKpi(3, t("kpi_p10_p90_end"), `${fmtCompactMoney(batch.endP10)}–${fmtCompactMoney(batch.endP90)}`, t("sub_conf_band", { yrs: simYears }));
         const centerInf = useMean ? batch.infMean : batch.infMedian;
-        const rndInfLbl = inflationSource === "historical" ? "US CPI" : "Fixed";
+        const rndInfLbl = inflationSource === "historical" ? t("inf_lbl_rnd_cpi") : t("inf_lbl_rnd_fix");
         const centerCutYrs = useMean ? batch.cutYrsMean : batch.cutYrsMedian;
         const rndCutText = (expenseFloorPct < 100 && initialExpense > 0)
-          ? `Cut Yrs: ${centerCutYrs.toFixed(1)}/${simYears}`
-          : `${batch.survivedCount} survived`;
-        setKpi(4, `Total Expense (${statShort})`, batch.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}%/yr`, "kpi-val exp-col");
-        setKpi(5, `Port. TWWR (${statShort})`, fmtPct(centerTwwr), `Vol ${centerVol.toFixed(2)}% • Sharpe ${centerSharpe.toFixed(2)}`, "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
-        setKpi(6, `Max Drawdown (${statShort})`, fmtPct(centerDD, 2, false), `Severe (P10): ${fmtPct(batch.maxDDP10, 1, false)}`, "kpi-val neg");
+          ? t("sub_cut_rnd", { cut: centerCutYrs.toFixed(1), yrs: simYears })
+          : t("sub_survived_cnt", { cnt: batch.survivedCount });
+        setKpi(4, t("kpi_tot_exp_stat", { stat: statShort }), batch.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}${t("per_yr_unit")}`, "kpi-val exp-col");
+        setKpi(5, t("kpi_port_twwr_stat", { stat: statShort }), fmtPct(centerTwwr), t("sub_vol_sharpe", { vol: centerVol.toFixed(2), sharpe: centerSharpe.toFixed(2) }), "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
+        setKpi(6, t("kpi_max_dd_stat", { stat: statShort }), fmtPct(centerDD, 2, false), t("sub_severe_p10", { dd: fmtPct(batch.maxDDP10, 1, false) }), "kpi-val neg");
 
         document.getElementById("wealthLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>Portfolio ${statLong} (${numRuns} runs)</strong></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? "Median (P50)" : "Average (Mean)"}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>25th–75th Band</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>10th–90th Band</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>${t("leg_port_rand", { stat: statLong, runs: numRuns.toLocaleString("en-US") })}</strong></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
         `;
-        document.getElementById("chartSubhead").textContent = `Bootstrap w/ replacement from ${poolYears[0]}–${poolYears[poolYears.length - 1]} (${cfg.inflationSource === "historical" ? "Matched US CPI" : cfg.fixedInfPct + "% Fixed Inflation"})`;
+        document.getElementById("chartSubhead").textContent = cfg.inflationSource === "historical"
+          ? t("sub_wealth_rand_hist", { y0: poolYears[0], y1: poolYears[poolYears.length - 1] })
+          : t("sub_wealth_rand_fix", { y0: poolYears[0], y1: poolYears[poolYears.length - 1], rate: cfg.fixedInfPct });
         const isDarkTheme = document.documentElement.dataset.theme === "dark";
         const expInnerSwatch = isDarkTheme ? "rgba(251, 191, 36, 0.30)" : "rgba(180, 83, 9, 0.25)";
         const expOuterSwatch = isDarkTheme ? "rgba(251, 191, 36, 0.14)" : "rgba(180, 83, 9, 0.12)";
         document.getElementById("ddLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>Total Expense ${statLong} (Survivors at Yr)</strong></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? "Median (P50)" : "Average (Mean)"}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:${expInnerSwatch}; height:9px;"></span><span>25th–75th Band</span></div>
-          <div class="legend-item"><span class="swatch" style="background:${expOuterSwatch}; height:9px;"></span><span>10th–90th Band</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>${t("leg_exp_rand", { stat: statLong })}</strong></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:${expInnerSwatch}; height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:${expOuterSwatch}; height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
         `;
-        document.getElementById("ddSubhead").textContent = `Cumulative spending among runs still surviving at each year (${basisTag}) • Hover to inspect`;
+        document.getElementById("ddSubhead").textContent = t("sub_exp_rand", { basis: basisTag });
 
         if (state.tab === "random") {
           renderRandomSummaryTable(batch);
@@ -3640,7 +4085,7 @@
     elBtnTheme.addEventListener("click", () => {
       const isLight = document.documentElement.dataset.theme === "light";
       document.documentElement.dataset.theme = isLight ? "dark" : "light";
-      elBtnTheme.innerHTML = isLight ? "&#9788; Light Mode" : "&#9790; Dark Mode";
+      syncThemeButtonLabel();
       updateAll();
     });
 
@@ -3875,29 +4320,33 @@
       const hxVis = m.mapX(idx) * scaleX;
       if (m.kind === "random") {
         const b = m.batch.bands;
-        const hdr = idx === 0 ? `Initial Start (Yr 0 • ${m.batch.numRuns} runs)` : `Simulated Year ${idx} (${m.batch.numRuns} runs)`;
+        const hdr = idx === 0
+          ? t("tip_w_rand_init", { runs: m.batch.numRuns })
+          : t("tip_w_rand_yr", { yr: idx, runs: m.batch.numRuns });
         wealthTip.innerHTML = `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
-          <div class="tip-row"><span style="color:var(--port);">Median (50th):</span><strong>${fmtExactMoney(b.p50[idx])}</strong></div>
-          <div class="tip-row"><span style="color:var(--equity);">Average (Mean):</span><strong>${fmtExactMoney(b.mean[idx])}</strong></div>
-          <div class="tip-row"><span style="color:var(--success);">90th Pct:</span><span>${fmtExactMoney(b.p90[idx])}</span></div>
-          <div class="tip-row"><span style="color:var(--accent);">75th Pct:</span><span>${fmtExactMoney(b.p75[idx])}</span></div>
-          <div class="tip-row"><span style="color:var(--accent);">25th Pct:</span><span>${fmtExactMoney(b.p25[idx])}</span></div>
-          <div class="tip-row"><span style="color:var(--danger);">10th Pct:</span><span>${fmtExactMoney(b.p10[idx])}</span></div>
-          ${idx > 0 ? `<div class="tip-row"><span style="color:var(--inflation);">Avg US Inflation:</span><span>${fmtPct(b.infMean[idx - 1], 2, false)}</span></div>` : ""}
-          <div class="tip-row" style="margin-top:3px; color:var(--muted);"><span>Survival (&gt; $0):</span><strong>${b.survRate[idx].toFixed(1)}%</strong></div>
+          <div class="tip-row"><span style="color:var(--port);">${t("tip_med_50")}</span><strong>${fmtExactMoney(b.p50[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--equity);">${t("tip_avg_mean")}</span><strong>${fmtExactMoney(b.mean[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--success);">${t("tip_p90")}</span><span>${fmtExactMoney(b.p90[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--accent);">${t("tip_p75")}</span><span>${fmtExactMoney(b.p75[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--accent);">${t("tip_p25")}</span><span>${fmtExactMoney(b.p25[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--danger);">${t("tip_p10")}</span><span>${fmtExactMoney(b.p10[idx])}</span></div>
+          ${idx > 0 ? `<div class="tip-row"><span style="color:var(--inflation);">${t("tip_avg_inf")}</span><span>${fmtPct(b.infMean[idx - 1], 2, false)}</span></div>` : ""}
+          <div class="tip-row" style="margin-top:3px; color:var(--muted);"><span>${t("tip_surv_gt0")}</span><strong>${b.survRate[idx].toFixed(1)}%</strong></div>
         `;
       } else {
         const p = m.pts[idx];
-        const hdr = p.step === 0 ? "Initial Start (Yr 0)" : `Sim Yr ${p.step} (Hist: ${p.histYear})`;
+        const hdr = p.step === 0
+          ? t("tip_w_seq_init")
+          : t("tip_w_seq_yr", { step: p.step, yr: p.histYear });
         wealthTip.innerHTML = `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
-          <div class="tip-row"><span style="color:var(--port);">Portfolio:</span><strong>${fmtExactMoney(p.port)}</strong></div>
-          <div class="tip-row"><span style="color:var(--expense);">Expense:</span><span>${p.step === 0 ? "—" : "-" + fmtExactMoney(p.expense) + (p.expCutApplied ? ` (${p.expPctApplied}%)` : "")}</span></div>
-          <div class="tip-row"><span style="color:var(--equity);">100% Equity:</span><span>${fmtExactMoney(p.benchEq)}</span></div>
-          <div class="tip-row"><span style="color:var(--bond);">100% Bond:</span><span>${fmtExactMoney(p.benchBd)}</span></div>
-          <div class="tip-row"><span style="color:var(--inflation);">US Inflation:</span><span>${p.step === 0 ? "—" : fmtPct(p.infPct, 2, false)}</span></div>
-          <div class="tip-row" style="margin-top:3px; color:var(--muted);"><span>Drawdown:</span><span>${fmtPct(p.dd, 2, false)}</span></div>
+          <div class="tip-row"><span style="color:var(--port);">${t("tip_portfolio")}</span><strong>${fmtExactMoney(p.port)}</strong></div>
+          <div class="tip-row"><span style="color:var(--expense);">${t("tip_expense")}</span><span>${p.step === 0 ? "—" : "-" + fmtExactMoney(p.expense) + (p.expCutApplied ? ` (${p.expPctApplied}%)` : "")}</span></div>
+          <div class="tip-row"><span style="color:var(--equity);">${t("tip_100_eq")}</span><span>${fmtExactMoney(p.benchEq)}</span></div>
+          <div class="tip-row"><span style="color:var(--bond);">${t("tip_100_bd")}</span><span>${fmtExactMoney(p.benchBd)}</span></div>
+          <div class="tip-row"><span style="color:var(--inflation);">${t("tip_us_inf")}</span><span>${p.step === 0 ? "—" : fmtPct(p.infPct, 2, false)}</span></div>
+          <div class="tip-row" style="margin-top:3px; color:var(--muted);"><span>${t("tip_drawdown")}</span><span>${fmtPct(p.dd, 2, false)}</span></div>
         `;
       }
       positionTooltip(wealthTip, hxVis, rect.width);
@@ -3946,30 +4395,30 @@
         const b = m.batch.bands;
         const survN = b.survCount[idx];
         const hdr = idx === 0
-          ? `Initial Start (Yr 0 • ${survN}/${m.batch.numRuns} runs)`
-          : `Thru Yr ${idx} (${survN}/${m.batch.numRuns} survived Yr ${idx})`;
+          ? t("tip_exp_rand_init", { surv: survN, runs: m.batch.numRuns })
+          : t("tip_exp_rand_yr", { yr: idx, surv: survN, runs: m.batch.numRuns });
         ddTip.innerHTML = survN > 0 ? `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
-          <div class="tip-row"><span style="color:var(--expense);">Median Total (P50):</span><strong>${fmtExactMoney(b.cumExpP50[idx])}</strong></div>
-          <div class="tip-row"><span style="color:var(--equity);">Average Total:</span><strong>${fmtExactMoney(b.cumExpMean[idx])}</strong></div>
-          <div class="tip-row"><span style="color:var(--inflation);">90th Pct Total:</span><span>${fmtExactMoney(b.cumExpP90[idx])}</span></div>
-          <div class="tip-row"><span>25th–75th Band:</span><span>${fmtCompactMoney(b.cumExpP25[idx])}–${fmtCompactMoney(b.cumExpP75[idx])}</span></div>
-          <div class="tip-row"><span style="color:var(--accent);">10th Pct Total:</span><span>${fmtExactMoney(b.cumExpP10[idx])}</span></div>
-          ${idx > 0 ? `<div class="tip-row" style="margin-top:3px; border-top:1px solid var(--border); padding-top:3px; color:var(--muted);"><span>Yr ${idx} Annual (Med / Avg):</span><span>${fmtExactMoney(b.expP50[idx - 1])} / ${fmtExactMoney(b.expMean[idx - 1])}${m.batch.expenseFloorPct < 100 ? ` (${b.cutRate[idx - 1].toFixed(0)}% cut)` : ""}</span></div>` : ""}
+          <div class="tip-row"><span style="color:var(--expense);">${t("tip_med_tot")}</span><strong>${fmtExactMoney(b.cumExpP50[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--equity);">${t("tip_avg_tot")}</span><strong>${fmtExactMoney(b.cumExpMean[idx])}</strong></div>
+          <div class="tip-row"><span style="color:var(--inflation);">${t("tip_p90_tot")}</span><span>${fmtExactMoney(b.cumExpP90[idx])}</span></div>
+          <div class="tip-row"><span>${t("tip_band_25_75")}</span><span>${fmtCompactMoney(b.cumExpP25[idx])}–${fmtCompactMoney(b.cumExpP75[idx])}</span></div>
+          <div class="tip-row"><span style="color:var(--accent);">${t("tip_p10_tot")}</span><span>${fmtExactMoney(b.cumExpP10[idx])}</span></div>
+          ${idx > 0 ? `<div class="tip-row" style="margin-top:3px; border-top:1px solid var(--border); padding-top:3px; color:var(--muted);"><span>${t("tip_yr_ann", { yr: idx })}</span><span>${fmtExactMoney(b.expP50[idx - 1])} / ${fmtExactMoney(b.expMean[idx - 1])}${m.batch.expenseFloorPct < 100 ? t("tip_cut_pct", { pct: b.cutRate[idx - 1].toFixed(0) }) : ""}</span></div>` : ""}
         ` : `
           <div style="font-weight:700; margin-bottom:4px;">${hdr}</div>
-          <div class="muted">No runs survived through Yr ${idx}.</div>
+          <div class="muted">${t("tip_no_surv", { yr: idx })}</div>
         `;
       } else {
         const r = m.rows[idx];
         ddTip.innerHTML = `
-          <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">Sim Yr ${r.step} (Hist: ${r.histYear})</div>
-          <div class="tip-row"><span style="color:var(--accent);">Port. Return:</span><strong class="${r.portRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(r.portRetPct)}</strong></div>
-          <div class="tip-row"><span style="color:var(--equity);">Equity Ret:</span><span>${fmtPct(r.eqRetPct)}</span></div>
-          <div class="tip-row"><span style="color:var(--bond);">Bond Ret:</span><span>${fmtPct(r.bdRetPct)}</span></div>
-          <div class="tip-row"><span style="color:var(--expense);">Expense Out:</span><span>${r.expDisp > 0 ? "-" + fmtExactMoney(r.expDisp) + (r.expCutApplied ? ` (${r.expPctApplied}%)` : "") : (r.expCutApplied ? "$0 (0%)" : "$0")}</span></div>
-          <div class="tip-row"><span style="color:var(--inflation);">US Inflation:</span><span>${fmtPct(r.infPct, 2, false)}</span></div>
-          <div class="tip-row"><span style="color:var(--danger);">Drawdown:</span><span>${fmtPct(r.ddPct, 2, false)}</span></div>
+          <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("tip_w_seq_yr", { step: r.step, yr: r.histYear })}</div>
+          <div class="tip-row"><span style="color:var(--accent);">${t("tip_port_ret")}</span><strong class="${r.portRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(r.portRetPct)}</strong></div>
+          <div class="tip-row"><span style="color:var(--equity);">${t("tip_eq_ret")}</span><span>${fmtPct(r.eqRetPct)}</span></div>
+          <div class="tip-row"><span style="color:var(--bond);">${t("tip_bd_ret")}</span><span>${fmtPct(r.bdRetPct)}</span></div>
+          <div class="tip-row"><span style="color:var(--expense);">${t("tip_exp_out")}</span><span>${r.expDisp > 0 ? "-" + fmtExactMoney(r.expDisp) + (r.expCutApplied ? ` (${r.expPctApplied}%)` : "") : (r.expCutApplied ? "$0 (0%)" : "$0")}</span></div>
+          <div class="tip-row"><span style="color:var(--inflation);">${t("tip_us_inf")}</span><span>${fmtPct(r.infPct, 2, false)}</span></div>
+          <div class="tip-row"><span style="color:var(--danger);">${t("tip_drawdown")}</span><span>${fmtPct(r.ddPct, 2, false)}</span></div>
         `;
       }
       positionTooltip(ddTip, hxVis, rect.width);
@@ -4014,12 +4463,12 @@
       const bdV = r[m.cfg.bdKey];
       const hxVis = m.mapX(idx) * scaleX;
       histTip.innerHTML = `
-        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">Year ${r.Year} Historical Data</div>
-        <div class="tip-row"><span style="color:var(--inflation);">US CPI Inflation:</span><strong>${fmtPct(r.NYU_US_CPI_Inflation_pct, 2, false)}</strong></div>
-        <div class="tip-row"><span style="color:var(--muted);">Cum. CPI ($100 start):</span><span>$${m.cumSeries[idx].toFixed(1)}</span></div>
-        <div class="tip-row"><span style="color:var(--equity);">${SERIES_LABELS[m.cfg.eqKey]}:</span><span>${eqV === null || eqV === undefined ? "—" : fmtPct(eqV)}</span></div>
-        <div class="tip-row"><span style="color:var(--bond);">${SERIES_LABELS[m.cfg.bdKey]}:</span><span>${bdV === null || bdV === undefined ? "—" : fmtPct(bdV)}</span></div>
-        <div class="tip-row"><span style="color:var(--muted);">3M US T-Bill:</span><span>${fmtPct(r.NYU_US_3M_TBill_pct, 2, false)}</span></div>
+        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("tip_hist_hdr", { yr: r.Year })}</div>
+        <div class="tip-row"><span style="color:var(--inflation);">${t("tip_us_cpi_inf")}</span><strong>${fmtPct(r.NYU_US_CPI_Inflation_pct, 2, false)}</strong></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("tip_cum_cpi_100")}</span><span>$${m.cumSeries[idx].toFixed(1)}</span></div>
+        <div class="tip-row"><span style="color:var(--equity);">${getSeriesLabel(m.cfg.eqKey)}:</span><span>${eqV === null || eqV === undefined ? "—" : fmtPct(eqV)}</span></div>
+        <div class="tip-row"><span style="color:var(--bond);">${getSeriesLabel(m.cfg.bdKey)}:</span><span>${bdV === null || bdV === undefined ? "—" : fmtPct(bdV)}</span></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("tip_3m_tbill")}</span><span>${fmtPct(r.NYU_US_3M_TBill_pct, 2, false)}</span></div>
       `;
       positionTooltip(histTip, hxVis, rect.width);
     });
@@ -4168,21 +4617,22 @@
 
       // Collapsed-section summaries
       const infTxt = elInfSource.value === "historical"
-        ? "Historical CPI"
-        : `${(parseFloat(elFixedInfPct.value) || 0).toFixed(1)}% inflation`;
-      document.getElementById("sumSpending").textContent =
-        `${cutOn ? `Cut to ${floorPct}% in bad years` : "Fixed spending"} · ${infTxt} · ${elWithdrawTiming.value === "start" ? "Start" : "End"} of year`;
+        ? t("sum_inf_hist")
+        : t("sum_inf_fixed", { rate: (parseFloat(elFixedInfPct.value) || 0).toFixed(1) });
+      const spendModeTxt = cutOn ? t("sum_cut_bad", { pct: floorPct }) : t("sum_fixed_spend");
+      const timingTxt = elWithdrawTiming.value === "start" ? t("sum_start_yr") : t("sum_end_yr");
+      document.getElementById("sumSpending").textContent = `${spendModeTxt} · ${infTxt} · ${timingTxt}`;
       document.getElementById("sumIndices").textContent =
-        `${SERIES_LABELS[elEquity.value] || ""} + ${SERIES_LABELS[elBond.value] || ""}`;
+        `${getSeriesLabel(elEquity.value)} + ${getSeriesLabel(elBond.value)}`;
 
       // Sync tab bar labels with selected sidebar options
       const simYrs = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 30));
       const winRange = (elStartYr.value && elEndYr.value) ? `${elStartYr.value}–${elEndYr.value}` : "1928–2025";
-      document.getElementById("tabMetaSeq").textContent = `${elStartYr.value || "1988"} · ${simYrs}y`;
-      document.getElementById("tabMetaRand").textContent = `1,000 runs · ${simYrs}y`;
+      document.getElementById("tabMetaSeq").textContent = t("meta_seq", { yr: elStartYr.value || "1988", sim: simYrs });
+      document.getElementById("tabMetaRand").textContent = t("meta_rand", { sim: simYrs });
       document.getElementById("tabMetaData").textContent = state.dataScope === "all" ? "1928–2025" : winRange;
       const scopeBtn = document.getElementById("btnScopeWindow");
-      if (scopeBtn) scopeBtn.textContent = `Selected Window (${winRange})`;
+      if (scopeBtn) scopeBtn.textContent = t("btn_scope_win", { range: winRange });
 
       saveSettingsToStorage();
     }
@@ -4195,12 +4645,25 @@
       return val !== undefined && val !== null && Array.from(selEl.options).some(o => o.value === String(val));
     }
 
+    function detectInitialLang(savedObj) {
+      try {
+        const siteLang = localStorage.getItem(LANG_STORAGE_KEY);
+        if (siteLang === "en-UK" || siteLang === "zh-CN") return siteLang;
+      } catch (_) {}
+      if (savedObj && (savedObj.lang === "en-UK" || savedObj.lang === "zh-CN")) {
+        return savedObj.lang;
+      }
+      const nav = (navigator.language || "").toLowerCase();
+      return nav.startsWith("zh") ? "zh-CN" : "en-UK";
+    }
+
     function saveSettingsToStorage() {
       if (isRestoringSettings) return;
       try {
         const detInd = document.getElementById("detailsIndices");
         const detSpd = document.getElementById("detailsSpending");
         const payload = {
+          lang: state.lang,
           initialAsset: Math.max(100, Math.round(parseMoneyInput(elInitial) || 1000000)),
           initialExpense: Math.max(0, Math.round(parseMoneyInput(elExpense))),
           ratio: elRatioSelect.value,
@@ -4228,6 +4691,7 @@
           openSpending: detSpd ? detSpd.open : false
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        localStorage.setItem(LANG_STORAGE_KEY, state.lang);
       } catch (_) {
         // Ignore storage quota / sandboxed iframe errors
       }
@@ -4241,7 +4705,9 @@
       } catch (_) {
         saved = null;
       }
+      state.lang = detectInitialLang(saved);
       if (!saved || typeof saved !== "object") {
+        applyStaticI18n();
         populateYearSelects(1988, 2025);
         syncSimYrChips();
         return;
@@ -4315,7 +4781,6 @@
         }
         if (saved.theme === "dark" || saved.theme === "light") {
           document.documentElement.dataset.theme = saved.theme;
-          elBtnTheme.innerHTML = saved.theme === "dark" ? "&#9788; Light Mode" : "&#9790; Dark Mode";
         }
         const detInd = document.getElementById("detailsIndices");
         const detSpd = document.getElementById("detailsSpending");
@@ -4335,10 +4800,21 @@
           document.getElementById("scaleToggleWrap").style.display = isSimTab ? "inline-flex" : "none";
           document.getElementById("basisWrap").style.display = state.tab === "data" ? "none" : "inline-flex";
         }
+        applyStaticI18n();
       } finally {
         isRestoringSettings = false;
       }
     }
+
+    document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const nextLang = btn.dataset.lang === "zh-CN" ? "zh-CN" : "en-UK";
+        if (state.lang === nextLang) return;
+        state.lang = nextLang;
+        applyStaticI18n();
+        updateAll();
+      });
+    });
 
     ["detailsIndices", "detailsSpending"].forEach(id => {
       const el = document.getElementById(id);
