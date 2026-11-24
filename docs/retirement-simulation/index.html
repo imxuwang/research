@@ -6,98 +6,98 @@
   <title>Retirement Simulation</title>
   <style>
     :root {
-      --bg: #f1f5f9;
-      --bg-subtle: #f8fafc;
+      --bg: #f7f7f5;
+      --bg-subtle: #fafaf8;
       --panel: #ffffff;
-      --panel-alt: #f1f5f9;
-      --seg-bg: #e2e8f0;
+      --panel-alt: #f3f3ef;
+      --seg-bg: #efefeb;
       --seg-active: #ffffff;
       --input-bg: #ffffff;
-      --canvas-bg: #ffffff;
-      --thead-bg: #f8fafc;
+      --canvas-bg: transparent;
+      --thead-bg: #fafaf8;
       --tooltip-bg: rgba(255, 255, 255, 0.98);
-      --border: rgba(15, 23, 42, 0.10);
-      --border-strong: #cbd5e1;
-      --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
-      --tip-shadow: 0 10px 25px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
-      --text: #0f172a;
-      --text-soft: #334155;
-      --muted: #64748b;
-      --grid: rgba(15, 23, 42, 0.08);
-      --zero-line: rgba(15, 23, 42, 0.28);
-      --crosshair: rgba(15, 23, 42, 0.35);
-      --accent: #0284c7;
-      --accent-soft: rgba(2, 132, 199, 0.12);
-      --equity: #4f46e5;
-      --bond: #059669;
-      --port: #d97706;
-      --port-fill-top: rgba(245, 158, 11, 0.16);
-      --port-fill-bot: rgba(245, 158, 11, 0.00);
-      --expense: #b45309;
-      --inflation: #9333ea;
-      --inf-bar-pos: rgba(147, 51, 234, 0.72);
-      --inf-bar-neg: rgba(2, 132, 199, 0.72);
-      --danger: #e11d48;
-      --success: #059669;
-      --bar-pos: rgba(2, 132, 199, 0.70);
-      --bar-neg: rgba(225, 29, 72, 0.65);
-      --mc-outer-band: rgba(2, 132, 199, 0.10);
-      --mc-inner-band: rgba(2, 132, 199, 0.22);
-      --dd-band: rgba(225, 29, 72, 0.14);
-      --coh-other: rgba(100, 116, 139, 0.22);
-      --pill-bg: rgba(79, 70, 229, 0.10);
-      --pill-text: #4338ca;
-      --row-alt: rgba(15, 23, 42, 0.02);
-      --row-hover: rgba(2, 132, 199, 0.06);
+      --border: rgba(24, 24, 27, 0.09);
+      --border-strong: rgba(24, 24, 27, 0.18);
+      --card-shadow: none;
+      --tip-shadow: 0 8px 24px rgba(24, 24, 27, 0.10), 0 1px 3px rgba(24, 24, 27, 0.06);
+      --text: #18181b;
+      --text-soft: #3f3f46;
+      --muted: #71717a;
+      --grid: rgba(24, 24, 27, 0.07);
+      --zero-line: rgba(24, 24, 27, 0.24);
+      --crosshair: rgba(24, 24, 27, 0.30);
+      --accent: #1d4ed8;
+      --accent-soft: rgba(29, 78, 216, 0.08);
+      --equity: #4338ca;
+      --bond: #047857;
+      --port: #b45309;
+      --port-fill-top: rgba(180, 83, 9, 0.12);
+      --port-fill-bot: rgba(180, 83, 9, 0.00);
+      --expense: #9a3412;
+      --inflation: #7e22ce;
+      --inf-bar-pos: rgba(126, 34, 206, 0.65);
+      --inf-bar-neg: rgba(29, 78, 216, 0.65);
+      --danger: #be123c;
+      --success: #047857;
+      --bar-pos: rgba(29, 78, 216, 0.68);
+      --bar-neg: rgba(190, 18, 60, 0.60);
+      --mc-outer-band: rgba(29, 78, 216, 0.08);
+      --mc-inner-band: rgba(29, 78, 216, 0.18);
+      --dd-band: rgba(190, 18, 60, 0.12);
+      --coh-other: rgba(113, 113, 122, 0.20);
+      --pill-bg: #f3f3ef;
+      --pill-text: #3f3f46;
+      --row-alt: rgba(24, 24, 27, 0.018);
+      --row-hover: rgba(29, 78, 216, 0.045);
       --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Roboto, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       color-scheme: light;
     }
 
     html[data-theme="dark"] {
-      --bg: #080d18;
-      --bg-subtle: #0d1424;
-      --panel: #11192c;
-      --panel-alt: #18233c;
-      --seg-bg: #0d1424;
-      --seg-active: #1e293b;
-      --input-bg: #080d18;
-      --canvas-bg: #0a101e;
-      --thead-bg: #152036;
-      --tooltip-bg: rgba(13, 20, 36, 0.96);
-      --border: rgba(148, 163, 184, 0.16);
-      --border-strong: rgba(148, 163, 184, 0.28);
+      --bg: #0c0d0f;
+      --bg-subtle: #111316;
+      --panel: #15171b;
+      --panel-alt: #1d2026;
+      --seg-bg: #111316;
+      --seg-active: #262a32;
+      --input-bg: #101215;
+      --canvas-bg: transparent;
+      --thead-bg: #191c21;
+      --tooltip-bg: rgba(21, 23, 27, 0.97);
+      --border: rgba(244, 244, 245, 0.09);
+      --border-strong: rgba(244, 244, 245, 0.19);
       --card-shadow: none;
-      --tip-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-      --text: #f8fafc;
-      --text-soft: #cbd5e1;
-      --muted: #94a3b8;
-      --grid: rgba(148, 163, 184, 0.11);
-      --zero-line: rgba(248, 250, 252, 0.28);
-      --crosshair: rgba(248, 250, 252, 0.35);
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.16);
-      --equity: #6366f1;
-      --bond: #10b981;
+      --tip-shadow: 0 12px 28px rgba(0, 0, 0, 0.50);
+      --text: #f4f4f5;
+      --text-soft: #d4d4d8;
+      --muted: #a1a1aa;
+      --grid: rgba(244, 244, 245, 0.08);
+      --zero-line: rgba(244, 244, 245, 0.24);
+      --crosshair: rgba(244, 244, 245, 0.32);
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.13);
+      --equity: #818cf8;
+      --bond: #34d399;
       --port: #f59e0b;
-      --port-fill-top: rgba(245, 158, 11, 0.26);
+      --port-fill-top: rgba(245, 158, 11, 0.18);
       --port-fill-bot: rgba(245, 158, 11, 0.00);
       --expense: #fbbf24;
       --inflation: #c084fc;
-      --inf-bar-pos: rgba(192, 132, 252, 0.72);
-      --inf-bar-neg: rgba(56, 189, 248, 0.72);
-      --danger: #f43f5e;
-      --success: #10b981;
-      --bar-pos: rgba(56, 189, 248, 0.62);
-      --bar-neg: rgba(244, 63, 94, 0.52);
-      --mc-outer-band: rgba(56, 189, 248, 0.11);
-      --mc-inner-band: rgba(56, 189, 248, 0.24);
-      --dd-band: rgba(244, 63, 94, 0.16);
-      --coh-other: rgba(148, 163, 184, 0.20);
-      --pill-bg: rgba(99, 102, 241, 0.16);
-      --pill-text: #c7d2fe;
-      --row-alt: rgba(148, 163, 184, 0.025);
-      --row-hover: rgba(56, 189, 248, 0.07);
+      --inf-bar-pos: rgba(192, 132, 252, 0.68);
+      --inf-bar-neg: rgba(96, 165, 250, 0.68);
+      --danger: #fb7185;
+      --success: #34d399;
+      --bar-pos: rgba(96, 165, 250, 0.62);
+      --bar-neg: rgba(251, 113, 133, 0.55);
+      --mc-outer-band: rgba(96, 165, 250, 0.10);
+      --mc-inner-band: rgba(96, 165, 250, 0.22);
+      --dd-band: rgba(251, 113, 133, 0.15);
+      --coh-other: rgba(161, 161, 170, 0.20);
+      --pill-bg: #22262d;
+      --pill-text: #d4d4d8;
+      --row-alt: rgba(255, 255, 255, 0.02);
+      --row-hover: rgba(96, 165, 250, 0.07);
       color-scheme: dark;
     }
 
@@ -106,7 +106,7 @@
       scrollbar-width: thin;
       scrollbar-color: var(--border-strong) transparent;
     }
-    *::-webkit-scrollbar { width: 7px; height: 7px; }
+    *::-webkit-scrollbar { width: 6px; height: 6px; }
     *::-webkit-scrollbar-track { background: transparent; }
     *::-webkit-scrollbar-thumb {
       background: var(--border-strong);
@@ -119,7 +119,7 @@
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      line-height: 1.4;
+      line-height: 1.45;
       font-size: 13.5px;
       -webkit-font-smoothing: antialiased;
     }
@@ -130,7 +130,8 @@
     header {
       border-bottom: 1px solid var(--border);
       background: var(--panel);
-      padding: 11px 22px;
+      padding: 0 22px;
+      min-height: 50px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -141,41 +142,42 @@
     }
     .hdr-left {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      align-items: center;
       min-width: 0;
     }
     .hdr-title-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+    .hdr-home-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.12s;
+    }
+    .hdr-home-link:hover { color: var(--text); }
+    .hdr-sep {
+      color: var(--border-strong);
+      font-size: 13px;
+      user-select: none;
     }
     header h1 {
       margin: 0;
-      font-size: 16.5px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 600;
       letter-spacing: -0.015em;
-    }
-    .badge {
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid rgba(2, 132, 199, 0.24);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
     }
     .subhead {
       color: var(--muted);
-      font-size: 11.5px;
+      font-size: 12px;
     }
     .hdr-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -183,18 +185,18 @@
     .layout {
       width: 100%;
       display: grid;
-      grid-template-columns: 390px minmax(0, 1fr);
+      grid-template-columns: 356px minmax(0, 1fr);
     }
     .sidebar {
-      padding: 16px 16px 28px;
+      padding: 0 0 28px;
       border-right: 1px solid var(--border);
-      background: var(--bg-subtle);
+      background: var(--panel);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 0;
     }
     .workspace {
-      padding: 16px 22px 36px;
+      padding: 18px 24px 36px;
       min-width: 0;
     }
     @media (min-width: 1100px) {
@@ -218,76 +220,51 @@
       .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
     }
 
-    /* CARDS & SIDEBAR SECTIONS */
+    /* FLAT ARCHITECTURAL SECTIONS (NO BOX-IN-BOX CHROME) */
     .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 15px 16px;
-      box-shadow: var(--card-shadow);
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
     }
     .side-section {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 14px;
-      box-shadow: var(--card-shadow);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      padding: 18px 20px;
     }
-    .section-head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 11px;
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-soft);
-    }
-    .step-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-family: var(--mono);
-      font-size: 10.5px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
+    .side-section:last-of-type { border-bottom: none; }
     .card-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      margin: 0 0 12px 0;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 0 0 10px 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
     }
-    .control-group { margin-bottom: 11px; }
+    .control-group { margin-bottom: 14px; }
     .control-group:last-child { margin-bottom: 0; }
     label {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 11.5px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       color: var(--text-soft);
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       gap: 6px;
     }
     .label-hint {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--accent);
+      font-family: var(--font);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
     input[type="number"], input[type="text"], select {
@@ -295,8 +272,8 @@
       background: var(--input-bg);
       color: var(--text);
       border: 1px solid var(--border-strong);
-      border-radius: 8px;
-      padding: 7px 10px;
+      border-radius: 6px;
+      padding: 6px 9px;
       font-size: 13px;
       font-family: var(--font);
       outline: none;
@@ -313,8 +290,8 @@
       align-items: center;
       background: var(--input-bg);
       border: 1px solid var(--border-strong);
-      border-radius: 8px;
-      padding: 0 10px;
+      border-radius: 6px;
+      padding: 0 9px;
       transition: border-color 0.12s, box-shadow 0.12s;
     }
     .currency-field:focus-within {
@@ -324,7 +301,7 @@
     .currency-prefix {
       color: var(--muted);
       font-family: var(--mono);
-      font-weight: 700;
+      font-weight: 500;
       font-size: 13px;
       margin-right: 6px;
       user-select: none;
@@ -332,45 +309,46 @@
     .currency-field input {
       border: none;
       background: transparent;
-      padding: 7px 0;
+      padding: 6px 0;
       font-family: var(--mono);
       font-variant-numeric: tabular-nums;
       font-weight: 600;
-      font-size: 13.5px;
+      font-size: 13px;
       box-shadow: none !important;
     }
 
     /* CHIPS */
     .chips {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       margin-top: 6px;
       flex-wrap: nowrap;
     }
     .chips .chip {
       flex: 1 1 0;
       text-align: center;
-      background: var(--panel-alt);
+      background: transparent;
       border: 1px solid var(--border);
-      color: var(--text-soft);
+      color: var(--muted);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       padding: 4px 4px;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.12s;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
     }
-    .chip:hover { border-color: var(--accent); color: var(--text); }
+    .chip:hover { border-color: var(--border-strong); color: var(--text); }
     .chip.active {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--accent);
+      background: var(--panel-alt);
+      border-color: var(--border-strong);
+      color: var(--text);
+      font-weight: 600;
     }
 
     /* RATIO BAR */
     .ratio-bar {
-      height: 9px;
+      height: 8px;
       border-radius: 999px;
       overflow: hidden;
       display: flex;
@@ -382,13 +360,13 @@
     .ratio-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 11.5px;
       font-family: var(--mono);
       margin-top: 4px;
       color: var(--muted);
     }
-    .ratio-labels .eq-lbl { color: var(--equity); font-weight: 600; }
-    .ratio-labels .bd-lbl { color: var(--bond); font-weight: 600; }
+    .ratio-labels .eq-lbl { color: var(--text-soft); font-weight: 500; }
+    .ratio-labels .bd-lbl { color: var(--text-soft); font-weight: 500; }
 
     .row-2 {
       display: grid;
@@ -396,27 +374,31 @@
       gap: 10px;
     }
     .notice {
-      font-size: 11px;
-      background: var(--accent-soft);
-      border: 1px solid rgba(2, 132, 199, 0.24);
+      font-size: 11.5px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
       color: var(--text-soft);
       padding: 7px 9px;
-      border-radius: 7px;
+      border-radius: 6px;
       margin-top: 8px;
       display: none;
     }
     .notice.warn {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.35);
+      background: rgba(180, 83, 9, 0.08);
+      border-color: rgba(180, 83, 9, 0.24);
       color: var(--port);
     }
 
-    /* KPI GRID */
+    /* UNIFIED HAIRLINE KPI STRIP (NO RAINBOW STRIPES) */
     .kpis {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 11px;
-      margin-bottom: 14px;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
     }
     @media (max-width: 1380px) {
       .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -426,151 +408,133 @@
     }
     .kpi {
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-top: 3px solid var(--accent);
-      border-radius: 10px;
-      padding: 11px 13px;
+      padding: 12px 14px;
       min-width: 0;
-      box-shadow: var(--card-shadow);
     }
-    .kpi.kpi-port { border-top-color: var(--port); }
-    .kpi.kpi-exp { border-top-color: var(--expense); }
-    .kpi.kpi-ret { border-top-color: var(--accent); }
-    .kpi.kpi-sharpe { border-top-color: var(--equity); }
-    .kpi.kpi-dd { border-top-color: var(--danger); }
-    .kpi.kpi-bw { border-top-color: var(--success); }
-    .kpi.kpi-inf { border-top-color: var(--inflation); }
-
     .kpi-label {
-      font-size: 10.5px;
+      font-size: 11.5px;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight: 500;
+      line-height: 1.3;
     }
     .kpi-val {
-      font-size: 19px;
-      font-weight: 700;
+      font-size: clamp(15.5px, 1.25vw, 18.5px);
+      font-weight: 650;
       font-family: var(--mono);
       font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
       margin-top: 4px;
+      line-height: 1.25;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .kpi-sub {
       font-size: 11px;
       color: var(--muted);
-      margin-top: 3px;
+      margin-top: 4px;
+      line-height: 1.35;
       font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
-    /* TABS & SEGMENTED CONTROLS (attached to results panel below) */
+    /* RESULTS SHELL & CRISP UNDERLINE TABS */
     .results-shell {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: var(--card-shadow);
+      border-radius: 8px;
       overflow: visible;
     }
     .tabs-bar {
       display: flex;
       gap: 8px;
-      padding: 10px 14px 0;
+      padding: 0 16px;
       border-bottom: 1px solid var(--border);
-      background: var(--bg-subtle);
-      border-radius: 12px 12px 0 0;
+      background: transparent;
       flex-wrap: wrap;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       position: relative;
     }
     .tab-strip {
       display: flex;
-      gap: 3px;
+      gap: 14px;
       flex-wrap: wrap;
       margin-bottom: -1px;
     }
     .tab-btn {
       background: transparent;
-      border: 1px solid transparent;
-      border-bottom: none;
+      border: none;
+      border-bottom: 2px solid transparent;
       color: var(--muted);
-      padding: 8px 9px;
-      border-radius: 9px 9px 0 0;
-      font-size: 12px;
-      font-weight: 600;
+      padding: 11px 0 9px;
+      border-radius: 0;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: var(--font);
       cursor: pointer;
-      transition: color 0.12s, background 0.12s;
+      transition: color 0.12s, border-color 0.12s;
       display: inline-flex;
-      align-items: center;
+      align-items: baseline;
       gap: 4px;
       white-space: nowrap;
     }
-    .tab-btn:hover { color: var(--text); background: rgba(148, 163, 184, 0.08); }
+    .tab-btn:hover { color: var(--text); }
     .tab-btn.active {
-      background: var(--panel);
-      border-color: var(--border);
+      border-bottom-color: var(--text);
       color: var(--text);
-      position: relative;
+      font-weight: 600;
     }
     .tab-btn .tab-meta {
       font-family: var(--mono);
-      font-size: 9.5px;
-      font-weight: 600;
+      font-size: 10.5px;
+      font-weight: 400;
       color: var(--muted);
-      padding: 1px 5px;
-      border-radius: 999px;
-      background: var(--panel-alt);
-    }
-    .tab-btn.active .tab-meta {
-      background: var(--accent-soft);
-      color: var(--accent);
     }
     .tabs-controls {
       display: flex;
       gap: 6px;
       align-items: center;
       flex-wrap: wrap;
-      padding-bottom: 7px;
+      padding: 6px 0;
       margin-left: auto;
     }
     .results-body {
-      padding: 16px;
+      padding: 18px 20px 20px;
     }
     .results-body > div > .card {
-      box-shadow: none;
+      margin-bottom: 0 !important;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
     }
+    .results-body > div > .card:first-child { padding-top: 0; }
+    .results-body > div > .card:last-child { padding-bottom: 0; border-bottom: none; }
+
     .seg-group {
       display: inline-flex;
       background: var(--seg-bg);
       border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 3px;
-      gap: 2px;
+      border-radius: 6px;
+      padding: 2px;
+      gap: 1px;
       flex-wrap: wrap;
     }
     .scale-btn {
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 4px 7px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font);
       cursor: pointer;
       white-space: nowrap;
+      transition: color 0.12s, background 0.12s;
     }
+    .scale-btn:hover { color: var(--text); }
     .scale-btn.active {
       background: var(--seg-active);
-      color: var(--accent);
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.10);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
     }
     .basis-wrap {
       display: inline-flex;
@@ -578,16 +542,15 @@
       gap: 5px;
     }
     .basis-help-btn {
-      width: 20px;
-      height: 20px;
+      width: 19px;
+      height: 19px;
       border-radius: 50%;
       border: 1px solid var(--border-strong);
-      background: var(--panel);
+      background: transparent;
       color: var(--muted);
       font-size: 11px;
-      font-weight: 700;
-      font-family: Georgia, serif;
-      font-style: italic;
+      font-weight: 600;
+      font-family: var(--font);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -595,18 +558,18 @@
       padding: 0;
     }
     .basis-help-btn:hover, .basis-wrap:focus-within .basis-help-btn {
-      border-color: var(--accent);
-      color: var(--accent);
+      border-color: var(--text-soft);
+      color: var(--text);
     }
     .basis-popover {
       display: none;
       position: absolute;
-      right: 14px;
+      right: 18px;
       top: calc(100% + 6px);
       width: min(320px, calc(100% - 28px));
       background: var(--tooltip-bg);
       border: 1px solid var(--border-strong);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 11px 13px;
       box-shadow: var(--tip-shadow);
       font-size: 12px;
@@ -626,37 +589,35 @@
     }
 
     .btn {
-      background: var(--panel-alt);
+      background: transparent;
       border: 1px solid var(--border-strong);
-      color: var(--text);
-      padding: 6px 11px;
-      border-radius: 7px;
+      color: var(--text-soft);
+      padding: 5px 10px;
+      border-radius: 6px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
+      font-family: var(--font);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 5px;
       white-space: nowrap;
-      transition: border-color 0.12s, background 0.12s;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
     }
-    .btn:hover { border-color: var(--accent); }
-    .btn-primary {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .btn:hover { background: var(--panel-alt); color: var(--text); }
     .btn-accent {
-      background: rgba(245, 158, 11, 0.15);
-      border-color: var(--port);
-      color: var(--port);
+      background: var(--panel-alt);
+      border-color: var(--border-strong);
+      color: var(--text);
     }
+    .btn-accent:hover { border-color: var(--text-soft); }
     .link-btn {
       background: none;
       border: none;
       color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font);
       cursor: pointer;
       padding: 0;
     }
@@ -670,30 +631,28 @@
     canvas {
       width: 100%;
       display: block;
-      border-radius: 8px;
       background: var(--canvas-bg);
-      border: 1px solid var(--border);
     }
     .legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
+      gap: 10px 14px;
       font-size: 12px;
       color: var(--text-soft);
       margin-bottom: 10px;
       align-items: center;
       justify-content: space-between;
     }
-    .legend-items { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .legend-items { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
     .legend-item { display: flex; align-items: center; gap: 6px; }
-    .swatch { width: 12px; height: 3px; border-radius: 2px; }
+    .swatch { width: 11px; height: 3px; border-radius: 1px; }
     .tooltip {
       position: absolute;
       pointer-events: none;
       background: var(--tooltip-bg);
       border: 1px solid var(--border-strong);
-      border-radius: 8px;
-      padding: 9px 11px;
+      border-radius: 6px;
+      padding: 8px 10px;
       font-size: 11.5px;
       font-family: var(--mono);
       font-variant-numeric: tabular-nums;
@@ -701,7 +660,7 @@
       box-shadow: var(--tip-shadow);
       display: none;
       z-index: 15;
-      min-width: 235px;
+      min-width: 230px;
     }
     .tip-row {
       display: flex;
@@ -713,31 +672,35 @@
     /* TABLES */
     .filter-pills {
       display: inline-flex;
-      gap: 4px;
-      background: var(--bg);
+      gap: 2px;
+      background: var(--seg-bg);
       border: 1px solid var(--border);
       padding: 2px;
-      border-radius: 7px;
+      border-radius: 6px;
     }
     .filter-pill {
       background: transparent;
       border: none;
       color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 9px;
-      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font);
+      padding: 3px 8px;
+      border-radius: 4px;
       cursor: pointer;
     }
+    .filter-pill:hover { color: var(--text); }
     .filter-pill.active {
-      background: var(--panel-alt);
+      background: var(--seg-active);
       color: var(--text);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
     }
     .table-container {
       max-height: 440px;
       overflow: auto;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
     }
     table {
       width: 100%;
@@ -759,15 +722,13 @@
       background: var(--thead-bg);
       color: var(--muted);
       font-family: var(--font);
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 11.5px;
+      font-weight: 600;
       z-index: 2;
     }
     tbody tr:nth-child(even) td { background: var(--row-alt); }
     tbody tr:hover td { background: var(--row-hover); }
-    tr.depleted-row td { opacity: 0.62; }
+    tr.depleted-row td { opacity: 0.6; }
     .pos { color: var(--success); }
     .neg { color: var(--danger); }
     .muted { color: var(--muted); }
@@ -781,45 +742,32 @@
       background: var(--pill-bg);
       color: var(--pill-text);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
     }
     .cut-badge {
       display: inline-block;
       margin-left: 5px;
       padding: 0 5px;
       border-radius: 4px;
-      background: rgba(245, 158, 11, 0.16);
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(180, 83, 9, 0.10);
+      border: 1px solid rgba(180, 83, 9, 0.26);
       color: var(--expense);
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       vertical-align: middle;
     }
 
-    /* ===== SIDEBAR REDESIGN ===== */
-    .sidebar { gap: 14px; }
-    .side-section { padding: 14px 16px; }
-    .sidebar .control-group { margin-bottom: 16px; }
-    .sidebar .control-group:last-child { margin-bottom: 0; }
-    .sidebar label { font-size: 12px; color: var(--text); margin-bottom: 6px; }
-    .sidebar .label-hint {
-      font-family: var(--font);
-      font-weight: 500;
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
-    }
-    .sidebar .chips { margin-top: 6px; }
+    /* SIDEBAR DETAILS & CONTROLS */
     #triggerStateHint { display: none; }
-    .sum-inline { color: var(--muted); font-weight: 500; }
+    .sum-inline { color: var(--muted); font-weight: 400; }
     .sub-details:last-child { margin-bottom: 0; }
     .sub-details:not([open]) > summary { margin-bottom: 0; }
 
-    .sec-head-static { margin-bottom: 14px; }
+    .sec-head-static { margin-bottom: 12px; }
     .sec-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       color: var(--text);
     }
     details.side-section > summary {
@@ -832,8 +780,8 @@
       user-select: none;
     }
     details.side-section > summary::-webkit-details-marker { display: none; }
-    details.side-section[open] > summary { margin-bottom: 14px; }
-    .sec-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    details.side-section[open] > summary { margin-bottom: 12px; }
+    .sec-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .sec-summary {
       font-size: 11.5px;
       color: var(--muted);
@@ -844,21 +792,22 @@
     details[open] > summary .sec-summary { display: none; }
     .chev {
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
       transition: transform 0.15s;
       flex-shrink: 0;
     }
     details[open] > summary .chev { transform: rotate(90deg); }
     details.side-section > summary:hover .sec-title { color: var(--accent); }
 
-    .sub-details { margin-bottom: 16px; }
+    .sub-details { margin-bottom: 12px; }
     .sub-details > summary {
       cursor: pointer;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
+      font-weight: 500;
+      color: var(--text-soft);
       margin-bottom: 10px;
     }
+    .sub-details > summary:hover { color: var(--text); }
     .sub-details[open] {
       border-left: 2px solid var(--border-strong);
       padding-left: 10px;
@@ -867,76 +816,77 @@
     .sub-panel {
       margin-top: 10px;
       padding: 10px 0 0 10px;
-      border-left: 2px solid var(--accent-soft);
+      border-left: 2px solid var(--border);
     }
-    #randomControlsGroup.sub-panel { margin: -6px 0 16px; padding-top: 6px; }
+    #randomControlsGroup.sub-panel { margin: -6px 0 14px; padding-top: 6px; }
 
-    /* Segmented control (replaces 2-option dropdowns) */
+    /* Segmented control */
     .seg-ctl {
       display: flex;
       background: var(--seg-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 3px;
-      gap: 3px;
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
     }
     .seg-ctl button {
       flex: 1 1 0;
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 6px 8px;
-      border-radius: 6px;
+      padding: 5px 8px;
+      border-radius: 4px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       white-space: nowrap;
       font-family: var(--font);
-      transition: all 0.12s;
+      transition: color 0.12s, background 0.12s;
     }
     .seg-ctl button:hover { color: var(--text); }
     .seg-ctl button.active {
       background: var(--seg-active);
       color: var(--text);
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
     }
 
-    /* Number input + inline chips on one row */
+    /* Number input + inline chips */
     .input-with-chips {
       display: grid;
-      grid-template-columns: 76px 1fr;
+      grid-template-columns: 72px 1fr;
       gap: 8px;
       align-items: center;
     }
     .input-with-chips .chips { margin-top: 0; }
 
-    /* Allocation slider styled as the equity/bond bar */
+    /* Allocation slider */
     .ratio-slider {
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 10px;
+      height: 6px;
       border-radius: 999px;
-      margin: 6px 0 2px;
+      margin: 8px 0 4px;
       background: linear-gradient(to right, var(--equity) 0 var(--pct, 60%), var(--bond) var(--pct, 60%) 100%);
       outline: none;
       cursor: pointer;
     }
     .ratio-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--panel);
-      border: 2px solid var(--text-soft);
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
-    }
-    .ratio-slider::-moz-range-thumb {
       width: 16px;
       height: 16px;
       border-radius: 50%;
       background: var(--panel);
-      border: 2px solid var(--text-soft);
+      border: 2px solid var(--text);
+      box-shadow: 0 1px 3px rgba(24, 24, 27, 0.22);
+    }
+    .ratio-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--text);
     }
     .ratio-slider:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
 
@@ -945,8 +895,8 @@
     .switch {
       -webkit-appearance: none;
       appearance: none;
-      width: 34px;
-      height: 20px;
+      width: 32px;
+      height: 18px;
       border-radius: 999px;
       background: var(--border-strong);
       position: relative;
@@ -960,17 +910,17 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: #fff;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       transition: left 0.15s;
     }
     .switch:checked { background: var(--accent); }
     .switch:checked::after { left: 16px; }
 
-    /* Info tooltip marker */
+    /* Info marker */
     .info {
       display: inline-flex;
       align-items: center;
@@ -982,14 +932,11 @@
       border: 1px solid var(--border-strong);
       color: var(--muted);
       font-size: 9.5px;
-      font-weight: 700;
-      font-style: italic;
-      font-family: Georgia, serif;
+      font-weight: 600;
       cursor: help;
       vertical-align: middle;
     }
 
-    /* Subtle hint (replaces blue info boxes) */
     .notice.subtle {
       background: none;
       border: none;
@@ -1000,26 +947,104 @@
       font-size: 11.5px;
       line-height: 1.45;
     }
+
+    /* Compare Tab */
+    .compare-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px 16px;
+    }
+    .compare-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .compare-vals-field {
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+    .compare-lbl {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .compare-vals-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .compare-vals-input {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+    }
+    .compare-vals-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 18px 0;
+    }
+    .compare-grid > .card {
+      background: var(--panel);
+      padding: 14px 16px;
+    }
+    @media (max-width: 960px) {
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+    .cmp-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--panel-alt);
+      border: 1px solid var(--border-strong);
+      color: var(--text-soft);
+      vertical-align: middle;
+    }
+    .cmp-current-row td {
+      background: var(--accent-soft);
+    }
+    .cmp-best {
+      text-decoration: underline;
+      text-decoration-color: var(--border-strong);
+      text-underline-offset: 3px;
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="hdr-left">
       <div class="hdr-title-row">
-        <a href="../" id="linkHome" style="color:var(--muted); text-decoration:none; font-size:13px; font-weight:600;" data-i18n="nav_home" data-i18n-title="nav_home_title" title="Back to Home">&larr; Home</a>
-        <span style="color:var(--border-strong);">&middot;</span>
+        <a href="../" id="linkHome" class="hdr-home-link" data-i18n="nav_home" data-i18n-title="nav_home_title" title="Back to Home">&larr; Home</a>
+        <span class="hdr-sep">/</span>
         <h1 data-i18n="app_title">Retirement Simulation</h1>
-        <span class="badge" data-i18n="app_badge">100% Client-Side SPA</span>
       </div>
-      <div class="subhead" data-i18n="app_subhead">Sequential &amp; Random Simulation &bull; S&amp;P 500, MSCI ACWI / World, Bloomberg US &amp; Global Agg Bonds, NYU Stern (1928–2025)</div>
     </div>
     <div class="hdr-right">
       <div class="seg-group" id="langSwitch" role="group" aria-label="Language">
         <button type="button" class="scale-btn active" data-lang="en-UK">EN</button>
         <button type="button" class="scale-btn" data-lang="zh-CN">中文</button>
       </div>
-      <button type="button" class="btn" id="btnThemeToggle" data-i18n-title="theme_toggle_title" title="Toggle Dark / Light Theme">&#9790; Dark Mode</button>
-      <button type="button" class="btn" id="btnExportCsv" data-i18n="btn_export_csv" data-i18n-title="export_csv_title" title="Export simulated year-by-year ledger to CSV">&#8681; Export CSV</button>
+      <button type="button" class="btn" id="btnThemeToggle" data-i18n-title="theme_toggle_title" title="Toggle Dark / Light Theme">&#9790; Dark</button>
+      <button type="button" class="btn" id="btnExportCsv" data-i18n="btn_export_csv" data-i18n-title="export_csv_title" title="Export simulated year-by-year ledger to CSV">Export CSV</button>
     </div>
   </header>
 
@@ -1324,15 +1349,15 @@
           <div class="tab-strip">
             <button type="button" class="tab-btn active" data-tab="sequential" data-i18n-title="tip_tab_seq" title="Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)">
               <span data-i18n="tab_sequential">Sequential</span>
-              <span class="tab-meta" id="tabMetaSeq">1988 · 30y</span>
             </button>
             <button type="button" class="tab-btn" data-tab="random" data-i18n-title="tip_tab_rand" title="1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window">
               <span data-i18n="tab_random">Random</span>
-              <span class="tab-meta" id="tabMetaRand">1,000 runs · 30y</span>
+            </button>
+            <button type="button" class="tab-btn" data-tab="compare" data-i18n-title="tip_tab_compare" title="Vary one parameter across multiple values with 1,000 paired random runs and compare key metrics">
+              <span data-i18n="tab_compare">Compare</span>
             </button>
             <button type="button" class="tab-btn" data-tab="data" data-i18n-title="tip_tab_data" title="Inspect annual historical equity/bond returns and US CPI inflation">
               <span data-i18n="tab_data">Market &amp; CPI Data</span>
-              <span class="tab-meta" id="tabMetaData">1988–2025</span>
             </button>
           </div>
           <div class="tabs-controls">
@@ -1478,6 +1503,98 @@
         </div>
       </div>
 
+      <!-- TAB 2.5: CONFIGURATION COMPARISON -->
+      <div id="tabCompare" style="display:none;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="compare-controls">
+            <div class="compare-field">
+              <span class="compare-lbl" data-i18n="cmp_lbl_var">Variable attribute</span>
+              <div class="seg-group" id="compareVarWrap">
+                <button type="button" class="scale-btn active" data-cvar="equity_pct" data-i18n="cmp_short_equity_pct">Equity %</button>
+                <button type="button" class="scale-btn" data-cvar="withdrawal_rate" data-i18n="cmp_short_withdrawal_rate">Init. Exp %</button>
+                <button type="button" class="scale-btn" data-cvar="expense_floor" data-i18n="cmp_short_expense_floor">Bad-Yr %</button>
+              </div>
+            </div>
+            <div class="compare-field compare-vals-field">
+              <span class="compare-lbl" data-i18n="cmp_lbl_vals">Values to test (%)</span>
+              <div class="compare-vals-wrap">
+                <input type="text" id="compareValuesInput" class="compare-vals-input" value="0, 20, 40, 60, 80, 100" />
+                <button type="button" class="link-btn" id="btnCompareReset" data-i18n="cmp_btn_reset">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div class="subhead" id="compareBaselineNote" style="margin-top:8px;"></div>
+          <div class="notice warn" id="compareValNotice" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="compare-grid">
+          <div class="card">
+            <div class="legend" style="margin-bottom:6px;">
+              <div class="card-title" style="margin:0;" data-i18n="cmp_chart_surv">Survival Rate (&gt; $0) &amp; % &ge; Initial</div>
+              <div class="legend-items" style="font-size:11px;">
+                <div class="legend-item"><span class="swatch" style="background:var(--success); height:8px;"></span><span data-i18n="cmp_leg_surv">Survival (&gt; $0)</span></div>
+                <div class="legend-item"><span class="swatch" style="background:var(--equity);"></span><span data-i18n="cmp_leg_grew">Ended &ge; Initial</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cmpSurvCanvas" height="205"></canvas>
+              <div class="tooltip" id="cmpSurvTooltip"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="legend" style="margin-bottom:6px;">
+              <div class="card-title" id="cmpEndTitle" style="margin:0;">Ending Balance</div>
+              <div class="legend-items" style="font-size:11px;">
+                <div class="legend-item"><span class="swatch" style="background:var(--port); height:3px;"></span><span data-i18n="cmp_leg_center">Center (Med / Avg)</span></div>
+                <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:8px;"></span><span data-i18n="cmp_leg_p10_p90">10th–90th Pct Range</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cmpEndCanvas" height="205"></canvas>
+              <div class="tooltip" id="cmpEndTooltip"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="legend" style="margin-bottom:6px;">
+              <div class="card-title" id="cmpExpTitle" style="margin:0;">Total Expense (Survivors)</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cmpExpCanvas" height="205"></canvas>
+              <div class="tooltip" id="cmpExpTooltip"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="legend" style="margin-bottom:6px;">
+              <div class="card-title" id="cmpRetDdTitle" style="margin:0;">Port. TWWR &amp; Max Drawdown</div>
+              <div class="legend-items" style="font-size:11px;">
+                <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span data-i18n="kpi_port_twwr">Portfolio TWWR</span></div>
+                <div class="legend-item"><span class="swatch" style="background:var(--danger); height:8px;"></span><span data-i18n="kpi_max_dd">Max Drawdown</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cmpRetDdCanvas" height="205"></canvas>
+              <div class="tooltip" id="cmpRetDdTooltip"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="cmp_table_title">Key Metrics Comparison (1,000 Paired Random Runs)</span>
+            <span id="compareCount" style="font-family:var(--mono); font-weight:500;"></span>
+          </div>
+          <div class="table-container">
+            <table id="compareTable">
+              <thead id="compareHead"></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB 3: HISTORICAL DATA & US CPI VIEWER -->
       <div id="tabData" style="display:none;">
         <div class="card" style="margin-bottom:14px;">
@@ -1520,7 +1637,6 @@
               <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px;"></span><span data-i18n="hist_leg_pos">Positive US CPI Inflation (%)</span></div>
               <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-neg); height:8px;"></span><span data-i18n="hist_leg_neg">Deflation (&lt; 0%)</span></div>
             </div>
-            <div class="subhead" data-i18n="hist_chart_subhead">Hover bars to inspect yearly US CPI, cumulative price index, and asset returns</div>
           </div>
           <div class="chart-wrap">
             <canvas id="histCpiCanvas" height="220"></canvas>
@@ -1561,15 +1677,10 @@
       nav_home: { "en-UK": "← Home", "zh-CN": "← 首页" },
       nav_home_title: { "en-UK": "Back to Home", "zh-CN": "返回首页" },
       app_title: { "en-UK": "Retirement Simulation", "zh-CN": "退休资产模拟" },
-      app_badge: { "en-UK": "100% Client-Side SPA", "zh-CN": "纯前端本地运行" },
-      app_subhead: {
-        "en-UK": "Sequential & Random Simulation • S&P 500, MSCI ACWI / World, Bloomberg US & Global Agg Bonds, NYU Stern (1928–2025)",
-        "zh-CN": "顺序回测与随机蒙特卡洛模拟 • 标普 500、MSCI 全球/发达市场、彭博美国及全球综合债、NYU Stern (1928–2025)"
-      },
       theme_toggle_title: { "en-UK": "Toggle Dark / Light Theme", "zh-CN": "切换深色 / 浅色主题" },
-      theme_dark_mode: { "en-UK": "☾ Dark Mode", "zh-CN": "☾ 深色模式" },
-      theme_light_mode: { "en-UK": "☀ Light Mode", "zh-CN": "☀ 浅色模式" },
-      btn_export_csv: { "en-UK": "⇩ Export CSV", "zh-CN": "⇩ 导出 CSV" },
+      theme_dark_mode: { "en-UK": "☾ Dark", "zh-CN": "☾ 深色" },
+      theme_light_mode: { "en-UK": "☀ Light", "zh-CN": "☀ 浅色" },
+      btn_export_csv: { "en-UK": "Export CSV", "zh-CN": "导出 CSV" },
       export_csv_title: { "en-UK": "Export simulated year-by-year ledger to CSV", "zh-CN": "导出逐年模拟明细为 CSV" },
 
       // Sidebar 1: Your Plan
@@ -1712,13 +1823,11 @@
         "en-UK": "Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)",
         "zh-CN": "从起始年份按历史时间顺序逐年回测（若退休年数长于数据窗口则循环重复）"
       },
-      meta_seq: { "en-UK": "{yr} · {sim}y", "zh-CN": "{yr}起 · {sim}年" },
       tab_random: { "en-UK": "Random", "zh-CN": "随机模拟" },
       tip_tab_rand: {
         "en-UK": "1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window",
         "zh-CN": "从所选历史数据窗口中有放回随机抽样，进行 1,000 次蒙特卡洛模拟"
       },
-      meta_rand: { "en-UK": "1,000 runs · {sim}y", "zh-CN": "1,000次 · {sim}年" },
       tab_data: { "en-UK": "Market & CPI Data", "zh-CN": "市场与 CPI 数据" },
       tip_tab_data: {
         "en-UK": "Inspect annual historical equity/bond returns and US CPI inflation",
@@ -1788,16 +1897,12 @@
       axis_yr: { "en-UK": "Yr {n}", "zh-CN": "第{n}年" },
       leg_port_seq: { "en-UK": "Portfolio ({eq}/{bd}, Seq)", "zh-CN": "投资组合 ({eq}/{bd}，顺序)" },
       sub_wealth_seq: {
-        "en-UK": "Hover to inspect exact balances • Same initial asset & spending rule applied to all 3 curves",
-        "zh-CN": "悬停查看精确余额 • 三条曲线均采用相同的初始本金与支出规则"
+        "en-UK": "Same initial asset & spending rule applied to all 3 curves",
+        "zh-CN": "三条曲线均采用相同的初始本金与支出规则"
       },
       leg_port_ret: { "en-UK": "Portfolio Investment Return (%)", "zh-CN": "组合年度投资收益率 (%)" },
       leg_dd_peak: { "en-UK": "Wealth Drawdown from Peak (%)", "zh-CN": "资产相对峰值回撤 (%)" },
       leg_us_inf: { "en-UK": "US Inflation (%)", "zh-CN": "美国通胀率 (%)" },
-      sub_dd_seq: {
-        "en-UK": "Hover bars to inspect annual component returns & US inflation",
-        "zh-CN": "悬停柱状图可查看各年度分类资产收益与美国通胀率"
-      },
       leg_port_rand: { "en-UK": "Portfolio {stat} ({runs} runs)", "zh-CN": "投资组合{stat}（{runs} 次模拟）" },
       leg_med_p50: { "en-UK": "Median (P50)", "zh-CN": "中位数 (P50)" },
       leg_avg_mean: { "en-UK": "Average (Mean)", "zh-CN": "平均值 (Mean)" },
@@ -1816,8 +1921,8 @@
         "zh-CN": "累计总支出{stat}（截至当年仍存活序列）"
       },
       sub_exp_rand: {
-        "en-UK": "Cumulative spending among runs still surviving at each year ({basis}) • Hover to inspect",
-        "zh-CN": "截至各年度仍存活模拟序列的累计总支出（{basis}）• 悬停查看详情"
+        "en-UK": "Cumulative spending among runs still surviving at each year ({basis})",
+        "zh-CN": "截至各年度仍存活模拟序列的累计总支出（{basis}）"
       },
 
       // Ledger & Summary Tables
@@ -1872,8 +1977,8 @@
       btn_scope_win: { "en-UK": "Selected Window ({range})", "zh-CN": "所选区间 ({range})" },
       btn_scope_all: { "en-UK": "All 98 Years (1928–2025)", "zh-CN": "全部 98 年 (1928–2025)" },
       hist_subhead_dyn: {
-        "en-UK": "Showing {n} annual observations ({y0}–{y1}) • US CPI Inflation (NYU Stern / FRED CPI-U) alongside dividend-inclusive Equity & Bond Total Returns.",
-        "zh-CN": "当前显示 {n} 个年度样本 ({y0}–{y1}) • 美国 CPI 通胀率 (NYU Stern / FRED CPI-U) 与含分红股票及债券全收益率。"
+        "en-UK": "{n} annual observations ({y0}–{y1}) · US CPI (NYU Stern / FRED) & total returns",
+        "zh-CN": "{n} 个年度样本 ({y0}–{y1}) · 美国 CPI (NYU Stern / FRED) 与资产全收益"
       },
       hist_kpi_cpi: { "en-UK": "Annualized US CPI", "zh-CN": "年化美国 CPI" },
       hist_cpi_mean: { "en-UK": "Arith. Mean: {mean}%/yr ({n} yrs)", "zh-CN": "算术均值：{mean}%/年（共 {n} 年）" },
@@ -1885,10 +1990,6 @@
       hist_nom_sub: { "en-UK": "Nominal: {nom} ({y0}–{y1})", "zh-CN": "名义年化：{nom} ({y0}–{y1})" },
       hist_leg_pos: { "en-UK": "Positive US CPI Inflation (%)", "zh-CN": "正通胀年份 (%)" },
       hist_leg_neg: { "en-UK": "Deflation (< 0%)", "zh-CN": "通缩年份 (< 0%)" },
-      hist_chart_subhead: {
-        "en-UK": "Hover bars to inspect yearly US CPI, cumulative price index, and asset returns",
-        "zh-CN": "悬停柱状图可查看历年美国 CPI、累计物价指数及资产收益率"
-      },
       hist_table_title: {
         "en-UK": "Year-by-Year Historical US CPI Inflation & Index Total Returns (% in USD)",
         "zh-CN": "历年美国 CPI 通胀与各指数全收益率明细（美元计价 %）"
@@ -1936,7 +2037,58 @@
       tip_hist_hdr: { "en-UK": "Year {yr} Historical Data", "zh-CN": "{yr} 年历史市场数据" },
       tip_us_cpi_inf: { "en-UK": "US CPI Inflation:", "zh-CN": "美国 CPI 通胀：" },
       tip_cum_cpi_100: { "en-UK": "Cum. CPI ($100 start):", "zh-CN": "累计物价（$100 起点）：" },
-      tip_3m_tbill: { "en-UK": "3M US T-Bill:", "zh-CN": "3个月美国国库券：" }
+      tip_3m_tbill: { "en-UK": "3M US T-Bill:", "zh-CN": "3个月美国国库券：" },
+
+      // Compare Tab
+      tab_compare: { "en-UK": "Compare", "zh-CN": "参数对比" },
+      tip_tab_compare: {
+        "en-UK": "Vary one parameter across multiple values with 1,000 paired random runs and compare key metrics",
+        "zh-CN": "固定其他参数，对单个变量的多组取值进行 1,000 次配对随机模拟并对比核心指标"
+      },
+      cmp_short_equity_pct: { "en-UK": "Equity %", "zh-CN": "股票比例" },
+      cmp_short_withdrawal_rate: { "en-UK": "Init. Exp %", "zh-CN": "初始提取率" },
+      cmp_short_expense_floor: { "en-UK": "Bad-Yr %", "zh-CN": "不佳年支出" },
+      cmp_var_equity_pct: { "en-UK": "Equity Allocation (%)", "zh-CN": "股票比例 (%)" },
+      cmp_var_withdrawal_rate: { "en-UK": "Initial Expense Rate (%)", "zh-CN": "初始提取率 (%)" },
+      cmp_var_expense_floor: { "en-UK": "Bad-Year Expense Floor (%)", "zh-CN": "不佳年份支出比例 (%)" },
+      cmp_lbl_var: { "en-UK": "Variable attribute", "zh-CN": "对比变量" },
+      cmp_lbl_vals: { "en-UK": "Values to test (%)", "zh-CN": "测试取值 (%)" },
+      cmp_btn_reset: { "en-UK": "Reset", "zh-CN": "重置" },
+      cmp_baseline_prefix: { "en-UK": "Held constant:", "zh-CN": "固定不变：" },
+      cmp_paired_runs: { "en-UK": "paired runs", "zh-CN": "次配对模拟" },
+      cmp_warn_zero_exp: {
+        "en-UK": "Note: Annual spending is currently $0, so varying the bad-year expense floor has no effect. Increase Annual spending in the sidebar to see differences.",
+        "zh-CN": "提示：当前首年支出为 $0，因此调整不佳年份支出比例不会产生差异。请在左侧调高首年支出后再查看对比。"
+      },
+      cmp_chart_surv: { "en-UK": "Survival Rate (> $0) & % ≥ Initial", "zh-CN": "资产存活率 (> $0) 与 ≥ 初始本金比例" },
+      cmp_chart_end: { "en-UK": "Ending Balance ({stat} + 10th–90th Band, {basis})", "zh-CN": "期末资产（{stat} + 10%–90% 区间，{basis}）" },
+      cmp_chart_exp: { "en-UK": "Total Expense ({stat}, Survivors, {basis})", "zh-CN": "累计总支出（{stat}，存活序列，{basis}）" },
+      cmp_chart_retdd: { "en-UK": "Port. TWWR & Max Drawdown ({stat})", "zh-CN": "组合年化收益与最大回撤（{stat}）" },
+      cmp_leg_surv: { "en-UK": "Survival (> $0)", "zh-CN": "存活率 (> $0)" },
+      cmp_leg_grew: { "en-UK": "Ended ≥ Initial", "zh-CN": "期末 ≥ 初始本金" },
+      cmp_leg_p10_p90: { "en-UK": "10th–90th Pct Range", "zh-CN": "10%–90% 分位区间" },
+      cmp_leg_center: { "en-UK": "Center (Med / Avg)", "zh-CN": "中心值（中位/均值）" },
+      cmp_table_title: { "en-UK": "Key Metrics Comparison (1,000 Paired Random Runs)", "zh-CN": "核心指标对比总表（1,000 次配对随机模拟）" },
+      cmp_count_lbl: { "en-UK": "{n} configs • {runs} runs each", "zh-CN": "{n} 组配置 • 每组 {runs} 次模拟" },
+      cmp_current: { "en-UK": "Current", "zh-CN": "当前" },
+      cmp_th_grew: { "en-UK": "≥ Initial %", "zh-CN": "≥ 本金 %" },
+      cmp_th_cut_yrs: { "en-UK": "Cut Yrs ({stat})", "zh-CN": "缩减年数({stat})" },
+      cmp_kpi_best_end: { "en-UK": "Best Ending ({stat})", "zh-CN": "最高期末资产（{stat}）" },
+      cmp_kpi_best_surv: { "en-UK": "Best Survival Rate", "zh-CN": "最高资产存活率" },
+      cmp_kpi_best_p10: { "en-UK": "Best 10th Pct Floor", "zh-CN": "最佳 P10 底部资产" },
+      cmp_kpi_best_exp: { "en-UK": "Highest Expense ({stat})", "zh-CN": "最高累计支出（{stat}）" },
+      cmp_kpi_best_sharpe: { "en-UK": "Best Sharpe ({stat})", "zh-CN": "最高夏普比率（{stat}）" },
+      cmp_kpi_best_dd: { "en-UK": "Smallest Max DD ({stat})", "zh-CN": "最小最大回撤（{stat}）" },
+      cmp_at_val: { "en-UK": "{attr}: {val}", "zh-CN": "{attr}：{val}" },
+      cmp_tip_grew: { "en-UK": "Ended ≥ Initial:", "zh-CN": "期末 ≥ 初始本金：" },
+      cmp_tip_surv_cnt: { "en-UK": "Survived Runs:", "zh-CN": "存活模拟次数：" },
+      cmp_tip_vol: { "en-UK": "Ann. Volatility:", "zh-CN": "年化波动率：" }
+    };
+
+    const COMPARE_DEFAULTS = {
+      equity_pct:      { values: "0, 20, 40, 60, 80, 100", min: 0, max: 100 },
+      withdrawal_rate: { values: "2.5, 3, 3.5, 4, 4.5, 5, 6", min: 0, max: 25 },
+      expense_floor:   { values: "100, 95, 90, 80, 70, 60, 50", min: 0, max: 100 }
     };
 
     const PRESETS = {
@@ -1993,6 +2145,15 @@
       sequenceKey: "",
       batchCache: null,
       batchKey: "",
+      compareVar: "equity_pct",
+      compareValuesMap: {
+        equity_pct: COMPARE_DEFAULTS.equity_pct.values,
+        withdrawal_rate: COMPARE_DEFAULTS.withdrawal_rate.values,
+        expense_floor: COMPARE_DEFAULTS.expense_floor.values
+      },
+      compareCache: null,
+      compareCacheKey: "",
+      hoverCmpIdx: null,
       dataScope: "window",
       lastRun: null,
       lastHistRows: [],
@@ -2980,11 +3141,11 @@
       document.getElementById("ledgerCount").textContent = countText;
     }
 
-    function computeRandomBatch(poolYears, simYears, numRuns, cfg, seed) {
-      const rng = mulberry32(seed);
+    function computeRandomBatch(poolYears, simYears, numRuns, cfg, seed, precomputedSeqs = null) {
+      const rng = precomputedSeqs ? null : mulberry32(seed);
       const runs = [];
       for (let t = 0; t < numRuns; t++) {
-        const seq = generateYearSequence(poolYears, simYears, "random", rng);
+        const seq = precomputedSeqs ? precomputedSeqs[t] : generateYearSequence(poolYears, simYears, "random", rng);
         runs.push(runSequence(seq, cfg));
       }
 
@@ -3767,12 +3928,471 @@
       drawHistCpiChart(histRows, cumSeries, cfg);
     }
 
+    // ---- Configuration Comparison (Variable Attribute Sweep, 1,000 Paired Random Runs) ----
+    function parseCompareValues(varKey, rawStr) {
+      const def = COMPARE_DEFAULTS[varKey] || COMPARE_DEFAULTS.equity_pct;
+      const parts = String(rawStr || "").split(/[,;\s]+/).map(s => s.replace(/%/g, "").trim()).filter(Boolean);
+      const seen = new Set();
+      const out = [];
+      for (const p of parts) {
+        const num = parseFloat(p);
+        if (!isFinite(num)) continue;
+        const clamped = Math.max(def.min, Math.min(def.max, Math.round(num * 100) / 100));
+        if (!seen.has(clamped)) {
+          seen.add(clamped);
+          out.push(clamped);
+        }
+        if (out.length >= 12) break;
+      }
+      if (out.length >= 2) return out;
+      return def.values.split(",").map(s => parseFloat(s.trim()));
+    }
+
+    function formatCompareVal(varKey, val) {
+      if (varKey === "withdrawal_rate") {
+        return `${Number.isInteger(val) ? val.toFixed(0) : val.toFixed(1).replace(/\.0$/, "")}%`;
+      }
+      return `${Number.isInteger(val) ? val : val.toFixed(1)}%`;
+    }
+
+    function computeCompareSweep(poolYears, simYears, numRuns, baseCfg, seed, varKey, values) {
+      const rng = mulberry32(seed);
+      const pairedSeqs = [];
+      for (let i = 0; i < numRuns; i++) {
+        pairedSeqs.push(generateYearSequence(poolYears, simYears, "random", rng));
+      }
+
+      const items = values.map(val => {
+        const cfg = { ...baseCfg };
+        if (varKey === "equity_pct") {
+          cfg.eqWeight = val / 100.0;
+        } else if (varKey === "withdrawal_rate") {
+          cfg.initialExpense = Math.max(0, baseCfg.initialAsset * (val / 100.0));
+        } else if (varKey === "expense_floor") {
+          cfg.expenseFloorPct = val;
+        }
+        const batch = computeRandomBatch(poolYears, simYears, numRuns, cfg, seed, pairedSeqs);
+        return { val, label: formatCompareVal(varKey, val), cfg, batch };
+      });
+
+      return { varKey, values, items, baseCfg, simYears, numRuns, poolYears };
+    }
+
+    function drawCompareSurvivalChart(sweep, hoverIdx = state.hoverCmpIdx) {
+      const canvas = document.getElementById("cmpSurvCanvas");
+      if (!canvas) return;
+      const { ctx, w, h } = setupCanvas(canvas);
+      const C = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+
+      const items = sweep.items;
+      if (!items.length) return;
+
+      const pad = { l: 48, r: 16, t: 22, b: 28 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+      const mapX = i => pad.l + ((i + 0.5) / items.length) * cw;
+      const mapY = v => pad.t + ch - (Math.max(0, Math.min(100, v)) / 100) * ch;
+
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
+      ctx.textAlign = "right";
+      [0, 25, 50, 75, 100].forEach(v => {
+        const y = mapY(v);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(v + "%", pad.l - 6, y + 4);
+      });
+
+      const barW = Math.max(14, Math.min(44, (cw / items.length) * 0.56));
+      items.forEach((it, i) => {
+        const surv = it.batch.survivalPct;
+        const cx = mapX(i);
+        const y = mapY(surv);
+        const isH = hoverIdx === i;
+        ctx.fillStyle = surv >= 90 ? C.success : (surv < 70 ? C.danger : C.accent);
+        ctx.globalAlpha = isH ? 1.0 : 0.80;
+        ctx.fillRect(cx - barW / 2, y, barW, pad.t + ch - y);
+        ctx.globalAlpha = 1.0;
+
+        ctx.fillStyle = C.text;
+        ctx.textAlign = "center";
+        ctx.fillText(surv.toFixed(0) + "%", cx, Math.max(pad.t - 5, y - 5));
+        ctx.fillStyle = C.muted;
+        ctx.fillText(it.label, cx, h - 8);
+      });
+
+      // Overlay % >= initial line
+      ctx.beginPath();
+      ctx.strokeStyle = C.equity;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 3]);
+      items.forEach((it, i) => {
+        const x = mapX(i), y = mapY(it.batch.grewPct);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+      items.forEach((it, i) => {
+        const x = mapX(i), y = mapY(it.batch.grewPct);
+        ctx.beginPath();
+        ctx.arc(x, y, hoverIdx === i ? 4.5 : 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = C.equity;
+        ctx.fill();
+      });
+
+      canvas._cmpMeta = { sweep, items, pad, cw, ch, mapX, mapY, w, h };
+    }
+
+    function drawCompareEndChart(sweep, hoverIdx = state.hoverCmpIdx) {
+      const canvas = document.getElementById("cmpEndCanvas");
+      if (!canvas) return;
+      const { ctx, w, h } = setupCanvas(canvas);
+      const C = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+
+      const items = sweep.items;
+      if (!items.length) return;
+      const useMean = state.centerStat === "mean";
+
+      const pad = { l: 64, r: 16, t: 22, b: 28 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      const allVals = items.flatMap(it => [it.batch.endP90, it.batch.endMean, it.batch.endMedian, it.batch.endP10, 100]);
+      const yTicks = computeNiceLinearTicks(0, Math.max(...allVals) * 1.08, 4);
+      const minV = yTicks[0], maxV = yTicks[yTicks.length - 1];
+      const mapX = i => pad.l + ((i + 0.5) / items.length) * cw;
+      const mapY = v => pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
+
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
+      ctx.textAlign = "right";
+      yTicks.forEach(v => {
+        const y = mapY(v);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(fmtCompactMoney(v), pad.l - 6, y + 4);
+      });
+
+      // P10-P90 range bars
+      const rngW = Math.max(10, Math.min(28, (cw / items.length) * 0.36));
+      items.forEach((it, i) => {
+        const cx = mapX(i);
+        const y90 = mapY(it.batch.endP90);
+        const y10 = mapY(it.batch.endP10);
+        ctx.fillStyle = hoverIdx === i ? C.mcInnerBand : C.mcOuterBand;
+        ctx.fillRect(cx - rngW / 2, y90, rngW, Math.max(2, y10 - y90));
+        ctx.strokeStyle = C.accent;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(cx - rngW / 2, y90); ctx.lineTo(cx + rngW / 2, y90);
+        ctx.moveTo(cx - rngW / 2, y10); ctx.lineTo(cx + rngW / 2, y10);
+        ctx.stroke();
+
+        ctx.fillStyle = C.muted;
+        ctx.textAlign = "center";
+        ctx.fillText(it.label, cx, h - 8);
+      });
+
+      // Center line (Median or Mean)
+      ctx.beginPath();
+      ctx.strokeStyle = C.port;
+      ctx.lineWidth = 2.6;
+      items.forEach((it, i) => {
+        const v = useMean ? it.batch.endMean : it.batch.endMedian;
+        const x = mapX(i), y = mapY(v);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      items.forEach((it, i) => {
+        const v = useMean ? it.batch.endMean : it.batch.endMedian;
+        const x = mapX(i), y = mapY(v);
+        ctx.beginPath();
+        ctx.arc(x, y, hoverIdx === i ? 5.5 : 4.2, 0, Math.PI * 2);
+        ctx.fillStyle = C.port;
+        ctx.fill();
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = C.panel;
+        ctx.stroke();
+        ctx.fillStyle = C.text;
+        ctx.textAlign = "center";
+        ctx.fillText(fmtCompactMoney(v), x, Math.max(pad.t - 5, y - 8));
+      });
+
+      canvas._cmpMeta = { sweep, items, pad, cw, ch, mapX, mapY, w, h };
+    }
+
+    function drawCompareExpChart(sweep, hoverIdx = state.hoverCmpIdx) {
+      const canvas = document.getElementById("cmpExpCanvas");
+      if (!canvas) return;
+      const { ctx, w, h } = setupCanvas(canvas);
+      const C = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+
+      const items = sweep.items;
+      if (!items.length) return;
+      const useMean = state.centerStat === "mean";
+
+      const pad = { l: 64, r: 16, t: 22, b: 28 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      const vals = items.map(it => it.batch.survivedCount > 0 ? (useMean ? it.batch.expMean : it.batch.expMedian) : 0);
+      const yTicks = computeNiceLinearTicks(0, Math.max(100, ...vals) * 1.12, 4);
+      const minV = yTicks[0], maxV = yTicks[yTicks.length - 1];
+      const mapX = i => pad.l + ((i + 0.5) / items.length) * cw;
+      const mapY = v => pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
+
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
+      ctx.textAlign = "right";
+      yTicks.forEach(v => {
+        const y = mapY(v);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(fmtCompactMoney(v), pad.l - 6, y + 4);
+      });
+
+      const barW = Math.max(14, Math.min(44, (cw / items.length) * 0.56));
+      items.forEach((it, i) => {
+        const cx = mapX(i);
+        const v = vals[i];
+        const y = mapY(v);
+        ctx.fillStyle = C.expense;
+        ctx.globalAlpha = hoverIdx === i ? 1.0 : 0.78;
+        ctx.fillRect(cx - barW / 2, y, barW, pad.t + ch - y);
+        ctx.globalAlpha = 1.0;
+
+        ctx.fillStyle = C.text;
+        ctx.textAlign = "center";
+        ctx.fillText(it.batch.survivedCount > 0 ? fmtCompactMoney(v) : "—", cx, Math.max(pad.t - 5, y - 5));
+        ctx.fillStyle = C.muted;
+        ctx.fillText(it.label, cx, h - 8);
+      });
+
+      canvas._cmpMeta = { sweep, items, pad, cw, ch, mapX, mapY, w, h };
+    }
+
+    function drawCompareRetDdChart(sweep, hoverIdx = state.hoverCmpIdx) {
+      const canvas = document.getElementById("cmpRetDdCanvas");
+      if (!canvas) return;
+      const { ctx, w, h } = setupCanvas(canvas);
+      const C = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+
+      const items = sweep.items;
+      if (!items.length) return;
+      const useMean = state.centerStat === "mean";
+
+      const pad = { l: 50, r: 16, t: 22, b: 28 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      const twwrs = items.map(it => useMean ? it.batch.twwrMean : it.batch.twwrMedian);
+      const dds = items.map(it => useMean ? it.batch.maxDDMean : it.batch.maxDDMedian);
+      const rawMin = Math.min(-10, ...dds, ...twwrs) * 1.15;
+      const rawMax = Math.max(8, ...twwrs) * 1.25;
+      const yTicks = computeNiceLinearTicks(rawMin, rawMax, 4);
+      const minV = yTicks[0], maxV = yTicks[yTicks.length - 1];
+      const mapX = i => pad.l + ((i + 0.5) / items.length) * cw;
+      const mapY = v => pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
+      const yZero = mapY(0);
+
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
+      ctx.textAlign = "right";
+      yTicks.forEach(v => {
+        const y = mapY(v);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText((v > 0 ? "+" : "") + v.toFixed(0) + "%", pad.l - 6, y + 4);
+      });
+
+      ctx.strokeStyle = C.zeroLine;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, yZero);
+      ctx.lineTo(w - pad.r, yZero);
+      ctx.stroke();
+
+      const barW = Math.max(12, Math.min(34, (cw / items.length) * 0.44));
+      items.forEach((it, i) => {
+        const cx = mapX(i);
+        const isH = hoverIdx === i;
+        const r = twwrs[i];
+        const dd = dds[i];
+        const yR = mapY(r);
+        const yD = mapY(dd);
+
+        // TWWR bar
+        ctx.fillStyle = isH ? C.accent : C.barPos;
+        ctx.fillRect(cx - barW / 2, Math.min(yR, yZero), barW, Math.abs(yR - yZero));
+        // Max Drawdown bar
+        ctx.fillStyle = isH ? C.danger : C.barNeg;
+        ctx.fillRect(cx - barW / 2, Math.min(yD, yZero), barW, Math.abs(yD - yZero));
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = C.accent;
+        ctx.fillText((r >= 0 ? "+" : "") + r.toFixed(1) + "%", cx, Math.max(pad.t - 4, Math.min(yR, yZero) - 4));
+        ctx.fillStyle = C.muted;
+        ctx.fillText(it.label, cx, h - 8);
+      });
+
+      canvas._cmpMeta = { sweep, items, pad, cw, ch, mapX, mapY, w, h };
+    }
+
+    function redrawAllCompareCharts(sweep) {
+      drawCompareSurvivalChart(sweep, state.hoverCmpIdx);
+      drawCompareEndChart(sweep, state.hoverCmpIdx);
+      drawCompareExpChart(sweep, state.hoverCmpIdx);
+      drawCompareRetDdChart(sweep, state.hoverCmpIdx);
+    }
+
+    function renderCompareTab(sweep, basisTag) {
+      const useMean = state.centerStat === "mean";
+      const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
+      const { varKey, items, baseCfg, simYears, numRuns, poolYears } = sweep;
+
+      // Baseline summary (everything held constant except varKey)
+      const parts = [
+        `${fmtCompactMoney(baseCfg.initialAsset)}`,
+        ...(varKey !== "equity_pct" ? [`${Math.round(baseCfg.eqWeight * 100)}/${100 - Math.round(baseCfg.eqWeight * 100)}`] : []),
+        ...(varKey !== "withdrawal_rate" ? [`${((baseCfg.initialExpense / baseCfg.initialAsset) * 100).toFixed(1)}% WR`] : []),
+        ...(varKey !== "expense_floor" && baseCfg.expenseFloorPct < 100 ? [`${baseCfg.expenseFloorPct}% floor`] : []),
+        `${simYears}y`,
+        `${poolYears[0]}–${poolYears[poolYears.length - 1]}`,
+        `${numRuns.toLocaleString("en-US")} ${t("cmp_paired_runs")}`
+      ];
+      const baseNoteEl = document.getElementById("compareBaselineNote");
+      if (baseNoteEl) {
+        baseNoteEl.textContent = `${t("cmp_baseline_prefix")} ${parts.join(" · ")} (${basisTag})`;
+      }
+
+      const warnEl = document.getElementById("compareValNotice");
+      if (warnEl) {
+        if (varKey === "expense_floor" && baseCfg.initialExpense <= 0) {
+          warnEl.style.display = "block";
+          warnEl.textContent = t("cmp_warn_zero_exp");
+        } else {
+          warnEl.style.display = "none";
+        }
+      }
+
+      // Update chart headings with current stat (Med/Avg) and basis
+      document.getElementById("cmpEndTitle").textContent = t("cmp_chart_end", { stat: statShort, basis: basisTag });
+      document.getElementById("cmpExpTitle").textContent = t("cmp_chart_exp", { stat: statShort, basis: basisTag });
+      document.getElementById("cmpRetDdTitle").textContent = t("cmp_chart_retdd", { stat: statShort });
+
+      // Update Top 6 KPI cards with best-across-sweep highlights
+      if (items.length) {
+        const bestEnd = items.reduce((a, b) => ((useMean ? b.batch.endMean : b.batch.endMedian) > (useMean ? a.batch.endMean : a.batch.endMedian) ? b : a));
+        const bestSurv = items.reduce((a, b) => (b.batch.survivalPct > a.batch.survivalPct ? b : a));
+        const bestP10 = items.reduce((a, b) => (b.batch.endP10 > a.batch.endP10 ? b : a));
+        const bestExp = items.reduce((a, b) => ((useMean ? b.batch.expMean : b.batch.expMedian) > (useMean ? a.batch.expMean : a.batch.expMedian) ? b : a));
+        const bestSharpe = items.reduce((a, b) => ((useMean ? b.batch.sharpeMean : b.batch.sharpeMedian) > (useMean ? a.batch.sharpeMean : a.batch.sharpeMedian) ? b : a));
+        const bestDD = items.reduce((a, b) => ((useMean ? b.batch.maxDDMean : b.batch.maxDDMedian) > (useMean ? a.batch.maxDDMean : a.batch.maxDDMedian) ? b : a));
+
+        const endVal = useMean ? bestEnd.batch.endMean : bestEnd.batch.endMedian;
+        const expVal = useMean ? bestExp.batch.expMean : bestExp.batch.expMedian;
+        const shVal = useMean ? bestSharpe.batch.sharpeMean : bestSharpe.batch.sharpeMedian;
+        const ddVal = useMean ? bestDD.batch.maxDDMean : bestDD.batch.maxDDMedian;
+        const attrShort = t("cmp_short_" + varKey);
+
+        setKpi(1, t("cmp_kpi_best_end", { stat: statShort }), fmtCompactMoney(endVal), t("cmp_at_val", { attr: attrShort, val: bestEnd.label }) + ` • (${basisTag})`);
+        setKpi(2, t("cmp_kpi_best_surv"), `${bestSurv.batch.survivalPct.toFixed(1)}%`, t("cmp_at_val", { attr: attrShort, val: bestSurv.label }), "kpi-val " + (bestSurv.batch.survivalPct >= 90 ? "pos" : (bestSurv.batch.survivalPct < 70 ? "neg" : "")));
+        setKpi(3, t("cmp_kpi_best_p10"), fmtCompactMoney(bestP10.batch.endP10), t("cmp_at_val", { attr: attrShort, val: bestP10.label }));
+        setKpi(4, t("cmp_kpi_best_exp", { stat: statShort }), bestExp.batch.survivedCount > 0 ? fmtCompactMoney(expVal) : "—", t("cmp_at_val", { attr: attrShort, val: bestExp.label }), "kpi-val exp-col");
+        setKpi(5, t("cmp_kpi_best_sharpe", { stat: statShort }), shVal.toFixed(2), t("cmp_at_val", { attr: attrShort, val: bestSharpe.label }), "kpi-val pos");
+        setKpi(6, t("cmp_kpi_best_dd", { stat: statShort }), fmtPct(ddVal, 2, false), t("cmp_at_val", { attr: attrShort, val: bestDD.label }), "kpi-val neg");
+      }
+
+      // Render comparison table
+      const curBaseVal = varKey === "equity_pct"
+        ? Math.round(baseCfg.eqWeight * 100)
+        : (varKey === "withdrawal_rate"
+          ? Math.round((baseCfg.initialExpense / baseCfg.initialAsset) * 1000) / 10
+          : baseCfg.expenseFloorPct);
+
+      const maxSurv = Math.max(...items.map(it => it.batch.survivalPct));
+      const maxEnd = Math.max(...items.map(it => useMean ? it.batch.endMean : it.batch.endMedian));
+      const maxExp = Math.max(...items.map(it => it.batch.survivedCount > 0 ? (useMean ? it.batch.expMean : it.batch.expMedian) : -1));
+      const maxSharpe = Math.max(...items.map(it => useMean ? it.batch.sharpeMean : it.batch.sharpeMedian));
+      const bestDDVal = Math.max(...items.map(it => useMean ? it.batch.maxDDMean : it.batch.maxDDMedian));
+
+      const showCutCol = varKey === "expense_floor" || baseCfg.expenseFloorPct < 100;
+      document.getElementById("compareHead").innerHTML = `
+        <tr>
+          <th>${t("cmp_var_" + varKey)}</th>
+          <th>${t("kpi_survival")}</th>
+          <th>${t("cmp_th_grew")}</th>
+          <th>${t("kpi_end_bal_stat", { stat: statShort })}</th>
+          <th>${t("kpi_p10_p90_end")}</th>
+          <th>${t("kpi_tot_exp_stat", { stat: statShort })}</th>
+          ${showCutCol ? `<th>${t("cmp_th_cut_yrs", { stat: statShort })}</th>` : ""}
+          <th>${t("kpi_port_twwr_stat", { stat: statShort })}</th>
+          <th>${t("kpi_sharpe")}</th>
+          <th>${t("kpi_max_dd_stat", { stat: statShort })}</th>
+        </tr>
+      `;
+
+      const tbody = document.querySelector("#compareTable tbody");
+      const frag = document.createDocumentFragment();
+      items.forEach(it => {
+        const b = it.batch;
+        const tr = document.createElement("tr");
+        const isCurrent = Math.abs(it.val - curBaseVal) < 0.05;
+        if (isCurrent) tr.className = "cmp-current-row";
+        const cEnd = useMean ? b.endMean : b.endMedian;
+        const cExp = useMean ? b.expMean : b.expMedian;
+        const cTwwr = useMean ? b.twwrMean : b.twwrMedian;
+        const cSharpe = useMean ? b.sharpeMean : b.sharpeMedian;
+        const cDD = useMean ? b.maxDDMean : b.maxDDMedian;
+        const cCut = useMean ? b.cutYrsMean : b.cutYrsMedian;
+        tr.innerHTML = `
+          <td><strong>${it.label}</strong>${isCurrent ? `<span class="cmp-badge">${t("cmp_current")}</span>` : ""}</td>
+          <td class="${b.survivalPct >= 90 ? 'pos' : (b.survivalPct < 70 ? 'neg' : '')}${b.survivalPct === maxSurv ? ' cmp-best' : ''}"><strong>${b.survivalPct.toFixed(1)}%</strong></td>
+          <td class="muted">${b.grewPct.toFixed(1)}%</td>
+          <td class="${cEnd === maxEnd ? 'cmp-best' : ''}"><strong>${fmtExactMoney(cEnd)}</strong> <span class="muted">(${(cEnd / baseCfg.initialAsset).toFixed(2)}x)</span></td>
+          <td class="muted">${fmtCompactMoney(b.endP10)} – ${fmtCompactMoney(b.endP90)}</td>
+          <td class="exp-col${b.survivedCount > 0 && cExp === maxExp ? ' cmp-best' : ''}"><strong>${b.survivedCount > 0 ? fmtExactMoney(cExp) : "—"}</strong></td>
+          ${showCutCol ? `<td class="muted">${b.survivedCount > 0 ? cCut.toFixed(1) + "/" + simYears : "—"}</td>` : ""}
+          <td class="${cTwwr >= 0 ? 'pos' : 'neg'}">${fmtPct(cTwwr)}</td>
+          <td class="${cSharpe === maxSharpe ? 'cmp-best' : ''}">${cSharpe.toFixed(2)}</td>
+          <td class="neg${cDD === bestDDVal ? ' cmp-best' : ''}">${fmtPct(cDD, 2, false)}</td>
+        `;
+        frag.appendChild(tr);
+      });
+      tbody.innerHTML = "";
+      tbody.appendChild(frag);
+      document.getElementById("compareCount").textContent = t("cmp_count_lbl", { n: items.length, runs: numRuns.toLocaleString("en-US") });
+
+      // Draw all 4 charts AFTER table DOM updates so width/scrollbar geometry is finalized
+      redrawAllCompareCharts(sweep);
+    }
+
     function updateModeNotices(poolYears, simYears, mode) {
       const W = poolYears.length;
-      const isRandTab = state.tab === "random";
-      elCenterToggleWrap.style.display = isRandTab ? "inline-flex" : "none";
+      const isRandOrCompare = state.tab === "random" || state.tab === "compare";
+      elCenterToggleWrap.style.display = isRandOrCompare ? "inline-flex" : "none";
       const rerollBtn = document.getElementById("btnReroll");
-      if (rerollBtn) rerollBtn.style.display = isRandTab ? "inline-flex" : "none";
+      if (rerollBtn) rerollBtn.style.display = isRandOrCompare ? "inline-flex" : "none";
       if (W === 0) {
         elSimModeNotice.style.display = "none";
         return;
@@ -3856,7 +4476,7 @@
       const eqWeight = eqPct / 100.0;
       const eqKey = elEquity.value;
       const bdKey = elBond.value;
-      const mode = state.tab === "random" ? "random" : (state.tab === "sequential" ? "sequential" : elSimMode.value);
+      const mode = (state.tab === "random" || state.tab === "compare") ? "random" : (state.tab === "sequential" ? "sequential" : elSimMode.value);
       elSimMode.value = mode;
       const simYears = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 1));
       const numRuns = 1000;
@@ -3925,6 +4545,19 @@
 
       const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
 
+      if (state.tab === "compare") {
+        if (forceResample) state.seed += 1;
+        const cmpVar = state.compareVar;
+        const cmpVals = parseCompareValues(cmpVar, state.compareValuesMap[cmpVar]);
+        const cKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed, cmpVar, cmpVals });
+        if (state.compareCacheKey !== cKey || !state.compareCache) {
+          state.compareCache = computeCompareSweep(poolYears, simYears, numRuns, cfg, state.seed, cmpVar, cmpVals);
+          state.compareCacheKey = cKey;
+        }
+        renderCompareTab(state.compareCache, basisTag);
+        return;
+      }
+
       if (mode === "sequential") {
         const seqKey = `${poolYears[0]}-${poolYears[poolYears.length - 1]}-${poolYears.length}-${simYears}-seq`;
         if (forceResample || state.sequenceKey !== seqKey || state.sampledSequence.length !== simYears) {
@@ -3962,7 +4595,7 @@
           <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>${t("leg_dd_peak")}</span></div>
           <div class="legend-item"><span class="swatch" style="background:var(--inflation);"></span><span>${t("leg_us_inf")}</span></div>
         `;
-        document.getElementById("ddSubhead").textContent = t("sub_dd_seq");
+        document.getElementById("ddSubhead").textContent = "";
 
         if (state.tab === "sequential") {
           renderLedger(sim);
@@ -4200,11 +4833,13 @@
       state.tab = tabName;
       state.hoverStepIdx = null;
       state.hoverBarIdx = null;
+      state.hoverCmpIdx = null;
       const isSimTab = tabName === "sequential" || tabName === "random";
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tabName));
       document.getElementById("tabSingle").style.display = isSimTab ? "block" : "none";
       const rollEl = document.getElementById("tabRolling");
       if (rollEl) rollEl.style.display = "none";
+      document.getElementById("tabCompare").style.display = tabName === "compare" ? "block" : "none";
       document.getElementById("tabData").style.display = tabName === "data" ? "block" : "none";
       document.getElementById("scaleToggleWrap").style.display = isSimTab ? "inline-flex" : "none";
       document.getElementById("basisWrap").style.display = tabName === "data" ? "none" : "inline-flex";
@@ -4436,8 +5071,131 @@
       }
     });
 
+    // Compare Charts Hover + Crosshair
+    function bindCompareChartHover(canvasId, tooltipId, renderTooltipHtml) {
+      const canvas = document.getElementById(canvasId);
+      const tip = document.getElementById(tooltipId);
+      if (!canvas || !tip) return;
+      canvas.addEventListener("mousemove", e => {
+        const m = canvas._cmpMeta;
+        if (!m || !m.items.length) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const scaleX = rect.width / m.w;
+        const padLVis = m.pad.l * scaleX;
+        const cwVis = m.cw * scaleX;
+        if (mx < padLVis || mx > rect.width - m.pad.r * scaleX) {
+          if (state.hoverCmpIdx !== null) {
+            state.hoverCmpIdx = null;
+            redrawAllCompareCharts(m.sweep);
+          }
+          tip.style.display = "none";
+          return;
+        }
+        const n = m.items.length;
+        const idx = Math.max(0, Math.min(n - 1, Math.floor(((mx - padLVis) / cwVis) * n)));
+        if (state.hoverCmpIdx !== idx) {
+          state.hoverCmpIdx = idx;
+          redrawAllCompareCharts(m.sweep);
+        }
+        const item = m.items[idx];
+        const hxVis = m.mapX(idx) * scaleX;
+        tip.innerHTML = renderTooltipHtml(item, m.sweep);
+        positionTooltip(tip, hxVis, rect.width);
+      });
+      canvas.addEventListener("mouseleave", () => {
+        tip.style.display = "none";
+        if (state.hoverCmpIdx !== null && canvas._cmpMeta) {
+          state.hoverCmpIdx = null;
+          redrawAllCompareCharts(canvas._cmpMeta.sweep);
+        }
+      });
+    }
+
+    bindCompareChartHover("cmpSurvCanvas", "cmpSurvTooltip", (item, sweep) => {
+      const b = item.batch;
+      return `
+        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
+        <div class="tip-row"><span style="color:var(--success);">${t("tip_surv_gt0")}</span><strong>${b.survivalPct.toFixed(1)}% (${b.survivedCount}/${b.numRuns})</strong></div>
+        <div class="tip-row"><span style="color:var(--accent);">${t("cmp_tip_grew")}</span><strong>${b.grewPct.toFixed(1)}%</strong></div>
+      `;
+    });
+
+    bindCompareChartHover("cmpEndCanvas", "cmpEndTooltip", (item, sweep) => {
+      const b = item.batch;
+      return `
+        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
+        <div class="tip-row"><span style="color:var(--port);">${t("tip_med_50")}</span><strong>${fmtExactMoney(b.endMedian)}</strong></div>
+        <div class="tip-row"><span style="color:var(--equity);">${t("tip_avg_mean")}</span><strong>${fmtExactMoney(b.endMean)}</strong></div>
+        <div class="tip-row"><span style="color:var(--success);">${t("tip_p90")}</span><span>${fmtExactMoney(b.endP90)}</span></div>
+        <div class="tip-row"><span style="color:var(--danger);">${t("tip_p10")}</span><span>${fmtExactMoney(b.endP10)}</span></div>
+      `;
+    });
+
+    bindCompareChartHover("cmpExpCanvas", "cmpExpTooltip", (item, sweep) => {
+      const b = item.batch;
+      return `
+        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
+        <div class="tip-row"><span style="color:var(--expense);">${t("tip_med_tot")}</span><strong>${b.survivedCount > 0 ? fmtExactMoney(b.expMedian) : "—"}</strong></div>
+        <div class="tip-row"><span style="color:var(--equity);">${t("tip_avg_tot")}</span><strong>${b.survivedCount > 0 ? fmtExactMoney(b.expMean) : "—"}</strong></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("cmp_tip_surv_cnt")}</span><span>${b.survivedCount}/${b.numRuns}</span></div>
+      `;
+    });
+
+    bindCompareChartHover("cmpRetDdCanvas", "cmpRetDdTooltip", (item, sweep) => {
+      const b = item.batch;
+      const useMean = state.centerStat === "mean";
+      const twwr = useMean ? b.twwrMean : b.twwrMedian;
+      const vol = useMean ? b.volMean : b.volMedian;
+      const sharpe = useMean ? b.sharpeMean : b.sharpeMedian;
+      const dd = useMean ? b.maxDDMean : b.maxDDMedian;
+      return `
+        <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
+        <div class="tip-row"><span style="color:var(--accent);">${t("kpi_port_twwr")}:</span><strong>${fmtPct(twwr)}</strong></div>
+        <div class="tip-row"><span style="color:var(--danger);">${t("kpi_max_dd")}:</span><strong>${fmtPct(dd, 2, false)}</strong></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("kpi_sharpe")}:</span><span>${sharpe.toFixed(2)}</span></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("cmp_tip_vol")}</span><span>${vol.toFixed(2)}%</span></div>
+      `;
+    });
+
     // CSV Export
     document.getElementById("btnExportCsv").addEventListener("click", () => {
+      if (state.tab === "compare" && state.compareCache) {
+        const sw = state.compareCache;
+        const lines = ["Variable,Value,SurvivedRuns,SurvivalPct,GrewInitialPct,EndingBalanceMedian,EndingBalanceMean,EndP10,EndP90,SurvTotalExpenseMedian,SurvTotalExpenseMean,TwwrMedianPct,TwwrMeanPct,VolMedianPct,SharpeMedian,SharpeMean,MaxDDMedianPct,MaxDDMeanPct,MaxDDP10Pct"];
+        sw.items.forEach(it => {
+          const b = it.batch;
+          lines.push([
+            sw.varKey,
+            it.val,
+            b.survivedCount,
+            b.survivalPct.toFixed(2),
+            b.grewPct.toFixed(2),
+            b.endMedian.toFixed(2),
+            b.endMean.toFixed(2),
+            b.endP10.toFixed(2),
+            b.endP90.toFixed(2),
+            b.expMedian.toFixed(2),
+            b.expMean.toFixed(2),
+            b.twwrMedian.toFixed(2),
+            b.twwrMean.toFixed(2),
+            b.volMedian.toFixed(2),
+            b.sharpeMedian.toFixed(3),
+            b.sharpeMean.toFixed(3),
+            b.maxDDMedian.toFixed(2),
+            b.maxDDMean.toFixed(2),
+            b.maxDDP10.toFixed(2)
+          ].join(","));
+        });
+        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `retirement_compare_${sw.varKey}_${sw.simYears}yrs_${sw.numRuns}runs.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
       if (state.tab === "data") {
         const rows = state.lastHistRows && state.lastHistRows.length ? state.lastHistRows : RAW_DATA;
         const eqKey = elEquity.value;
@@ -4580,12 +5338,8 @@
       document.getElementById("sumIndices").textContent =
         `${getSeriesLabel(elEquity.value)} + ${getSeriesLabel(elBond.value)}`;
 
-      // Sync tab bar labels with selected sidebar options
-      const simYrs = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 30));
+      // Sync data scope window label
       const winRange = (elStartYr.value && elEndYr.value) ? `${elStartYr.value}–${elEndYr.value}` : "1928–2025";
-      document.getElementById("tabMetaSeq").textContent = t("meta_seq", { yr: elStartYr.value || "1988", sim: simYrs });
-      document.getElementById("tabMetaRand").textContent = t("meta_rand", { sim: simYrs });
-      document.getElementById("tabMetaData").textContent = state.dataScope === "all" ? "1928–2025" : winRange;
       const scopeBtn = document.getElementById("btnScopeWindow");
       if (scopeBtn) scopeBtn.textContent = t("btn_scope_win", { range: winRange });
 
@@ -4641,6 +5395,8 @@
           centerStat: state.centerStat,
           dataScope: state.dataScope,
           ledgerFilter: state.ledgerFilter,
+          compareVar: state.compareVar,
+          compareValuesMap: state.compareValuesMap,
           theme: document.documentElement.dataset.theme || "light",
           openIndices: detInd ? detInd.open : false,
           openSpending: detSpd ? detSpd.open : false
@@ -4649,6 +5405,16 @@
         localStorage.setItem(LANG_STORAGE_KEY, state.lang);
       } catch (_) {
         // Ignore storage quota / sandboxed iframe errors
+      }
+    }
+
+    function syncCompareControlsUI() {
+      document.querySelectorAll("#compareVarWrap button[data-cvar]").forEach(b => {
+        b.classList.toggle("active", b.dataset.cvar === state.compareVar);
+      });
+      const inp = document.getElementById("compareValuesInput");
+      if (inp && document.activeElement !== inp) {
+        inp.value = state.compareValuesMap[state.compareVar] || COMPARE_DEFAULTS[state.compareVar].values;
       }
     }
 
@@ -4663,6 +5429,7 @@
       state.lang = detectInitialLang(saved);
       if (!saved || typeof saved !== "object") {
         applyStaticI18n();
+        syncCompareControlsUI();
         populateYearSelects(1988, 2025);
         syncSimYrChips();
         return;
@@ -4734,6 +5501,17 @@
             b.classList.toggle("active", b.dataset.filter === state.ledgerFilter);
           });
         }
+        if (saved.compareVar && COMPARE_DEFAULTS[saved.compareVar]) {
+          state.compareVar = saved.compareVar;
+        }
+        if (saved.compareValuesMap && typeof saved.compareValuesMap === "object") {
+          Object.keys(COMPARE_DEFAULTS).forEach(k => {
+            if (typeof saved.compareValuesMap[k] === "string" && saved.compareValuesMap[k].trim()) {
+              state.compareValuesMap[k] = saved.compareValuesMap[k];
+            }
+          });
+        }
+        syncCompareControlsUI();
         if (saved.theme === "dark" || saved.theme === "light") {
           document.documentElement.dataset.theme = saved.theme;
         }
@@ -4744,13 +5522,14 @@
 
         syncSimYrChips();
 
-        if (["sequential", "random", "data"].includes(saved.tab)) {
+        if (["sequential", "random", "compare", "data"].includes(saved.tab)) {
           state.tab = saved.tab;
           const isSimTab = state.tab === "sequential" || state.tab === "random";
           document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === state.tab));
           document.getElementById("tabSingle").style.display = isSimTab ? "block" : "none";
           const rollEl = document.getElementById("tabRolling");
           if (rollEl) rollEl.style.display = "none";
+          document.getElementById("tabCompare").style.display = state.tab === "compare" ? "block" : "none";
           document.getElementById("tabData").style.display = state.tab === "data" ? "block" : "none";
           document.getElementById("scaleToggleWrap").style.display = isSimTab ? "inline-flex" : "none";
           document.getElementById("basisWrap").style.display = state.tab === "data" ? "none" : "inline-flex";
@@ -4759,6 +5538,38 @@
       } finally {
         isRestoringSettings = false;
       }
+    }
+
+    // Compare controls listeners
+    document.querySelectorAll("#compareVarWrap button[data-cvar]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const nextVar = btn.dataset.cvar;
+        if (!COMPARE_DEFAULTS[nextVar] || state.compareVar === nextVar) return;
+        state.compareVar = nextVar;
+        state.hoverCmpIdx = null;
+        syncCompareControlsUI();
+        updateAll();
+      });
+    });
+
+    const elCompareValuesInput = document.getElementById("compareValuesInput");
+    if (elCompareValuesInput) {
+      elCompareValuesInput.addEventListener("input", () => {
+        state.compareValuesMap[state.compareVar] = elCompareValuesInput.value;
+        state.hoverCmpIdx = null;
+        updateAll();
+      });
+    }
+
+    const elBtnCompareReset = document.getElementById("btnCompareReset");
+    if (elBtnCompareReset) {
+      elBtnCompareReset.addEventListener("click", () => {
+        const def = COMPARE_DEFAULTS[state.compareVar].values;
+        state.compareValuesMap[state.compareVar] = def;
+        if (elCompareValuesInput) elCompareValuesInput.value = def;
+        state.hoverCmpIdx = null;
+        updateAll();
+      });
     }
 
     document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
