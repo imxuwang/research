@@ -1478,9 +1478,10 @@
               </label>
               <select id="badYearTrigger">
                 <option value="neg_return" selected data-i18n="trig_neg_return">Portfolio return is negative</option>
+                <option value="wr_guardrail" data-i18n="trig_wr_guardrail">Withdrawal rate is &gt; 20% above initial</option>
+                <option value="in_drawdown" data-i18n="trig_in_drawdown">Balance is &ge; 10% below prior peak</option>
                 <option value="below_initial" data-i18n="trig_below_initial">Balance is below starting amount</option>
                 <option value="below_real_initial" data-i18n="trig_below_real_initial">Balance is below inflation-adjusted start</option>
-                <option value="in_drawdown" data-i18n="trig_in_drawdown">Balance is below its prior peak</option>
               </select>
             </div>
           </div>
@@ -1853,13 +1854,13 @@
 
         <div class="panel-block">
           <div class="legend">
-            <div class="legend-items">
-              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px;"></span><span data-i18n="hist_leg_pos">Positive US CPI Inflation (%)</span></div>
+            <div class="legend-items" id="histLegendItems">
+              <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px;"></span><span data-i18n="hist_leg_pos">US CPI Inflation (Left)</span></div>
               <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-neg); height:8px;"></span><span data-i18n="hist_leg_neg">Deflation (&lt; 0%)</span></div>
             </div>
           </div>
           <div class="chart-wrap">
-            <canvas id="histCpiCanvas" height="220" role="img" aria-label="Historical US CPI inflation chart" data-i18n-aria-label="aria_canvas_hist_cpi"></canvas>
+            <canvas id="histCpiCanvas" height="255" role="img" aria-label="Historical US CPI inflation and equity return chart" data-i18n-aria-label="aria_canvas_hist_cpi"></canvas>
             <div class="tooltip" id="histCpiTooltip"></div>
           </div>
         </div>
@@ -2021,9 +2022,10 @@
       hint_select_lt100: { "en-UK": "Select <100%", "zh-CN": "请选择 <100%" },
       lbl_bad_yr_when: { "en-UK": "A \"bad year\" is when", "zh-CN": "“不佳年份”触发条件" },
       trig_neg_return: { "en-UK": "Portfolio return is negative", "zh-CN": "投资组合当年收益为负" },
+      trig_wr_guardrail: { "en-UK": "Withdrawal rate is > 20% above initial", "zh-CN": "当前提取率超初始值 20%（护栏）" },
+      trig_in_drawdown: { "en-UK": "Balance is ≥ 10% below prior peak", "zh-CN": "资产较历史峰值回撤 ≥ 10%" },
       trig_below_initial: { "en-UK": "Balance is below starting amount", "zh-CN": "资产低于初始本金" },
       trig_below_real_initial: { "en-UK": "Balance is below inflation-adjusted start", "zh-CN": "资产低于通胀调整后初始本金" },
-      trig_in_drawdown: { "en-UK": "Balance is below its prior peak", "zh-CN": "资产低于历史峰值（处于回撤中）" },
       lbl_inflation: { "en-UK": "Inflation", "zh-CN": "通胀来源" },
       opt_inf_historical: { "en-UK": "Historical CPI", "zh-CN": "历史 CPI" },
       opt_inf_fixed: { "en-UK": "Fixed rate", "zh-CN": "固定通胀率" },
@@ -2090,7 +2092,7 @@
       aria_canvas_cmp_end: { "en-UK": "Ending balance comparison chart", "zh-CN": "期末资产对比图" },
       aria_canvas_cmp_exp: { "en-UK": "Total expense comparison chart", "zh-CN": "累计总支出对比图" },
       aria_canvas_cmp_retdd: { "en-UK": "Return and maximum drawdown comparison chart", "zh-CN": "年化收益率与最大回撤对比图" },
-      aria_canvas_hist_cpi: { "en-UK": "Historical US CPI inflation chart", "zh-CN": "历年美国 CPI 通胀率柱状图" },
+      aria_canvas_hist_cpi: { "en-UK": "Historical US CPI inflation and equity return chart", "zh-CN": "历年美国 CPI 通胀与股票收益率对比图" },
       popover_nominal_html: {
         "en-UK": "<strong>Nominal $ (Future Dollars)</strong><br />Actual dollar balance printed on your future account statement, <em>without</em> removing inflation.",
         "zh-CN": "<strong>名义金额 $（未来账面金额）</strong><br />未来账户账单上显示的实际美元数字，<em>未扣除</em>通货膨胀影响。"
@@ -2241,8 +2243,11 @@
       hist_kpi_eq_real: { "en-UK": "Selected Equity (Real)", "zh-CN": "所选股票（实际年化）" },
       hist_no_eq: { "en-UK": "No equity observations", "zh-CN": "无有效股票数据" },
       hist_nom_sub: { "en-UK": "Nominal: {nom} ({y0}–{y1})", "zh-CN": "名义年化：{nom} ({y0}–{y1})" },
-      hist_leg_pos: { "en-UK": "Positive US CPI Inflation (%)", "zh-CN": "正通胀年份 (%)" },
-      hist_leg_neg: { "en-UK": "Deflation (< 0%)", "zh-CN": "通缩年份 (< 0%)" },
+      hist_leg_pos: { "en-UK": "US CPI Inflation (Left)", "zh-CN": "美国 CPI 通胀（左轴）" },
+      hist_leg_neg: { "en-UK": "Deflation (< 0%)", "zh-CN": "通缩 (< 0%)" },
+      hist_leg_eq: { "en-UK": "{eq} Return (Right)", "zh-CN": "{eq} 收益（右轴）" },
+      hist_axis_cpi: { "en-UK": "CPI", "zh-CN": "CPI" },
+      hist_axis_eq: { "en-UK": "Equity", "zh-CN": "股票" },
       hist_table_title: {
         "en-UK": "Year-by-Year Historical US CPI Inflation & Index Total Returns (% in USD)",
         "zh-CN": "历年美国 CPI 通胀与各指数全收益率明细（美元计价 %）"
@@ -2731,11 +2736,18 @@
       return pool;
     }
 
-    function checkIsBadYear({ trigger, timing, stepIdx, balAtWithdraw, initialAsset, infIdxAtWithdraw, peakNom, prevRetNomPct, curRetNomPct }) {
+    function checkIsBadYear({ trigger, timing, stepIdx, balAtWithdraw, initialAsset, initialExpense, baseTargetExpNom, infIdxAtWithdraw, peakNom, prevRetNomPct, curRetNomPct }) {
       const trig = trigger || "neg_return";
       if (trig === "neg_return") {
         if (timing === "start") return stepIdx > 0 && prevRetNomPct !== null && prevRetNomPct < 0;
         return curRetNomPct < 0;
+      }
+      if (trig === "wr_guardrail") {
+        if (initialAsset <= 0 || initialExpense <= 0) return false;
+        if (balAtWithdraw <= 0) return true;
+        const initWR = initialExpense / initialAsset;
+        const curWR = baseTargetExpNom / balAtWithdraw;
+        return curWR > initWR * 1.20 + 1e-9;
       }
       if (trig === "below_initial") {
         return balAtWithdraw < initialAsset - 1e-6;
@@ -2744,7 +2756,7 @@
         return balAtWithdraw < (initialAsset * infIdxAtWithdraw) - 1e-6;
       }
       if (trig === "in_drawdown") {
-        return balAtWithdraw < peakNom - 1e-6;
+        return peakNom > 0 && balAtWithdraw <= peakNom * 0.90 + 1e-6;
       }
       return false;
     }
@@ -2761,7 +2773,7 @@
       if (withdrawTiming === "start") {
         const isBad = checkIsBadYear({
           trigger: badYearTrigger, timing: "start", stepIdx,
-          balAtWithdraw: bState.bal, initialAsset, infIdxAtWithdraw: prevInfIndex,
+          balAtWithdraw: bState.bal, initialAsset, initialExpense, baseTargetExpNom, infIdxAtWithdraw: prevInfIndex,
           peakNom: bState.peakNom, prevRetNomPct: bState.prevRetNomPct, curRetNomPct: 0
         });
         const effExp = (initialExpense > 0 && floorPct < 100 && isBad) ? baseTargetExpNom * floorRatio : baseTargetExpNom;
@@ -2772,7 +2784,7 @@
         const grown = bState.bal * (1 + rAsset);
         const isBad = checkIsBadYear({
           trigger: badYearTrigger, timing: "end", stepIdx,
-          balAtWithdraw: grown, initialAsset, infIdxAtWithdraw: cumInfIndex,
+          balAtWithdraw: grown, initialAsset, initialExpense, baseTargetExpNom, infIdxAtWithdraw: cumInfIndex,
           peakNom: bState.peakNom, prevRetNomPct: bState.prevRetNomPct, curRetNomPct: rPct
         });
         const effExp = (initialExpense > 0 && floorPct < 100 && isBad) ? baseTargetExpNom * floorRatio : baseTargetExpNom;
@@ -2871,7 +2883,7 @@
         } else if (withdrawTiming === "start") {
           const isBadYear = checkIsBadYear({
             trigger: badYearTrigger, timing: "start", stepIdx: i,
-            balAtWithdraw: startNom, initialAsset, infIdxAtWithdraw: prevInfIndex,
+            balAtWithdraw: startNom, initialAsset, initialExpense, baseTargetExpNom, infIdxAtWithdraw: prevInfIndex,
             peakNom, prevRetNomPct: prevPortRetNomPct, curRetNomPct: 0
           });
           expCutApplied = initialExpense > 0 && expenseFloorPct < 100 && isBadYear;
@@ -2906,7 +2918,7 @@
           portRetPct = ((preWithdraw / startNom) - 1) * 100;
           const isBadYear = checkIsBadYear({
             trigger: badYearTrigger, timing: "end", stepIdx: i,
-            balAtWithdraw: preWithdraw, initialAsset, infIdxAtWithdraw: cumInfIndex,
+            balAtWithdraw: preWithdraw, initialAsset, initialExpense, baseTargetExpNom, infIdxAtWithdraw: cumInfIndex,
             peakNom, prevRetNomPct: prevPortRetNomPct, curRetNomPct: portRetPct
           });
           expCutApplied = initialExpense > 0 && expenseFloorPct < 100 && isBadYear;
@@ -3893,6 +3905,60 @@
 
     const CANVAS_FONT = '12px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
 
+    function computeAlignedDualTicks(minA, maxA, minB, maxB) {
+      const niceSteps = [0.5, 1, 2, 2.5, 4, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100];
+      const pickStep = req => {
+        if (req <= 0) return 1;
+        for (const s of niceSteps) {
+          if (s >= req) return s;
+        }
+        return Math.ceil(req / 50) * 50;
+      };
+      const needNeg = minA < 0 || minB < 0;
+      const negOptions = needNeg ? [1, 2, 3] : [0];
+      let best = null;
+      for (const nNeg of negOptions) {
+        for (let nPos = 2; nPos <= 5; nPos++) {
+          const total = nNeg + nPos;
+          if (total < 4 || total > 6) continue;
+          const reqA = Math.max(
+            nNeg > 0 ? (Math.max(0, -minA) * 1.08) / nNeg : 0,
+            (Math.max(1, maxA) * 1.08) / nPos
+          );
+          const reqB = Math.max(
+            nNeg > 0 ? (Math.max(0, -minB) * 1.08) / nNeg : 0,
+            (Math.max(5, maxB) * 1.08) / nPos
+          );
+          const stepA = pickStep(reqA);
+          const stepB = pickStep(reqB);
+          const spanA = total * stepA;
+          const spanB = total * stepB;
+          const usedA = Math.max(0, maxA) + Math.max(0, -minA);
+          const usedB = Math.max(0, maxB) + Math.max(0, -minB);
+          const fillA = usedA / spanA;
+          const fillB = usedB / spanB;
+          const intBonus = (Number.isInteger(stepA) ? 0.04 : 0) + (Number.isInteger(stepB) ? 0.04 : 0);
+          const score = fillA + fillB + intBonus - (total === 6 ? 0.04 : 0);
+          if (!best || score > best.score) {
+            best = { nNeg, nPos, total, stepA, stepB, score };
+          }
+        }
+      }
+      const ticksA = [];
+      const ticksB = [];
+      for (let k = -best.nNeg; k <= best.nPos; k++) {
+        ticksA.push(Number((k * best.stepA).toPrecision(10)));
+        ticksB.push(Number((k * best.stepB).toPrecision(10)));
+      }
+      return { ticksA, ticksB };
+    }
+
+    function fmtAxisPct(v) {
+      if (Math.abs(v) < 1e-9) return "0%";
+      const s = v > 0 ? "+" : "";
+      return s + (Number.isInteger(v) ? v.toFixed(0) : v.toFixed(1)) + "%";
+    }
+
     function drawHistCpiChart(histRows, cumSeries, cfg, hoverIdx = state.hoverHistIdx) {
       const canvas = document.getElementById("histCpiCanvas");
       const { ctx, w, h } = setupCanvas(canvas);
@@ -3902,53 +3968,143 @@
       const n = histRows.length;
       if (!n) return;
 
-      const pad = { l: 74, r: 22, t: 16, b: 28 };
+      const cpiVals = histRows.map(r => r.NYU_US_CPI_Inflation_pct);
+      const eqVals = histRows.map(r => {
+        const v = r[cfg.eqKey];
+        return (v === null || v === undefined || !isFinite(v)) ? null : v;
+      });
+      const validEq = eqVals.filter(v => v !== null);
+      const hasEq = validEq.length > 0;
+
+      const pad = { l: 58, r: hasEq ? 58 : 22, t: 24, b: 28 };
       const cw = w - pad.l - pad.r;
       const ch = h - pad.t - pad.b;
 
-      const cpiVals = histRows.map(r => r.NYU_US_CPI_Inflation_pct);
-      const rawMin = Math.min(-2, Math.min(...cpiVals) * 1.12);
-      const rawMax = Math.max(4, Math.max(...cpiVals) * 1.12);
-      const yTicks = computeNiceLinearTicks(rawMin, rawMax, 4);
-      const minV = yTicks[0];
-      const maxV = yTicks[yTicks.length - 1];
+      const cpiMinRaw = Math.min(...cpiVals);
+      const cpiMaxRaw = Math.max(...cpiVals);
+      let cpiTicks, eqTicks;
+      if (hasEq) {
+        const dual = computeAlignedDualTicks(cpiMinRaw, cpiMaxRaw, Math.min(...validEq), Math.max(...validEq));
+        cpiTicks = dual.ticksA;
+        eqTicks = dual.ticksB;
+      } else {
+        cpiTicks = computeNiceLinearTicks(Math.min(-2, cpiMinRaw * 1.12), Math.max(4, cpiMaxRaw * 1.12), 4);
+        eqTicks = null;
+      }
 
+      const minCpi = cpiTicks[0];
+      const maxCpi = cpiTicks[cpiTicks.length - 1];
       const mapX = i => pad.l + ((i + 0.5) / n) * cw;
-      const mapY = v => pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
-      const yZero = mapY(0);
+      const mapYCpi = v => pad.t + ch - ((v - minCpi) / (maxCpi - minCpi || 1)) * ch;
+      const mapYEq = hasEq
+        ? (v => pad.t + ch - ((v - eqTicks[0]) / (eqTicks[eqTicks.length - 1] - eqTicks[0] || 1)) * ch)
+        : mapYCpi;
+      const yZero = mapYCpi(0);
 
-      ctx.strokeStyle = C.grid;
-      ctx.lineWidth = 1;
-      ctx.fillStyle = C.muted;
-      ctx.font = CANVAS_FONT;
+      // Axis Headers (Left: CPI, Right: Equity)
+      ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
+      ctx.fillStyle = C.inflation;
       ctx.textAlign = "right";
-      yTicks.forEach(v => {
-        const y = mapY(v);
+      ctx.fillText(t("hist_axis_cpi"), pad.l - 8, 12);
+      if (hasEq) {
+        ctx.fillStyle = C.equity;
+        ctx.textAlign = "left";
+        ctx.fillText(t("hist_axis_eq"), w - pad.r + 8, 12);
+      }
+
+      // Shared Horizontal Gridlines + Left (CPI) & Right (Equity) Tick Labels
+      ctx.lineWidth = 1;
+      ctx.font = CANVAS_FONT;
+      cpiTicks.forEach((vCpi, idx) => {
+        const y = mapYCpi(vCpi);
+        ctx.strokeStyle = C.grid;
         ctx.beginPath();
         ctx.moveTo(pad.l, y);
         ctx.lineTo(w - pad.r, y);
         ctx.stroke();
-        ctx.fillText((v > 0 ? "+" : "") + v.toFixed(0) + "%", pad.l - 8, y + 4);
+
+        ctx.fillStyle = C.inflation;
+        ctx.textAlign = "right";
+        ctx.fillText(fmtAxisPct(vCpi), pad.l - 8, y + 4);
+
+        if (hasEq && eqTicks && eqTicks[idx] !== undefined) {
+          ctx.fillStyle = C.equity;
+          ctx.textAlign = "left";
+          ctx.fillText(fmtAxisPct(eqTicks[idx]), w - pad.r + 8, y + 4);
+        }
       });
 
+      // Shared 0% Baseline
       ctx.strokeStyle = C.zeroLine;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(pad.l, yZero);
       ctx.lineTo(w - pad.r, yZero);
       ctx.stroke();
 
-      const barW = Math.max(2, Math.min(18, (cw / n) * 0.68));
+      // US CPI Bars (Left Axis — soft backdrop so Equity line pops cleanly)
+      const barW = Math.max(2, Math.min(18, (cw / n) * 0.64));
       cpiVals.forEach((inf, i) => {
         const x = mapX(i) - barW / 2;
-        const y = mapY(inf);
+        const y = mapYCpi(inf);
         const isHover = hoverIdx === i;
+        ctx.save();
+        ctx.globalAlpha = isHover ? 0.96 : 0.48;
         ctx.fillStyle = inf >= 0
           ? (isHover ? C.inflation : C.infBarPos)
           : (isHover ? C.accent : C.infBarNeg);
         ctx.fillRect(x, Math.min(y, yZero), barW, Math.abs(y - yZero));
+        ctx.restore();
       });
 
+      // Selected Equity Return Line (Right Axis — breaks cleanly across null/pre-inception years)
+      if (hasEq) {
+        ctx.save();
+        ctx.strokeStyle = C.equity;
+        ctx.lineWidth = 2.2;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        let drawing = false;
+        eqVals.forEach((ev, i) => {
+          if (ev === null) {
+            drawing = false;
+            return;
+          }
+          const x = mapX(i);
+          const y = mapYEq(ev);
+          if (!drawing) {
+            ctx.moveTo(x, y);
+            drawing = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+
+        // Subtle point markers when window is readable (or for isolated single-point runs)
+        const showAllDots = n <= 55;
+        eqVals.forEach((ev, i) => {
+          if (ev === null) return;
+          const prevNull = i === 0 || eqVals[i - 1] === null;
+          const nextNull = i === n - 1 || eqVals[i + 1] === null;
+          if (!showAllDots && !(prevNull && nextNull)) return;
+          const x = mapX(i);
+          const y = mapYEq(ev);
+          ctx.beginPath();
+          ctx.arc(x, y, showAllDots ? 2.6 : 3.4, 0, Math.PI * 2);
+          ctx.fillStyle = C.equity;
+          ctx.fill();
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = C.panel;
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      // X-Axis Year Labels
       ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
       ctx.textAlign = "center";
       const yrStep = n > 60 ? 10 : n > 30 ? 5 : n > 14 ? 2 : 1;
       let lastTickPx = -999;
@@ -3962,6 +4118,7 @@
         lastTickPx = px;
       });
 
+      // Hover Crosshair + Active Equity Point
       if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
         const hx = mapX(hoverIdx);
         ctx.save();
@@ -3973,9 +4130,20 @@
         ctx.lineTo(hx, pad.t + ch);
         ctx.stroke();
         ctx.restore();
+
+        if (hasEq && eqVals[hoverIdx] !== null) {
+          const ey = mapYEq(eqVals[hoverIdx]);
+          ctx.beginPath();
+          ctx.arc(hx, ey, 5, 0, Math.PI * 2);
+          ctx.fillStyle = C.equity;
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = C.panel;
+          ctx.stroke();
+        }
       }
 
-      canvas._histMeta = { histRows, cumSeries, cfg, pad, cw, ch, mapX, mapY, w, h };
+      canvas._histMeta = { histRows, cumSeries, cfg, pad, cw, ch, mapX, mapY: mapYCpi, mapYEq, cpiTicks, eqTicks, w, h };
     }
 
     function renderHistoricalDataTab(poolYears, cfg) {
@@ -4032,6 +4200,15 @@
       document.getElementById("histEqRealCagr").textContent = eqRealCagrStr;
       document.getElementById("histEqNomSub").textContent = eqNomSubStr;
 
+      const histLegEl = document.getElementById("histLegendItems");
+      if (histLegEl) {
+        histLegEl.innerHTML = `
+          <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-pos); height:8px; opacity:0.75;"></span><span>${t("hist_leg_pos")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--inf-bar-neg); height:8px; opacity:0.75;"></span><span>${t("hist_leg_neg")}</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--equity); height:3px;"></span><strong>${t("hist_leg_eq", { eq: getSeriesLabel(cfg.eqKey) })}</strong></div>
+        `;
+      }
+
       document.getElementById("histDataHead").innerHTML = `
         <tr>
           <th>${t("th_year")}</th>
@@ -4066,7 +4243,7 @@
       tbody.appendChild(frag);
       document.getElementById("histRowCount").textContent = t("cnt_hist_yrs", { n: histRows.length, y0: yStart, y1: yEnd });
 
-      // Draw CPI chart AFTER table DOM updates so width/scrollbar geometry is finalized
+      // Draw dual-axis CPI + Equity chart AFTER table DOM updates so width/scrollbar geometry is finalized
       drawHistCpiChart(histRows, cumSeries, cfg);
     }
 
@@ -5334,8 +5511,8 @@
       histTip.innerHTML = `
         <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("tip_hist_hdr", { yr: r.Year })}</div>
         <div class="tip-row"><span style="color:var(--inflation);">${t("tip_us_cpi_inf")}</span><strong>${fmtPct(r.NYU_US_CPI_Inflation_pct, 2, false)}</strong></div>
+        <div class="tip-row"><span style="color:var(--equity);">${getSeriesLabel(m.cfg.eqKey)}:</span><strong>${eqV === null || eqV === undefined ? "—" : fmtPct(eqV)}</strong></div>
         <div class="tip-row"><span style="color:var(--muted);">${t("tip_cum_cpi_100")}</span><span>$${m.cumSeries[idx].toFixed(1)}</span></div>
-        <div class="tip-row"><span style="color:var(--equity);">${getSeriesLabel(m.cfg.eqKey)}:</span><span>${eqV === null || eqV === undefined ? "—" : fmtPct(eqV)}</span></div>
         <div class="tip-row"><span style="color:var(--bond);">${getSeriesLabel(m.cfg.bdKey)}:</span><span>${bdV === null || bdV === undefined ? "—" : fmtPct(bdV)}</span></div>
         <div class="tip-row"><span style="color:var(--muted);">${t("tip_3m_tbill")}</span><span>${fmtPct(r.NYU_US_3M_TBill_pct, 2, false)}</span></div>
       `;
