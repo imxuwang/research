@@ -574,8 +574,8 @@
       cursor: pointer;
       transition: color 0.12s, border-color 0.12s;
       display: inline-flex;
-      align-items: baseline;
-      gap: 4px;
+      align-items: center;
+      gap: 6px;
       white-space: nowrap;
     }
     .tab-btn:hover { color: var(--text); }
@@ -583,6 +583,99 @@
       border-bottom-color: var(--text);
       color: var(--text);
       font-weight: 600;
+    }
+    @keyframes tab-spin {
+      to { transform: rotate(360deg); }
+    }
+    .tab-spinner {
+      display: none;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      border: 1.75px solid var(--border-strong);
+      border-top-color: var(--accent);
+      animation: tab-spin 0.72s linear infinite;
+      flex-shrink: 0;
+    }
+    .tab-btn.is-running .tab-spinner {
+      display: inline-block;
+    }
+    .tab-btn.is-running:not(.active) {
+      color: var(--accent);
+    }
+    .tab-btn.active.is-running {
+      border-bottom-color: var(--accent);
+    }
+    .run-status-bar {
+      display: none;
+      position: relative;
+      background: var(--accent-soft);
+      border-top: 1px solid var(--accent-border);
+      border-bottom: 1px solid var(--accent-border);
+      margin: 0 calc(var(--body-px, 20px) * -1);
+      color: var(--text);
+    }
+    .run-status-bar.is-visible {
+      display: block;
+    }
+    .run-status-bar.is-flush-top {
+      margin-top: calc(var(--body-py, 18px) * -1);
+      border-top: none;
+    }
+    .run-status-bar.is-visible + .kpis.kpis-flush-top {
+      margin-top: 0;
+    }
+    .run-status-bar.is-visible + .kpis {
+      border-top: none;
+    }
+    .run-status-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 8px var(--body-px, 20px);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .run-status-lead {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .run-status-bar .tab-spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+    }
+    .run-status-prog {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .run-progress-track {
+      height: 2px;
+      width: 100%;
+      background: var(--accent-border);
+      overflow: hidden;
+    }
+    .run-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.08s linear;
+    }
+    #tabSingle.is-computing #simKpis,
+    #tabSingle.is-computing > .panel-block,
+    #tabCompare.is-computing #cmpKpis,
+    #tabCompare.is-computing .compare-grid,
+    #tabCompare.is-computing .compare-table-block {
+      opacity: 0.42;
+      pointer-events: none;
+      transition: opacity 0.14s;
     }
     .tabs-controls {
       display: flex;
@@ -713,13 +806,14 @@
       white-space: nowrap;
       transition: border-color 0.12s, background 0.12s, color 0.12s;
     }
-    .btn:hover { background: var(--panel-alt); color: var(--text); }
+    .btn:hover:not(:disabled) { background: var(--panel-alt); color: var(--text); }
+    .btn:disabled { opacity: 0.52; cursor: not-allowed; }
     .btn-accent {
       background: var(--panel-alt);
       border-color: var(--border-strong);
       color: var(--text);
     }
-    .btn-accent:hover { border-color: var(--text-soft); }
+    .btn-accent:hover:not(:disabled) { border-color: var(--text-soft); }
     .link-btn {
       background: none;
       border: none;
@@ -1269,8 +1363,17 @@
     @media (prefers-reduced-motion: reduce) {
       .hdr-home-link, input, select, .currency-field, .chips .chip, .tab-btn,
       .scale-btn, .basis-help-btn, .info-btn, .btn, .chev, .seg-ctl button,
-      .switch, .switch::after {
+      .switch, .switch::after, .run-progress-fill, #tabSingle #simKpis,
+      #tabSingle > .panel-block, #tabCompare #cmpKpis, #tabCompare .compare-grid,
+      #tabCompare .compare-table-block {
         transition: none;
+      }
+      .tab-spinner {
+        animation: none;
+        width: 7px;
+        height: 7px;
+        border: none;
+        background: var(--accent);
       }
     }
   </style>
@@ -1564,7 +1667,7 @@
           <option value="median" selected>median</option>
           <option value="mean">mean</option>
         </select>
-        <input type="number" id="numRuns" value="1000" />
+        <input type="number" id="numRuns" value="10000" />
         <div id="randomControlsGroup"></div>
       </div>
     </aside>
@@ -1578,18 +1681,20 @@
             <button type="button" class="tab-btn active" id="tabBtnSequential" role="tab" aria-selected="true" aria-controls="tabSingle" tabindex="0" data-tab="sequential" data-i18n-title="tip_tab_seq" title="Historical chronological order starting at Data from (repeats the data window cyclically if retirement horizon is longer)">
               <span data-i18n="tab_sequential">Sequential</span>
             </button>
-            <button type="button" class="tab-btn" id="tabBtnRandom" role="tab" aria-selected="false" aria-controls="tabSingle" tabindex="-1" data-tab="random" data-i18n-title="tip_tab_rand" title="1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window">
+            <button type="button" class="tab-btn" id="tabBtnRandom" role="tab" aria-selected="false" aria-controls="tabSingle" tabindex="-1" data-tab="random" data-i18n-title="tip_tab_rand" title="10,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window">
               <span data-i18n="tab_random">Random</span>
+              <span class="tab-spinner" aria-hidden="true"></span>
             </button>
-            <button type="button" class="tab-btn" id="tabBtnCompare" role="tab" aria-selected="false" aria-controls="tabCompare" tabindex="-1" data-tab="compare" data-i18n-title="tip_tab_compare" title="Vary one parameter across multiple values with 1,000 paired random runs and compare key metrics">
+            <button type="button" class="tab-btn" id="tabBtnCompare" role="tab" aria-selected="false" aria-controls="tabCompare" tabindex="-1" data-tab="compare" data-i18n-title="tip_tab_compare" title="Vary one parameter across multiple values with 10,000 paired random runs and compare key metrics">
               <span data-i18n="tab_compare">Compare</span>
+              <span class="tab-spinner" aria-hidden="true"></span>
             </button>
             <button type="button" class="tab-btn" id="tabBtnData" role="tab" aria-selected="false" aria-controls="tabData" tabindex="-1" data-tab="data" data-i18n-title="tip_tab_data" title="Inspect annual historical equity/bond returns and US CPI inflation">
               <span data-i18n="tab_data">Market &amp; CPI Data</span>
             </button>
           </div>
           <div class="tabs-controls">
-            <button type="button" class="btn btn-accent" id="btnReroll" data-i18n="btn_rerun" data-i18n-title="tip_rerun" style="display:none; padding:4px 9px;" title="Draw a fresh set of 1,000 random sequences">
+            <button type="button" class="btn btn-accent" id="btnReroll" data-i18n="btn_rerun" data-i18n-title="tip_rerun" style="display:none; padding:4px 9px;" title="Draw a fresh set of 10,000 random sequences">
               &#8635; Re-run
             </button>
             <div class="basis-wrap" id="basisWrap">
@@ -1612,6 +1717,16 @@
         <div class="results-body">
       <!-- TAB 1: UNIFIED SIMULATION VIEW (SEQUENTIAL OR MULTI-RUN RANDOM) -->
       <div id="tabSingle" role="tabpanel" aria-labelledby="tabBtnSequential">
+        <div class="run-status-bar is-flush-top" id="randRunStatus" role="status" aria-live="polite">
+          <div class="run-status-inner">
+            <div class="run-status-lead">
+              <span class="tab-spinner" aria-hidden="true"></span>
+              <span id="randRunStatusText">Running 10,000 random simulations…</span>
+            </div>
+            <span class="run-status-prog tabular" id="randRunStatusProg">0%</span>
+          </div>
+          <div class="run-progress-track"><div class="run-progress-fill" id="randRunProgressFill"></div></div>
+        </div>
         <div class="kpis kpis-flush-top" id="simKpis">
           <div class="kpi kpi-port">
             <div class="kpi-label" id="kpiLbl1">Ending Balance</div>
@@ -1713,6 +1828,17 @@
           <div class="notice warn" id="compareValNotice" role="status" style="margin-top:8px;"></div>
         </div>
 
+        <div class="run-status-bar" id="cmpRunStatus" role="status" aria-live="polite">
+          <div class="run-status-inner">
+            <div class="run-status-lead">
+              <span class="tab-spinner" aria-hidden="true"></span>
+              <span id="cmpRunStatusText">Comparing configurations…</span>
+            </div>
+            <span class="run-status-prog tabular" id="cmpRunStatusProg">0%</span>
+          </div>
+          <div class="run-progress-track"><div class="run-progress-fill" id="cmpRunProgressFill"></div></div>
+        </div>
+
         <div class="kpis" id="cmpKpis">
           <div class="kpi kpi-port">
             <div class="kpi-label" id="cmpKpiLbl1">Best Ending</div>
@@ -1800,9 +1926,9 @@
           </div>
         </div>
 
-        <div class="panel-block">
+        <div class="panel-block compare-table-block">
           <div class="card-title">
-            <h2 class="card-title" style="margin:0;" data-i18n="cmp_table_title">Key Metrics Comparison (1,000 Paired Random Runs)</h2>
+            <h2 class="card-title" style="margin:0;" data-i18n="cmp_table_title">Key Metrics Comparison (10,000 Paired Random Runs)</h2>
             <span id="compareCount" style="font-family:var(--mono); font-weight:500;"></span>
           </div>
           <div class="table-container">
@@ -2061,8 +2187,8 @@
       },
       tab_random: { "en-UK": "Random", "zh-CN": "随机模拟" },
       tip_tab_rand: {
-        "en-UK": "1,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window",
-        "zh-CN": "从所选历史数据窗口中有放回随机抽样，进行 1,000 次蒙特卡洛模拟"
+        "en-UK": "10,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window",
+        "zh-CN": "从所选历史数据窗口中有放回随机抽样，进行 10,000 次蒙特卡洛模拟"
       },
       tab_data: { "en-UK": "Market & CPI Data", "zh-CN": "市场与 CPI 数据" },
       tip_tab_data: {
@@ -2070,7 +2196,7 @@
         "zh-CN": "查看历年股票/债券收益率及美国 CPI 通胀数据"
       },
       btn_rerun: { "en-UK": "↻ Re-run", "zh-CN": "↻ 重新模拟" },
-      tip_rerun: { "en-UK": "Draw a fresh set of 1,000 random sequences", "zh-CN": "重新随机抽取 1,000 组模拟序列" },
+      tip_rerun: { "en-UK": "Draw a fresh set of 10,000 random sequences", "zh-CN": "重新随机抽取 10,000 组模拟序列" },
       btn_nominal: { "en-UK": "Nominal $", "zh-CN": "名义金额 $" },
       btn_real: { "en-UK": "Real $", "zh-CN": "实际购买力 $" },
       basis_help_aria: { "en-UK": "What is Nominal $ vs Real $?", "zh-CN": "什么是名义金额与实际购买力？" },
@@ -2300,8 +2426,8 @@
       // Compare Tab
       tab_compare: { "en-UK": "Compare", "zh-CN": "参数对比" },
       tip_tab_compare: {
-        "en-UK": "Vary one parameter across multiple values with 1,000 paired random runs and compare key metrics",
-        "zh-CN": "固定其他参数，对单个变量的多组取值进行 1,000 次配对随机模拟并对比核心指标"
+        "en-UK": "Vary one parameter across multiple values with 10,000 paired random runs and compare key metrics",
+        "zh-CN": "固定其他参数，对单个变量的多组取值进行 10,000 次配对随机模拟并对比核心指标"
       },
       cmp_short_equity_pct: { "en-UK": "Equity %", "zh-CN": "股票比例" },
       cmp_short_withdrawal_rate: { "en-UK": "Init. Exp %", "zh-CN": "初始提取率" },
@@ -2326,7 +2452,7 @@
       cmp_leg_grew: { "en-UK": "Ended ≥ Initial", "zh-CN": "期末 ≥ 初始本金" },
       cmp_leg_p10_p90: { "en-UK": "10th–90th Pct Range", "zh-CN": "10%–90% 分位区间" },
       cmp_leg_center: { "en-UK": "Center (Med / Avg)", "zh-CN": "中心值（中位/均值）" },
-      cmp_table_title: { "en-UK": "Key Metrics Comparison (1,000 Paired Random Runs)", "zh-CN": "核心指标对比总表（1,000 次配对随机模拟）" },
+      cmp_table_title: { "en-UK": "Key Metrics Comparison (10,000 Paired Random Runs)", "zh-CN": "核心指标对比总表（10,000 次配对随机模拟）" },
       cmp_count_lbl: { "en-UK": "{n} configs • {runs} runs each", "zh-CN": "{n} 组配置 • 每组 {runs} 次模拟" },
       cmp_current: { "en-UK": "Current", "zh-CN": "当前" },
       cmp_th_grew: { "en-UK": "≥ Initial %", "zh-CN": "≥ 本金 %" },
@@ -2351,8 +2477,30 @@
         "zh-CN": "下方触发条件仍然生效。"
       },
       sum_bad_yr_varied: { "en-UK": "Bad-Yr % varied in Compare", "zh-CN": "不佳年支出在对比中变化" },
-      cmp_trigger_note: { "en-UK": "Trigger: {trig}", "zh-CN": "触发条件：{trig}" }
+      cmp_trigger_note: { "en-UK": "Trigger: {trig}", "zh-CN": "触发条件：{trig}" },
+      status_running_random: {
+        "en-UK": "Running {total} random simulations…",
+        "zh-CN": "正在运行 {total} 次随机模拟…"
+      },
+      status_running_random_bands: {
+        "en-UK": "Summarizing percentile bands…",
+        "zh-CN": "正在汇总分位区间…"
+      },
+      status_running_random_prog: {
+        "en-UK": "{done} / {total}",
+        "zh-CN": "{done} / {total}"
+      },
+      status_running_compare: {
+        "en-UK": "Comparing {configs} configs × {runs} paired runs…",
+        "zh-CN": "正在对比 {configs} 组配置 × {runs} 次配对模拟…"
+      },
+      status_running_compare_prog: {
+        "en-UK": "{done} / {configs} ({pct}%)",
+        "zh-CN": "{done} / {configs} ({pct}%)"
+      }
     };
+
+    const NUM_RANDOM_RUNS = 10000;
 
     const COMPARE_DEFAULTS = {
       equity_pct:      { values: "0, 20, 40, 60, 80, 100", min: 0, max: 100 },
@@ -2434,6 +2582,26 @@
       hoverHistIdx: null
     };
 
+    const activeJobs = {
+      random: {
+        token: 0,
+        running: false,
+        key: "",
+        doneRuns: 0,
+        totalRuns: NUM_RANDOM_RUNS,
+        pct: 0
+      },
+      compare: {
+        token: 0,
+        running: false,
+        key: "",
+        doneItems: 0,
+        totalItems: 0,
+        totalRuns: NUM_RANDOM_RUNS,
+        pct: 0
+      }
+    };
+
     function t(key, vars) {
       const entry = I18N[key];
       let str = entry ? (entry[state.lang] !== undefined ? entry[state.lang] : entry["en-UK"]) : key;
@@ -2490,6 +2658,7 @@
       });
       syncThemeButtonLabel();
       syncRangeNoticeText();
+      if (typeof syncRunningUI === "function") syncRunningUI();
     }
 
     // Money Input Helpers (always parse stripped commas so parseFloat("1,000,000") never yields 1)
@@ -3425,123 +3594,433 @@
       document.getElementById("ledgerCount").textContent = countText;
     }
 
-    function computeRandomBatch(poolYears, simYears, numRuns, cfg, seed, precomputedSeqs = null) {
-      const rng = precomputedSeqs ? null : mulberry32(seed);
-      const runs = [];
-      for (let t = 0; t < numRuns; t++) {
-        const seq = precomputedSeqs ? precomputedSeqs[t] : generateYearSequence(poolYears, simYears, "random", rng);
-        runs.push(runSequence(seq, cfg));
-      }
+    function yieldToUI() {
+      return new Promise(resolve => setTimeout(resolve, 0));
+    }
 
-      const bands = {
-        p10: [], p25: [], p50: [], p75: [], p90: [], mean: [], survRate: [], survCount: [],
-        ddP10: [], ddP50: [], ddP90: [], ddMean: [],
-        retMean: [], retP50: [],
-        expMean: [], expP50: [], expP10: [], expP90: [],
-        cumExpP10: [], cumExpP25: [], cumExpP50: [], cumExpP75: [], cumExpP90: [], cumExpMean: [],
-        infMean: [], infP50: [], cutRate: []
-      };
-
-      // Precompute cumulative expense per run across steps 0..simYears
-      const runCumExps = runs.map(r => {
-        const arr = [0];
-        let acc = 0;
-        for (let i = 0; i < simYears; i++) {
-          acc += r.rows[i].expDisp;
-          arr.push(acc);
+    function yieldToPaint() {
+      return new Promise(resolve => {
+        if (typeof requestAnimationFrame === "function" && document.visibilityState === "visible") {
+          requestAnimationFrame(() => setTimeout(resolve, 0));
+        } else {
+          setTimeout(resolve, 0);
         }
-        return arr;
       });
+    }
 
-      for (let s = 0; s <= simYears; s++) {
-        const vals = runs.map(r => r.points[s].port).sort((a, b) => a - b);
-        bands.p10.push(quantileSorted(vals, 0.10));
-        bands.p25.push(quantileSorted(vals, 0.25));
-        bands.p50.push(quantileSorted(vals, 0.50));
-        bands.p75.push(quantileSorted(vals, 0.75));
-        bands.p90.push(quantileSorted(vals, 0.90));
-        bands.mean.push(meanArray(vals));
+    function buildPoolArrays(poolYears, cfg) {
+      const W = poolYears.length;
+      const eqArr = new Float64Array(W);
+      const bdArr = new Float64Array(W);
+      const rfArr = new Float64Array(W);
+      const infPctArr = new Float64Array(W);
+      const useHistInf = cfg.inflationSource === "historical";
+      for (let k = 0; k < W; k++) {
+        const d = DATA_BY_YEAR[poolYears[k]];
+        eqArr[k] = d[cfg.eqKey] / 100.0;
+        bdArr[k] = d[cfg.bdKey] / 100.0;
+        rfArr[k] = d.NYU_US_3M_TBill_pct / 100.0;
+        infPctArr[k] = useHistInf ? d.NYU_US_CPI_Inflation_pct : cfg.fixedInfPct;
+      }
+      return { W, eqArr, bdArr, rfArr, infPctArr };
+    }
 
-        // Survivor indices at step s (survived through year s, regardless of later years)
-        const survIdxs = [];
-        for (let rIdx = 0; rIdx < numRuns; rIdx++) {
-          if (runs[rIdx].points[s].port > 0) survIdxs.push(rIdx);
+    async function computeRandomBatchAsync(poolYears, simYears, numRuns, cfg, seed, {
+      pairedIdx = null,
+      poolData = null,
+      includeBands = true,
+      onProgress = null,
+      isCancelled = null
+    } = {}) {
+      const { W, eqArr, bdArr, rfArr, infPctArr } = poolData || buildPoolArrays(poolYears, cfg);
+      const rng = pairedIdx ? null : mulberry32(seed);
+
+      const initialAsset = cfg.initialAsset;
+      const initialExpense = Math.max(0, cfg.initialExpense);
+      const eqWeight = cfg.eqWeight;
+      const bdWeight = 1.0 - eqWeight;
+      const isAnnualRebal = cfg.rebalanceMode === "annual";
+      const isStartTiming = cfg.withdrawTiming === "start";
+      const isReal = cfg.displayBasis === "real";
+      const expenseFloorPct = cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100;
+      const floorRatio = expenseFloorPct / 100.0;
+      const canCut = initialExpense > 0 && expenseFloorPct < 100;
+      const trig = cfg.badYearTrigger || "neg_return";
+      const trigCode = trig === "neg_return" ? 0
+        : trig === "wr_guardrail" ? 1
+        : trig === "below_initial" ? 2
+        : trig === "below_real_initial" ? 3
+        : trig === "in_drawdown" ? 4 : -1;
+      const initWRThreshold = initialAsset > 0 ? (initialExpense / initialAsset) * 1.20 + 1e-9 : 0;
+
+      const endVals = new Float64Array(numRuns);
+      const twwrs = new Float64Array(numRuns);
+      const vols = new Float64Array(numRuns);
+      const sharpes = new Float64Array(numRuns);
+      const maxDDs = new Float64Array(numRuns);
+      const avgInfs = new Float64Array(numRuns);
+      const survExpsTot = new Float64Array(numRuns);
+      const survCutYrs = new Float64Array(numRuns);
+
+      const portMat = includeBands ? new Float64Array((simYears + 1) * numRuns) : null;
+      const cumExpMat = includeBands ? new Float64Array((simYears + 1) * numRuns) : null;
+      const ddMat = includeBands ? new Float64Array(simYears * numRuns) : null;
+      const retMat = includeBands ? new Float64Array(simYears * numRuns) : null;
+      const infMat = includeBands ? new Float64Array(simYears * numRuns) : null;
+      const expMat = includeBands ? new Float64Array(simYears * numRuns) : null;
+      const cutMat = includeBands ? new Uint8Array(simYears * numRuns) : null;
+
+      const runRets = new Float64Array(simYears);
+      const runExcess = new Float64Array(simYears);
+
+      let survivedCount = 0;
+      let grewCount = 0;
+      let sliceStart = performance.now();
+
+      for (let t = 0; t < numRuns; t++) {
+        let eqVal = initialAsset * eqWeight;
+        let bdVal = initialAsset * bdWeight;
+        let curExpenseNom = initialExpense;
+        let cumInfIndex = 1.0;
+        let depleted = false;
+        let totalExpenseDisp = 0;
+        let peakNom = initialAsset;
+        let prevPortRetNomPct = null;
+        let cutYearsCount = 0;
+        let peakDisp = initialAsset;
+        let maxDD = 0;
+        let lastEndDisp = initialAsset;
+
+        let activeCount = 0;
+        let twProd = 1.0;
+        let sumRet = 0;
+        let sumEx = 0;
+
+        if (includeBands) {
+          portMat[t] = initialAsset;
+          cumExpMat[t] = 0;
         }
-        const alive = survIdxs.length;
-        bands.survCount.push(alive);
-        bands.survRate.push((alive / numRuns) * 100);
 
-        if (alive > 0) {
-          const cExps = survIdxs.map(rIdx => runCumExps[rIdx][s]).sort((a, b) => a - b);
-          bands.cumExpP10.push(quantileSorted(cExps, 0.10));
-          bands.cumExpP25.push(quantileSorted(cExps, 0.25));
-          bands.cumExpP50.push(quantileSorted(cExps, 0.50));
-          bands.cumExpP75.push(quantileSorted(cExps, 0.75));
-          bands.cumExpP90.push(quantileSorted(cExps, 0.90));
-          bands.cumExpMean.push(meanArray(cExps));
-        } else {
-          bands.cumExpP10.push(0);
-          bands.cumExpP25.push(0);
-          bands.cumExpP50.push(0);
-          bands.cumExpP75.push(0);
-          bands.cumExpP90.push(0);
-          bands.cumExpMean.push(0);
+        const seqBase = t * simYears;
+        for (let i = 0; i < simYears; i++) {
+          const k = pairedIdx ? pairedIdx[seqBase + i] : (W > 0 ? Math.floor(rng() * W) : 0);
+          const infPct = W > 0 ? infPctArr[k] : 0;
+          const infRate = infPct / 100.0;
+          const rEqNom = W > 0 ? eqArr[k] : 0;
+          const rBdNom = W > 0 ? bdArr[k] : 0;
+          const rRfNom = W > 0 ? rfArr[k] : 0;
+
+          const startNom = eqVal + bdVal;
+          const prevInfIndex = cumInfIndex;
+          cumInfIndex *= (1 + infRate);
+
+          const baseTargetExpNom = isStartTiming ? curExpenseNom : curExpenseNom * (1 + infRate);
+
+          let actualExpNom = 0;
+          let portRetPct = 0;
+          let endNom = 0;
+          let expCutApplied = false;
+          let targetExpNom = baseTargetExpNom;
+
+          if (startNom <= 0) {
+            eqVal = 0;
+            bdVal = 0;
+            endNom = 0;
+            actualExpNom = 0;
+            portRetPct = 0;
+          } else if (isStartTiming) {
+            if (canCut) {
+              let isBad = false;
+              if (trigCode === 0) isBad = i > 0 && prevPortRetNomPct !== null && prevPortRetNomPct < 0;
+              else if (trigCode === 1) isBad = startNom <= 0 || (baseTargetExpNom / startNom) > initWRThreshold;
+              else if (trigCode === 2) isBad = startNom < initialAsset - 1e-6;
+              else if (trigCode === 3) isBad = startNom < (initialAsset * prevInfIndex) - 1e-6;
+              else if (trigCode === 4) isBad = peakNom > 0 && startNom <= peakNom * 0.90 + 1e-6;
+              if (isBad) {
+                expCutApplied = true;
+                targetExpNom = baseTargetExpNom * floorRatio;
+              }
+            }
+            if (startNom <= targetExpNom) {
+              actualExpNom = startNom;
+              eqVal = 0;
+              bdVal = 0;
+              endNom = 0;
+              portRetPct = 0;
+              depleted = true;
+            } else {
+              const rem = startNom - targetExpNom;
+              actualExpNom = targetExpNom;
+              const eqShare = eqVal / startNom;
+              const grownEq = (rem * eqShare) * (1 + rEqNom);
+              const grownBd = (rem * (1 - eqShare)) * (1 + rBdNom);
+              endNom = grownEq + grownBd;
+              portRetPct = ((endNom / rem) - 1) * 100;
+              if (isAnnualRebal) {
+                eqVal = endNom * eqWeight;
+                bdVal = endNom * bdWeight;
+              } else {
+                eqVal = grownEq;
+                bdVal = grownBd;
+              }
+            }
+          } else {
+            const grownEq = eqVal * (1 + rEqNom);
+            const grownBd = bdVal * (1 + rBdNom);
+            const preWithdraw = grownEq + grownBd;
+            portRetPct = ((preWithdraw / startNom) - 1) * 100;
+            if (canCut) {
+              let isBad = false;
+              if (trigCode === 0) isBad = portRetPct < 0;
+              else if (trigCode === 1) isBad = preWithdraw <= 0 || (baseTargetExpNom / preWithdraw) > initWRThreshold;
+              else if (trigCode === 2) isBad = preWithdraw < initialAsset - 1e-6;
+              else if (trigCode === 3) isBad = preWithdraw < (initialAsset * cumInfIndex) - 1e-6;
+              else if (trigCode === 4) isBad = peakNom > 0 && preWithdraw <= peakNom * 0.90 + 1e-6;
+              if (isBad) {
+                expCutApplied = true;
+                targetExpNom = baseTargetExpNom * floorRatio;
+              }
+            }
+            if (preWithdraw <= targetExpNom) {
+              actualExpNom = preWithdraw > 0 ? preWithdraw : 0;
+              eqVal = 0;
+              bdVal = 0;
+              endNom = 0;
+              depleted = true;
+            } else {
+              actualExpNom = targetExpNom;
+              endNom = preWithdraw - targetExpNom;
+              if (isAnnualRebal) {
+                eqVal = endNom * eqWeight;
+                bdVal = endNom * bdWeight;
+              } else {
+                const scale = endNom / preWithdraw;
+                eqVal = grownEq * scale;
+                bdVal = grownBd * scale;
+              }
+            }
+          }
+
+          if (expCutApplied) cutYearsCount += 1;
+          prevPortRetNomPct = startNom > 0 ? portRetPct : 0;
+          if (endNom > peakNom) peakNom = endNom;
+          curExpenseNom *= (1 + infRate);
+
+          const deflatorEnd = isReal ? cumInfIndex : 1.0;
+          const deflatorExp = isReal ? (isStartTiming ? prevInfIndex : cumInfIndex) : 1.0;
+          const expDisp = actualExpNom / deflatorExp;
+          const endDisp = endNom / deflatorEnd;
+          lastEndDisp = endDisp;
+          totalExpenseDisp += expDisp;
+
+          const portRetDisp = (startNom > 0 && !(isStartTiming && startNom <= targetExpNom))
+            ? (isReal ? (((1 + portRetPct / 100) / (1 + infRate) - 1) * 100) : portRetPct)
+            : 0;
+          const rfRetDisp = isReal ? (((1 + rRfNom) / (1 + infRate) - 1) * 100) : (rRfNom * 100);
+
+          if (endDisp >= peakDisp) peakDisp = endDisp;
+          const dd = peakDisp > 0 ? ((endDisp / peakDisp) - 1) : 0;
+          if (dd < maxDD) maxDD = dd;
+
+          if (endNom > 0 || (expDisp > 0 && portRetDisp !== 0)) {
+            twProd *= (1 + portRetDisp / 100.0);
+            runRets[activeCount] = portRetDisp;
+            const ex = portRetDisp - rfRetDisp;
+            runExcess[activeCount] = ex;
+            sumRet += portRetDisp;
+            sumEx += ex;
+            activeCount += 1;
+          }
+
+          if (includeBands) {
+            const stepOff = (i + 1) * numRuns + t;
+            portMat[stepOff] = endDisp;
+            cumExpMat[stepOff] = totalExpenseDisp;
+            const rowOff = i * numRuns + t;
+            ddMat[rowOff] = dd * 100;
+            retMat[rowOff] = portRetDisp;
+            infMat[rowOff] = infPct;
+            expMat[rowOff] = expDisp;
+            cutMat[rowOff] = expCutApplied ? 1 : 0;
+          }
+        }
+
+        const endVal = simYears > 0 ? lastEndDisp : initialAsset;
+        endVals[t] = endVal;
+        if (!depleted) {
+          survExpsTot[survivedCount] = totalExpenseDisp;
+          survCutYrs[survivedCount] = cutYearsCount;
+          survivedCount += 1;
+        }
+        if (endVal >= initialAsset) grewCount += 1;
+
+        twwrs[t] = activeCount > 0 ? (Math.pow(twProd, 1 / activeCount) - 1) * 100 : 0;
+        let vol = 0, sharpe = 0;
+        if (activeCount > 1) {
+          const arith = sumRet / activeCount;
+          const meanEx = sumEx / activeCount;
+          let sumSqR = 0, sumSqEx = 0;
+          for (let a = 0; a < activeCount; a++) {
+            const dr = runRets[a] - arith;
+            const dx = runExcess[a] - meanEx;
+            sumSqR += dr * dr;
+            sumSqEx += dx * dx;
+          }
+          const denom = activeCount - 1;
+          vol = Math.sqrt(sumSqR / denom);
+          const exVol = Math.sqrt(sumSqEx / denom);
+          sharpe = exVol > 1e-9 ? meanEx / exVol : 0;
+        }
+        vols[t] = vol;
+        sharpes[t] = sharpe;
+        maxDDs[t] = maxDD * 100;
+        avgInfs[t] = simYears > 0 ? (Math.pow(cumInfIndex, 1 / simYears) - 1) * 100 : 0;
+
+        if (((t + 1) & 255) === 0 && (performance.now() - sliceStart) >= 18) {
+          if (onProgress) onProgress(t + 1, numRuns, includeBands ? ((t + 1) / numRuns) * 0.72 : (t + 1) / numRuns);
+          await yieldToUI();
+          if (isCancelled && isCancelled()) return null;
+          sliceStart = performance.now();
         }
       }
 
-      for (let i = 0; i < simYears; i++) {
-        const step = i + 1;
-        const survRunsAtStep = runs.filter(r => r.points[step].port > 0);
-        const dds = runs.map(r => r.rows[i].ddPct).sort((a, b) => a - b);
-        const rets = runs.map(r => r.rows[i].portRetPct).sort((a, b) => a - b);
-        const infs = runs.map(r => r.rows[i].infPct).sort((a, b) => a - b);
-        bands.ddP10.push(quantileSorted(dds, 0.10));
-        bands.ddP50.push(quantileSorted(dds, 0.50));
-        bands.ddP90.push(quantileSorted(dds, 0.90));
-        bands.ddMean.push(meanArray(dds));
-        bands.retP50.push(quantileSorted(rets, 0.50));
-        bands.retMean.push(meanArray(rets));
-        if (survRunsAtStep.length > 0) {
-          const exps = survRunsAtStep.map(r => r.rows[i].expDisp).sort((a, b) => a - b);
-          bands.expP10.push(quantileSorted(exps, 0.10));
-          bands.expP50.push(quantileSorted(exps, 0.50));
-          bands.expP90.push(quantileSorted(exps, 0.90));
-          bands.expMean.push(meanArray(exps));
-          const cutCnt = survRunsAtStep.filter(r => r.rows[i].expCutApplied).length;
-          bands.cutRate.push((cutCnt / survRunsAtStep.length) * 100);
-        } else {
-          bands.expP10.push(0);
-          bands.expP50.push(0);
-          bands.expP90.push(0);
-          bands.expMean.push(0);
-          bands.cutRate.push(0);
+      if (isCancelled && isCancelled()) return null;
+
+      let bands = null;
+      if (includeBands) {
+        bands = {
+          p10: [], p25: [], p50: [], p75: [], p90: [], mean: [], survRate: [], survCount: [],
+          ddP10: [], ddP50: [], ddP90: [], ddMean: [],
+          retMean: [], retP50: [],
+          expMean: [], expP50: [], expP10: [], expP90: [],
+          cumExpP10: [], cumExpP25: [], cumExpP50: [], cumExpP75: [], cumExpP90: [], cumExpMean: [],
+          infMean: [], infP50: [], cutRate: []
+        };
+        const sortBuf = new Float64Array(numRuns);
+        const totalBandSteps = (simYears + 1) + simYears;
+        let doneBandSteps = 0;
+
+        for (let s = 0; s <= simYears; s++) {
+          const base = s * numRuns;
+          sortBuf.set(portMat.subarray(base, base + numRuns));
+          sortBuf.sort();
+          bands.p10.push(quantileSorted(sortBuf, 0.10));
+          bands.p25.push(quantileSorted(sortBuf, 0.25));
+          bands.p50.push(quantileSorted(sortBuf, 0.50));
+          bands.p75.push(quantileSorted(sortBuf, 0.75));
+          bands.p90.push(quantileSorted(sortBuf, 0.90));
+          bands.mean.push(meanArray(sortBuf));
+
+          let alive = 0;
+          for (let t = 0; t < numRuns; t++) {
+            if (portMat[base + t] > 0) {
+              sortBuf[alive++] = cumExpMat[base + t];
+            }
+          }
+          bands.survCount.push(alive);
+          bands.survRate.push((alive / numRuns) * 100);
+          if (alive > 0) {
+            const cExps = sortBuf.subarray(0, alive);
+            cExps.sort();
+            bands.cumExpP10.push(quantileSorted(cExps, 0.10));
+            bands.cumExpP25.push(quantileSorted(cExps, 0.25));
+            bands.cumExpP50.push(quantileSorted(cExps, 0.50));
+            bands.cumExpP75.push(quantileSorted(cExps, 0.75));
+            bands.cumExpP90.push(quantileSorted(cExps, 0.90));
+            bands.cumExpMean.push(meanArray(cExps));
+          } else {
+            bands.cumExpP10.push(0);
+            bands.cumExpP25.push(0);
+            bands.cumExpP50.push(0);
+            bands.cumExpP75.push(0);
+            bands.cumExpP90.push(0);
+            bands.cumExpMean.push(0);
+          }
+
+          doneBandSteps += 1;
+          if ((performance.now() - sliceStart) >= 18) {
+            if (onProgress) onProgress(numRuns, numRuns, 0.72 + (doneBandSteps / totalBandSteps) * 0.26);
+            await yieldToUI();
+            if (isCancelled && isCancelled()) return null;
+            sliceStart = performance.now();
+          }
         }
-        bands.infP50.push(quantileSorted(infs, 0.50));
-        bands.infMean.push(meanArray(infs));
+
+        for (let i = 0; i < simYears; i++) {
+          const rowBase = i * numRuns;
+          const nextPortBase = (i + 1) * numRuns;
+
+          const dds = ddMat.subarray(rowBase, rowBase + numRuns);
+          dds.sort();
+          bands.ddP10.push(quantileSorted(dds, 0.10));
+          bands.ddP50.push(quantileSorted(dds, 0.50));
+          bands.ddP90.push(quantileSorted(dds, 0.90));
+          bands.ddMean.push(meanArray(dds));
+
+          const rets = retMat.subarray(rowBase, rowBase + numRuns);
+          rets.sort();
+          bands.retP50.push(quantileSorted(rets, 0.50));
+          bands.retMean.push(meanArray(rets));
+
+          const infs = infMat.subarray(rowBase, rowBase + numRuns);
+          infs.sort();
+          bands.infP50.push(quantileSorted(infs, 0.50));
+          bands.infMean.push(meanArray(infs));
+
+          let aliveStep = 0;
+          let cutCnt = 0;
+          for (let t = 0; t < numRuns; t++) {
+            if (portMat[nextPortBase + t] > 0) {
+              sortBuf[aliveStep++] = expMat[rowBase + t];
+              if (cutMat[rowBase + t]) cutCnt += 1;
+            }
+          }
+          if (aliveStep > 0) {
+            const exps = sortBuf.subarray(0, aliveStep);
+            exps.sort();
+            bands.expP10.push(quantileSorted(exps, 0.10));
+            bands.expP50.push(quantileSorted(exps, 0.50));
+            bands.expP90.push(quantileSorted(exps, 0.90));
+            bands.expMean.push(meanArray(exps));
+            bands.cutRate.push((cutCnt / aliveStep) * 100);
+          } else {
+            bands.expP10.push(0);
+            bands.expP50.push(0);
+            bands.expP90.push(0);
+            bands.expMean.push(0);
+            bands.cutRate.push(0);
+          }
+
+          doneBandSteps += 1;
+          if ((performance.now() - sliceStart) >= 18) {
+            if (onProgress) onProgress(numRuns, numRuns, 0.72 + (doneBandSteps / totalBandSteps) * 0.26);
+            await yieldToUI();
+            if (isCancelled && isCancelled()) return null;
+            sliceStart = performance.now();
+          }
+        }
       }
 
-      const endVals = runs.map(r => r.endVal).sort((a, b) => a - b);
-      const survivedRuns = runs.filter(r => r.survived);
-      const expsTot = survivedRuns.length > 0
-        ? survivedRuns.map(r => r.totalExpenseDisp).sort((a, b) => a - b)
-        : [0];
-      const cutYrsArr = survivedRuns.length > 0
-        ? survivedRuns.map(r => r.cutYearsCount).sort((a, b) => a - b)
-        : [0];
-      const twwrs = runs.map(r => r.twwr).sort((a, b) => a - b);
-      const vols = runs.map(r => r.vol).sort((a, b) => a - b);
-      const sharpes = runs.map(r => r.sharpe).sort((a, b) => a - b);
-      const maxDDs = runs.map(r => r.maxDDPct).sort((a, b) => a - b);
-      const avgInfs = runs.map(r => r.avgInfPct).sort((a, b) => a - b);
+      endVals.sort();
+      twwrs.sort();
+      vols.sort();
+      sharpes.sort();
+      maxDDs.sort();
+      avgInfs.sort();
+      const expsTot = survivedCount > 0 ? survExpsTot.subarray(0, survivedCount) : new Float64Array(1);
+      const cutYrsArr = survivedCount > 0 ? survCutYrs.subarray(0, survivedCount) : new Float64Array(1);
+      if (survivedCount > 0) {
+        expsTot.sort();
+        cutYrsArr.sort();
+      }
 
-      const survivedCount = survivedRuns.length;
-      const grewCount = runs.filter(r => r.endVal >= cfg.initialAsset).length;
+      if (onProgress) onProgress(numRuns, numRuns, 1);
 
       return {
         numRuns,
         simYears,
         poolYears,
-        initialAsset: cfg.initialAsset,
+        initialAsset,
         survivedCount,
         survivalPct: (survivedCount / numRuns) * 100,
         grewPct: (grewCount / numRuns) * 100,
@@ -3564,7 +4043,7 @@
         infMedian: quantileSorted(avgInfs, 0.50),
         cutYrsMean: survivedCount > 0 ? meanArray(cutYrsArr) : 0,
         cutYrsMedian: survivedCount > 0 ? quantileSorted(cutYrsArr, 0.50) : 0,
-        expenseFloorPct: cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100,
+        expenseFloorPct,
         bands
       };
     }
@@ -4247,7 +4726,7 @@
       drawHistCpiChart(histRows, cumSeries, cfg);
     }
 
-    // ---- Configuration Comparison (Variable Attribute Sweep, 1,000 Paired Random Runs) ----
+    // ---- Configuration Comparison (Variable Attribute Sweep, 10,000 Paired Random Runs) ----
     function parseCompareValues(varKey, rawStr) {
       const def = COMPARE_DEFAULTS[varKey] || COMPARE_DEFAULTS.equity_pct;
       const parts = String(rawStr || "").split(/[,;\s]+/).map(s => s.replace(/%/g, "").trim()).filter(Boolean);
@@ -4274,14 +4753,26 @@
       return `${Number.isInteger(val) ? val : val.toFixed(1)}%`;
     }
 
-    function computeCompareSweep(poolYears, simYears, numRuns, baseCfg, seed, varKey, values) {
+    async function computeCompareSweepAsync(poolYears, simYears, numRuns, baseCfg, seed, varKey, values, {
+      onProgress = null,
+      isCancelled = null
+    } = {}) {
+      const poolData = buildPoolArrays(poolYears, baseCfg);
+      const W = poolData.W;
       const rng = mulberry32(seed);
-      const pairedSeqs = [];
-      for (let i = 0; i < numRuns; i++) {
-        pairedSeqs.push(generateYearSequence(poolYears, simYears, "random", rng));
+      const totalSteps = numRuns * simYears;
+      const pairedIdx = new Uint16Array(totalSteps);
+      if (W > 0) {
+        for (let k = 0; k < totalSteps; k++) {
+          pairedIdx[k] = Math.floor(rng() * W);
+        }
       }
 
-      const items = values.map(val => {
+      const items = [];
+      const totalConfigs = values.length;
+      for (let idx = 0; idx < totalConfigs; idx++) {
+        if (isCancelled && isCancelled()) return null;
+        const val = values[idx];
         const cfg = { ...baseCfg };
         if (varKey === "equity_pct") {
           cfg.eqWeight = val / 100.0;
@@ -4290,9 +4781,26 @@
         } else if (varKey === "expense_floor") {
           cfg.expenseFloorPct = val;
         }
-        const batch = computeRandomBatch(poolYears, simYears, numRuns, cfg, seed, pairedSeqs);
-        return { val, label: formatCompareVal(varKey, val), cfg, batch };
-      });
+        const batch = await computeRandomBatchAsync(poolYears, simYears, numRuns, cfg, seed, {
+          pairedIdx,
+          poolData,
+          includeBands: false,
+          onProgress: (_done, _tot, frac) => {
+            if (onProgress) {
+              const overall = (idx + frac) / totalConfigs;
+              onProgress(idx, totalConfigs, overall);
+            }
+          },
+          isCancelled
+        });
+        if (!batch || (isCancelled && isCancelled())) return null;
+        items.push({ val, label: formatCompareVal(varKey, val), cfg, batch });
+        if (onProgress) onProgress(idx + 1, totalConfigs, (idx + 1) / totalConfigs);
+        if (idx + 1 < totalConfigs) {
+          await yieldToUI();
+          if (isCancelled && isCancelled()) return null;
+        }
+      }
 
       return { varKey, values, items, baseCfg, simYears, numRuns, poolYears };
     }
@@ -4584,12 +5092,7 @@
       drawCompareRetDdChart(sweep, state.hoverCmpIdx);
     }
 
-    function renderCompareTab(sweep, basisTag) {
-      const useMean = state.centerStat === "mean";
-      const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
-      const { varKey, items, baseCfg, simYears, numRuns, poolYears } = sweep;
-
-      // Baseline summary (everything held constant except varKey)
+    function syncCompareHeaderMeta(varKey, baseCfg, simYears, numRuns, poolYears, basisTag) {
       const trigLabel = t("trig_" + (baseCfg.badYearTrigger || "neg_return"));
       const parts = [
         `${fmtCompactMoney(baseCfg.initialAsset)}`,
@@ -4615,6 +5118,15 @@
           warnEl.style.display = "none";
         }
       }
+    }
+
+    function renderCompareTab(sweep, basisTag) {
+      const useMean = state.centerStat === "mean";
+      const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
+      const { varKey, items, baseCfg, simYears, numRuns, poolYears } = sweep;
+
+      // Baseline summary (everything held constant except varKey)
+      syncCompareHeaderMeta(varKey, baseCfg, simYears, numRuns, poolYears, basisTag);
 
       // Update chart headings with current stat (Med/Avg) and basis
       document.getElementById("cmpEndTitle").textContent = t("cmp_chart_end", { stat: statShort, basis: basisTag });
@@ -4791,6 +5303,228 @@
       document.getElementById(`${prefix}Sub${idx}`).textContent = subText;
     }
 
+    function cancelJob(kind) {
+      const job = activeJobs[kind];
+      if (!job) return;
+      job.token += 1;
+      job.running = false;
+      job.key = "";
+    }
+
+    function syncRunningUI() {
+      const randRunning = activeJobs.random.running;
+      const cmpRunning = activeJobs.compare.running;
+
+      const tabBtnRand = document.getElementById("tabBtnRandom");
+      if (tabBtnRand) {
+        tabBtnRand.classList.toggle("is-running", randRunning);
+        tabBtnRand.setAttribute("aria-busy", randRunning ? "true" : "false");
+      }
+      const tabBtnCmp = document.getElementById("tabBtnCompare");
+      if (tabBtnCmp) {
+        tabBtnCmp.classList.toggle("is-running", cmpRunning);
+        tabBtnCmp.setAttribute("aria-busy", cmpRunning ? "true" : "false");
+      }
+
+      const showRandBanner = state.tab === "random" && randRunning;
+      const tabSingle = document.getElementById("tabSingle");
+      if (tabSingle) tabSingle.classList.toggle("is-computing", showRandBanner);
+      const randBar = document.getElementById("randRunStatus");
+      if (randBar) {
+        randBar.classList.toggle("is-visible", showRandBanner);
+        if (showRandBanner) {
+          const totalStr = activeJobs.random.totalRuns.toLocaleString("en-US");
+          const doneStr = activeJobs.random.doneRuns.toLocaleString("en-US");
+          const pct = Math.max(0, Math.min(100, activeJobs.random.pct));
+          const inBandsPhase = activeJobs.random.doneRuns >= activeJobs.random.totalRuns;
+          document.getElementById("randRunStatusText").textContent = inBandsPhase
+            ? t("status_running_random_bands")
+            : t("status_running_random", { total: totalStr });
+          document.getElementById("randRunStatusProg").textContent = inBandsPhase
+            ? `${pct}%`
+            : t("status_running_random_prog", { done: doneStr, total: totalStr });
+          document.getElementById("randRunProgressFill").style.width = `${pct}%`;
+        }
+      }
+
+      const showCmpBanner = state.tab === "compare" && cmpRunning;
+      const tabCompare = document.getElementById("tabCompare");
+      if (tabCompare) tabCompare.classList.toggle("is-computing", showCmpBanner);
+      const cmpBar = document.getElementById("cmpRunStatus");
+      if (cmpBar) {
+        cmpBar.classList.toggle("is-visible", showCmpBanner);
+        if (showCmpBanner) {
+          const runsStr = activeJobs.compare.totalRuns.toLocaleString("en-US");
+          const pct = Math.max(0, Math.min(100, activeJobs.compare.pct));
+          document.getElementById("cmpRunStatusText").textContent = t("status_running_compare", {
+            configs: activeJobs.compare.totalItems,
+            runs: runsStr
+          });
+          document.getElementById("cmpRunStatusProg").textContent = t("status_running_compare_prog", {
+            done: activeJobs.compare.doneItems,
+            configs: activeJobs.compare.totalItems,
+            pct
+          });
+          document.getElementById("cmpRunProgressFill").style.width = `${pct}%`;
+        }
+      }
+
+      const btnCsv = document.getElementById("btnExportCsv");
+      if (btnCsv) {
+        btnCsv.disabled = showRandBanner || showCmpBanner;
+      }
+    }
+
+    function renderRandomView(batch, eqPct, simYears, cfg) {
+      const { numRuns, poolYears } = batch;
+      const { initialAsset, initialExpense, expenseFloorPct, inflationSource, displayBasis } = cfg;
+      const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
+      state.lastRun = { mode: "random", batch, eqPct, simYears, cfg };
+
+      const useMean = state.centerStat === "mean";
+      const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
+      const statLong = useMean ? t("stat_avg_long") : t("stat_med_long");
+      const centerEnd = useMean ? batch.endMean : batch.endMedian;
+      const otherEnd = useMean ? batch.endMedian : batch.endMean;
+      const otherShort = useMean ? t("stat_med_short") : t("stat_avg_short");
+      const centerExp = useMean ? batch.expMean : batch.expMedian;
+      const centerTwwr = useMean ? batch.twwrMean : batch.twwrMedian;
+      const centerVol = useMean ? batch.volMean : batch.volMedian;
+      const centerSharpe = useMean ? batch.sharpeMean : batch.sharpeMedian;
+      const centerDD = useMean ? batch.maxDDMean : batch.maxDDMedian;
+      const survFmt = batch.survivedCount.toLocaleString("en-US");
+      const runsFmt = numRuns.toLocaleString("en-US");
+
+      setKpi(1, t("kpi_end_bal_stat", { stat: statShort }), fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
+      setKpi(2, t("kpi_survival"), `${batch.survivalPct.toFixed(1)}%`, t("sub_survival", { surv: survFmt, runs: runsFmt, grew: batch.grewPct.toFixed(0) }), "kpi-val " + (batch.survivalPct >= 90 ? "pos" : (batch.survivalPct < 70 ? "neg" : "")));
+      setKpi(3, t("kpi_p10_p90_end"), `${fmtCompactMoney(batch.endP10)}–${fmtCompactMoney(batch.endP90)}`, t("sub_conf_band", { yrs: simYears }));
+      const centerInf = useMean ? batch.infMean : batch.infMedian;
+      const rndInfLbl = inflationSource === "historical" ? t("inf_lbl_rnd_cpi") : t("inf_lbl_rnd_fix");
+      const centerCutYrs = useMean ? batch.cutYrsMean : batch.cutYrsMedian;
+      const rndCutText = (expenseFloorPct < 100 && initialExpense > 0)
+        ? t("sub_cut_rnd", { cut: centerCutYrs.toFixed(1), yrs: simYears })
+        : t("sub_survived_cnt", { cnt: survFmt });
+      setKpi(4, t("kpi_tot_exp_stat", { stat: statShort }), batch.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}${t("per_yr_unit")}`, "kpi-val exp-col");
+      setKpi(5, t("kpi_port_twwr_stat", { stat: statShort }), fmtPct(centerTwwr), t("sub_vol_sharpe", { vol: centerVol.toFixed(2), sharpe: centerSharpe.toFixed(2) }), "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
+      setKpi(6, t("kpi_max_dd_stat", { stat: statShort }), fmtPct(centerDD, 2, false), t("sub_severe_p10", { dd: fmtPct(batch.maxDDP10, 1, false) }), "kpi-val neg");
+
+      document.getElementById("wealthLegendItems").innerHTML = `
+        <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>${t("leg_port_rand", { stat: statLong, runs: runsFmt })}</strong></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
+      `;
+      document.getElementById("chartSubhead").textContent = cfg.inflationSource === "historical"
+        ? t("sub_wealth_rand_hist", { y0: poolYears[0], y1: poolYears[poolYears.length - 1] })
+        : t("sub_wealth_rand_fix", { y0: poolYears[0], y1: poolYears[poolYears.length - 1], rate: cfg.fixedInfPct });
+      document.getElementById("ddLegendItems").innerHTML = `
+        <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>${t("leg_exp_rand", { stat: statLong })}</strong></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--exp-inner-swatch); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--exp-outer-swatch); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
+      `;
+      document.getElementById("ddSubhead").textContent = t("sub_exp_rand", { basis: basisTag });
+
+      renderRandomSummaryTable(batch);
+      drawRandomBandChart(batch);
+      drawRandomDDChart(batch);
+    }
+
+    async function startRandomJob(bKey, poolYears, simYears, numRuns, cfg, seed, eqPct) {
+      const token = activeJobs.random.token + 1;
+      activeJobs.random.token = token;
+      activeJobs.random.running = true;
+      activeJobs.random.key = bKey;
+      activeJobs.random.doneRuns = 0;
+      activeJobs.random.totalRuns = numRuns;
+      activeJobs.random.pct = 0;
+      syncRunningUI();
+
+      // Let the browser paint the tab switch, tab spinner, and 0% progress bar immediately
+      await yieldToPaint();
+      if (activeJobs.random.token !== token) return;
+
+      let batch = null;
+      try {
+        batch = await computeRandomBatchAsync(poolYears, simYears, numRuns, cfg, seed, {
+          includeBands: true,
+          onProgress: (done, total, frac) => {
+            if (activeJobs.random.token !== token) return;
+            activeJobs.random.doneRuns = done;
+            activeJobs.random.totalRuns = total;
+            activeJobs.random.pct = Math.round(frac * 100);
+            syncRunningUI();
+          },
+          isCancelled: () => activeJobs.random.token !== token
+        });
+      } catch (err) {
+        if (activeJobs.random.token === token) {
+          activeJobs.random.running = false;
+          syncRunningUI();
+        }
+        throw err;
+      }
+
+      if (!batch || activeJobs.random.token !== token) return;
+      state.batchCache = batch;
+      state.batchKey = bKey;
+      activeJobs.random.running = false;
+      activeJobs.random.pct = 100;
+      syncRunningUI();
+
+      if (state.tab === "random") {
+        renderRandomView(batch, eqPct, simYears, cfg);
+      }
+    }
+
+    async function startCompareJob(cKey, poolYears, simYears, numRuns, cfg, seed, cmpVar, cmpVals) {
+      const token = activeJobs.compare.token + 1;
+      activeJobs.compare.token = token;
+      activeJobs.compare.running = true;
+      activeJobs.compare.key = cKey;
+      activeJobs.compare.doneItems = 0;
+      activeJobs.compare.totalItems = cmpVals.length;
+      activeJobs.compare.totalRuns = numRuns;
+      activeJobs.compare.pct = 0;
+      syncRunningUI();
+
+      // Let the browser paint the tab switch, tab spinner, and 0% progress bar immediately
+      await yieldToPaint();
+      if (activeJobs.compare.token !== token) return;
+
+      let sweep = null;
+      try {
+        sweep = await computeCompareSweepAsync(poolYears, simYears, numRuns, cfg, seed, cmpVar, cmpVals, {
+          onProgress: (doneItems, totalItems, frac) => {
+            if (activeJobs.compare.token !== token) return;
+            activeJobs.compare.doneItems = doneItems;
+            activeJobs.compare.totalItems = totalItems;
+            activeJobs.compare.pct = Math.round(frac * 100);
+            syncRunningUI();
+          },
+          isCancelled: () => activeJobs.compare.token !== token
+        });
+      } catch (err) {
+        if (activeJobs.compare.token === token) {
+          activeJobs.compare.running = false;
+          syncRunningUI();
+        }
+        throw err;
+      }
+
+      if (!sweep || activeJobs.compare.token !== token) return;
+      state.compareCache = sweep;
+      state.compareCacheKey = cKey;
+      activeJobs.compare.running = false;
+      activeJobs.compare.pct = 100;
+      syncRunningUI();
+
+      if (state.tab === "compare") {
+        const freshBasisTag = cfg.displayBasis === "real" ? t("basis_real") : t("basis_nominal");
+        renderCompareTab(sweep, freshBasisTag);
+      }
+    }
+
     function updateAll({ forceResample = false } = {}) {
       const initialAsset = Math.max(1, parseMoneyInput(elInitial) || 1000000);
       const initialExpense = Math.max(0, parseMoneyInput(elExpense));
@@ -4801,14 +5535,13 @@
       const mode = (state.tab === "random" || state.tab === "compare") ? "random" : (state.tab === "sequential" ? "sequential" : elSimMode.value);
       elSimMode.value = mode;
       const simYears = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 1));
-      const numRuns = 1000;
+      const numRuns = NUM_RANDOM_RUNS;
       const inflationSource = elInfSource.value;
       const fixedInfPct = parseFloat(elFixedInfPct.value) || 0;
       const expenseFloorPct = parseInt(elExpFloorPct.value, 10);
       const badYearTrigger = elBadYearTrigger.value;
       const withdrawTiming = elWithdrawTiming.value;
       const displayBasis = elDisplayBasis.value;
-      const centerStat = state.centerStat;
 
       elLblEqPct.textContent = t("lbl_eq_pct", { pct: eqPct });
       elLblBdPct.textContent = t("lbl_bd_pct", { pct: 100 - eqPct });
@@ -4865,25 +5598,43 @@
 
       const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
 
+      if (forceResample && (state.tab === "random" || state.tab === "compare")) {
+        state.seed += 1;
+      }
+
+      // Cancel stale in-flight background jobs if inputs/seed changed, but keep valid background jobs alive across tab switches
+      const cmpVar = state.compareVar;
+      const cmpVals = parseCompareValues(cmpVar, state.compareValuesMap[cmpVar]);
+      const expectedRandomKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed });
+      const expectedCompareKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed, cmpVar, cmpVals });
+      if (activeJobs.random.running && activeJobs.random.key !== expectedRandomKey) {
+        cancelJob("random");
+      }
+      if (activeJobs.compare.running && activeJobs.compare.key !== expectedCompareKey) {
+        cancelJob("compare");
+      }
+
       if (state.tab === "data") {
+        syncRunningUI();
         renderHistoricalDataTab(poolYears, cfg);
         return;
       }
 
       if (state.tab === "compare") {
-        if (forceResample) state.seed += 1;
-        const cmpVar = state.compareVar;
-        const cmpVals = parseCompareValues(cmpVar, state.compareValuesMap[cmpVar]);
-        const cKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed, cmpVar, cmpVals });
-        if (state.compareCacheKey !== cKey || !state.compareCache) {
-          state.compareCache = computeCompareSweep(poolYears, simYears, numRuns, cfg, state.seed, cmpVar, cmpVals);
-          state.compareCacheKey = cKey;
+        syncCompareHeaderMeta(cmpVar, cfg, simYears, numRuns, poolYears, basisTag);
+        if (state.compareCacheKey === expectedCompareKey && state.compareCache) {
+          syncRunningUI();
+          renderCompareTab(state.compareCache, basisTag);
+        } else if (activeJobs.compare.running && activeJobs.compare.key === expectedCompareKey) {
+          syncRunningUI();
+        } else {
+          startCompareJob(expectedCompareKey, poolYears, simYears, numRuns, cfg, state.seed, cmpVar, cmpVals);
         }
-        renderCompareTab(state.compareCache, basisTag);
         return;
       }
 
       if (mode === "sequential") {
+        syncRunningUI();
         const seqKey = `${poolYears[0]}-${poolYears[poolYears.length - 1]}-${poolYears.length}-${simYears}-seq`;
         if (forceResample || state.sequenceKey !== seqKey || state.sampledSequence.length !== simYears) {
           state.sampledSequence = generateYearSequence(poolYears, simYears, "sequential");
@@ -4926,60 +5677,14 @@
         drawWealthChart(sim);
         drawDDChart(sim);
       } else {
-        if (forceResample) state.seed += 1;
-        const bKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed });
-        if (state.batchKey !== bKey || !state.batchCache) {
-          state.batchCache = computeRandomBatch(poolYears, simYears, numRuns, cfg, state.seed);
-          state.batchKey = bKey;
+        if (state.batchKey === expectedRandomKey && state.batchCache) {
+          syncRunningUI();
+          renderRandomView(state.batchCache, eqPct, simYears, cfg);
+        } else if (activeJobs.random.running && activeJobs.random.key === expectedRandomKey) {
+          syncRunningUI();
+        } else {
+          startRandomJob(expectedRandomKey, poolYears, simYears, numRuns, cfg, state.seed, eqPct);
         }
-        const batch = state.batchCache;
-        state.lastRun = { mode: "random", batch, eqPct, simYears, cfg };
-
-        const useMean = centerStat === "mean";
-        const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
-        const statLong = useMean ? t("stat_avg_long") : t("stat_med_long");
-        const centerEnd = useMean ? batch.endMean : batch.endMedian;
-        const otherEnd = useMean ? batch.endMedian : batch.endMean;
-        const otherShort = useMean ? t("stat_med_short") : t("stat_avg_short");
-        const centerExp = useMean ? batch.expMean : batch.expMedian;
-        const centerTwwr = useMean ? batch.twwrMean : batch.twwrMedian;
-        const centerVol = useMean ? batch.volMean : batch.volMedian;
-        const centerSharpe = useMean ? batch.sharpeMean : batch.sharpeMedian;
-        const centerDD = useMean ? batch.maxDDMean : batch.maxDDMedian;
-
-        setKpi(1, t("kpi_end_bal_stat", { stat: statShort }), fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
-        setKpi(2, t("kpi_survival"), `${batch.survivalPct.toFixed(1)}%`, t("sub_survival", { surv: batch.survivedCount, runs: numRuns, grew: batch.grewPct.toFixed(0) }), "kpi-val " + (batch.survivalPct >= 90 ? "pos" : (batch.survivalPct < 70 ? "neg" : "")));
-        setKpi(3, t("kpi_p10_p90_end"), `${fmtCompactMoney(batch.endP10)}–${fmtCompactMoney(batch.endP90)}`, t("sub_conf_band", { yrs: simYears }));
-        const centerInf = useMean ? batch.infMean : batch.infMedian;
-        const rndInfLbl = inflationSource === "historical" ? t("inf_lbl_rnd_cpi") : t("inf_lbl_rnd_fix");
-        const centerCutYrs = useMean ? batch.cutYrsMean : batch.cutYrsMedian;
-        const rndCutText = (expenseFloorPct < 100 && initialExpense > 0)
-          ? t("sub_cut_rnd", { cut: centerCutYrs.toFixed(1), yrs: simYears })
-          : t("sub_survived_cnt", { cnt: batch.survivedCount });
-        setKpi(4, t("kpi_tot_exp_stat", { stat: statShort }), batch.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rndCutText} • ${statShort} ${rndInfLbl}: ${centerInf.toFixed(2)}${t("per_yr_unit")}`, "kpi-val exp-col");
-        setKpi(5, t("kpi_port_twwr_stat", { stat: statShort }), fmtPct(centerTwwr), t("sub_vol_sharpe", { vol: centerVol.toFixed(2), sharpe: centerSharpe.toFixed(2) }), "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
-        setKpi(6, t("kpi_max_dd_stat", { stat: statShort }), fmtPct(centerDD, 2, false), t("sub_severe_p10", { dd: fmtPct(batch.maxDDP10, 1, false) }), "kpi-val neg");
-
-        document.getElementById("wealthLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>${t("leg_port_rand", { stat: statLong, runs: numRuns.toLocaleString("en-US") })}</strong></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
-        `;
-        document.getElementById("chartSubhead").textContent = cfg.inflationSource === "historical"
-          ? t("sub_wealth_rand_hist", { y0: poolYears[0], y1: poolYears[poolYears.length - 1] })
-          : t("sub_wealth_rand_fix", { y0: poolYears[0], y1: poolYears[poolYears.length - 1], rate: cfg.fixedInfPct });
-        document.getElementById("ddLegendItems").innerHTML = `
-          <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>${t("leg_exp_rand", { stat: statLong })}</strong></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--exp-inner-swatch); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
-          <div class="legend-item"><span class="swatch" style="background:var(--exp-outer-swatch); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
-        `;
-        document.getElementById("ddSubhead").textContent = t("sub_exp_rand", { basis: basisTag });
-
-        renderRandomSummaryTable(batch);
-        drawRandomBandChart(batch);
-        drawRandomDDChart(batch);
       }
     }
 
@@ -4999,7 +5704,7 @@
 
     function scheduleUpdate(opts = {}, delayOverride = null) {
       const isHeavyTab = state.tab === "compare" || state.tab === "random";
-      const delay = delayOverride !== null ? delayOverride : (isHeavyTab ? 240 : 80);
+      const delay = delayOverride !== null ? delayOverride : (isHeavyTab ? 220 : 80);
       scheduledUpdateOpts = {
         forceResample: Boolean((scheduledUpdateOpts && scheduledUpdateOpts.forceResample) || opts.forceResample)
       };
@@ -5015,14 +5720,14 @@
     // Lightweight canvas-only redraw (used on resize so tables & simulations don't rerun)
     function redrawVisibleCharts() {
       if (state.tab === "compare") {
-        if (state.compareCache) redrawAllCompareCharts(state.compareCache);
+        if (state.compareCache && !activeJobs.compare.running) redrawAllCompareCharts(state.compareCache);
       } else if (state.tab === "data") {
         const m = histCanvas._histMeta;
         if (m && m.histRows && m.histRows.length) {
           drawHistCpiChart(m.histRows, m.cumSeries, m.cfg, state.hoverHistIdx);
         }
       } else if (state.tab === "random") {
-        if (state.batchCache) {
+        if (state.batchCache && !activeJobs.random.running) {
           drawRandomBandChart(state.batchCache, state.hoverStepIdx);
           drawRandomDDChart(state.batchCache, state.hoverBarIdx);
         }
@@ -5375,9 +6080,10 @@
       const hxVis = m.mapX(idx) * scaleX;
       if (m.kind === "random") {
         const b = m.batch.bands;
+        const runsFmt = m.batch.numRuns.toLocaleString("en-US");
         const hdr = idx === 0
-          ? t("tip_w_rand_init", { runs: m.batch.numRuns })
-          : t("tip_w_rand_yr", { yr: idx, runs: m.batch.numRuns });
+          ? t("tip_w_rand_init", { runs: runsFmt })
+          : t("tip_w_rand_yr", { yr: idx, runs: runsFmt });
         wealthTip.innerHTML = `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
           <div class="tip-row"><span style="color:var(--port);">${t("tip_med_50")}</span><strong>${fmtExactMoney(b.p50[idx])}</strong></div>
@@ -5445,9 +6151,11 @@
       if (isRandExp) {
         const b = m.batch.bands;
         const survN = b.survCount[idx];
+        const survFmt = survN.toLocaleString("en-US");
+        const runsFmt = m.batch.numRuns.toLocaleString("en-US");
         const hdr = idx === 0
-          ? t("tip_exp_rand_init", { surv: survN, runs: m.batch.numRuns })
-          : t("tip_exp_rand_yr", { yr: idx, surv: survN, runs: m.batch.numRuns });
+          ? t("tip_exp_rand_init", { surv: survFmt, runs: runsFmt })
+          : t("tip_exp_rand_yr", { yr: idx, surv: survFmt, runs: runsFmt });
         ddTip.innerHTML = survN > 0 ? `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
           <div class="tip-row"><span style="color:var(--expense);">${t("tip_med_tot")}</span><strong>${fmtExactMoney(b.cumExpP50[idx])}</strong></div>
@@ -5560,7 +6268,7 @@
       const b = item.batch;
       return `
         <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
-        <div class="tip-row"><span style="color:var(--success);">${t("tip_surv_gt0")}</span><strong>${b.survivalPct.toFixed(1)}% (${b.survivedCount}/${b.numRuns})</strong></div>
+        <div class="tip-row"><span style="color:var(--success);">${t("tip_surv_gt0")}</span><strong>${b.survivalPct.toFixed(1)}% (${b.survivedCount.toLocaleString("en-US")}/${b.numRuns.toLocaleString("en-US")})</strong></div>
         <div class="tip-row"><span style="color:var(--accent);">${t("cmp_tip_grew")}</span><strong>${b.grewPct.toFixed(1)}%</strong></div>
       `;
     });
@@ -5582,7 +6290,7 @@
         <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${t("cmp_var_" + sweep.varKey)}: ${item.label}</div>
         <div class="tip-row"><span style="color:var(--expense);">${t("tip_med_tot")}</span><strong>${b.survivedCount > 0 ? fmtExactMoney(b.expMedian) : "—"}</strong></div>
         <div class="tip-row"><span style="color:var(--equity);">${t("tip_avg_tot")}</span><strong>${b.survivedCount > 0 ? fmtExactMoney(b.expMean) : "—"}</strong></div>
-        <div class="tip-row"><span style="color:var(--muted);">${t("cmp_tip_surv_cnt")}</span><span>${b.survivedCount}/${b.numRuns}</span></div>
+        <div class="tip-row"><span style="color:var(--muted);">${t("cmp_tip_surv_cnt")}</span><span>${b.survivedCount.toLocaleString("en-US")}/${b.numRuns.toLocaleString("en-US")}</span></div>
       `;
     });
 
@@ -5604,7 +6312,11 @@
 
     // CSV Export
     document.getElementById("btnExportCsv").addEventListener("click", () => {
-      if (state.tab === "compare" && state.compareCache) {
+      if ((state.tab === "random" && activeJobs.random.running) || (state.tab === "compare" && activeJobs.compare.running)) {
+        return;
+      }
+      if (state.tab === "compare") {
+        if (!state.compareCache) return;
         const sw = state.compareCache;
         const lines = ["Variable,Value,SurvivedRuns,SurvivalPct,GrewInitialPct,EndingBalanceMedian,EndingBalanceMean,EndP10,EndP90,SurvTotalExpenseMedian,SurvTotalExpenseMean,TwwrMedianPct,TwwrMeanPct,VolMedianPct,SharpeMedian,SharpeMean,MaxDDMedianPct,MaxDDMeanPct,MaxDDP10Pct"];
         sw.items.forEach(it => {
