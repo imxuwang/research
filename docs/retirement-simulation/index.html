@@ -465,6 +465,102 @@
       color: var(--port);
     }
 
+    /* STRESS-TEST SCENARIO CHIPS */
+    .scenario-chips {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .scenario-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 4px;
+      min-height: 44px;
+      cursor: pointer;
+      font-family: var(--font);
+      color: var(--text-soft);
+      text-align: center;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .scenario-chip:hover {
+      border-color: var(--border-strong);
+      color: var(--text);
+      background: var(--panel-alt);
+    }
+    .scenario-chip .sc-title {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .scenario-chip .sc-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.15;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .scenario-chip.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--text);
+    }
+    .scenario-chip.active .sc-title {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .scenario-chip.active .sc-meta {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .scenario-chip.is-cma.active {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+    .scenario-chip.is-cma.active .sc-meta {
+      color: var(--port);
+    }
+    .scenario-notice {
+      line-height: 1.42;
+      font-size: 12px;
+    }
+    .scenario-variant-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 7px;
+    }
+    .scenario-var-btn {
+      flex: 1 1 0;
+      background: var(--panel);
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
+      padding: 4px 6px;
+      min-height: 26px;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font);
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .scenario-var-btn:hover { color: var(--text); }
+    .scenario-var-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
     /* UNIFIED HAIRLINE KPI BAND (SCOPED INSIDE EACH TAB) */
     .kpis {
       display: grid;
@@ -1348,6 +1444,8 @@
         padding: 7px 10px;
         font-size: 12.5px;
       }
+      .scenario-chip { min-height: 48px; padding: 8px 4px; }
+      .scenario-var-btn { min-height: 34px; padding: 6px 8px; font-size: 12px; }
       .basis-help-btn, .info-btn { width: 32px; height: 32px; font-size: 13px; }
       .link-btn { min-height: 36px; padding: 6px 6px; font-size: 12.5px; }
       details.side-section > summary, .sub-details > summary { min-height: 40px; }
@@ -1361,9 +1459,9 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .hdr-home-link, input, select, .currency-field, .chips .chip, .tab-btn,
-      .scale-btn, .basis-help-btn, .info-btn, .btn, .chev, .seg-ctl button,
-      .switch, .switch::after, .run-progress-fill, #tabSingle #simKpis,
+      .hdr-home-link, input, select, .currency-field, .chips .chip, .scenario-chip,
+      .scenario-var-btn, .tab-btn, .scale-btn, .basis-help-btn, .info-btn, .btn, .chev,
+      .seg-ctl button, .switch, .switch::after, .run-progress-fill, #tabSingle #simKpis,
       #tabSingle > .panel-block, #tabCompare #cmpKpis, #tabCompare .compare-grid,
       #tabCompare .compare-table-block {
         transition: none;
@@ -1503,6 +1601,37 @@
           </div>
         </div>
         <div class="notice subtle" id="simModeNotice" style="margin:-8px 0 14px;"></div>
+
+        <div class="control-group" id="ctrlScenarioGroup">
+          <div class="label-row">
+            <div class="label-lead">
+              <span id="lblScenarios" data-i18n="lbl_stress_scenarios">Stress-test scenarios</span>
+              <button type="button" class="info-btn" data-info-key="tip_stress_scenarios" aria-expanded="false" aria-controls="infoPopover" data-i18n-aria-label="aria_info_scenarios" data-i18n-title="tip_stress_scenarios" title="Three common advisor failure modes: 1966 Stagflation, 2000/1929 Early Crash, and a Lower-Return (CMA) haircut (-2%/yr stocks, -1%/yr bonds).">i</button>
+            </div>
+            <button type="button" class="link-btn" id="btnScenarioReset" data-i18n="btn_scenario_reset" style="display:none;">Reset</button>
+          </div>
+          <div class="scenario-chips" id="scenarioChips" role="group" aria-labelledby="lblScenarios">
+            <button type="button" class="scenario-chip" data-scenario="stagflation" aria-pressed="false" data-i18n-title="tip_sc_stagflation" title="1966–2025 (NYU S&amp;P 500 + 10Y Treasury): high inflation with weak stocks &amp; bonds">
+              <span class="sc-title" data-i18n="sc_stagflation">Stagflation</span>
+              <span class="sc-meta">1966</span>
+            </button>
+            <button type="button" class="scenario-chip" data-scenario="early_crash" aria-pressed="false" data-i18n-title="tip_sc_early_crash" title="Immediate bear market at retirement start (2000 Dot-Com + GFC or 1929 Great Depression)">
+              <span class="sc-title" data-i18n="sc_early_crash">Early Crash</span>
+              <span class="sc-meta" id="scEarlyCrashMeta">2000 · 1929</span>
+            </button>
+            <button type="button" class="scenario-chip is-cma" data-scenario="low_return" aria-pressed="false" data-i18n-title="tip_sc_low_return" title="High-valuation / lower-return CMA stress test: -2.0%/yr stocks and -1.0%/yr bonds">
+              <span class="sc-title" data-i18n="sc_low_return">Low Return</span>
+              <span class="sc-meta">−2% / −1%</span>
+            </button>
+          </div>
+          <div class="notice scenario-notice" id="scenarioNotice" role="status">
+            <div id="scenarioNoticeText"></div>
+            <div class="scenario-variant-row" id="scenarioCrashToggle" style="display:none;" role="group" aria-label="Early crash period" data-i18n-aria-label="aria_crash_variant">
+              <button type="button" class="scenario-var-btn active" data-crash="2000" aria-pressed="true" data-i18n="sc_crash_2000">2000 Dot-Com</button>
+              <button type="button" class="scenario-var-btn" data-crash="1929" aria-pressed="false" data-i18n="sc_crash_1929">1929 Depression</button>
+            </div>
+          </div>
+        </div>
 
         <details class="sub-details" id="detailsIndices">
           <summary><span data-i18n="lbl_indices_prefix">Indices:</span> <span id="sumIndices" class="sum-inline"></span></summary>
@@ -2103,6 +2232,51 @@
         "en-UK": "Sequential uses {y0}–{yEnd} (first {sim} of {w} yrs); Random draws from all {w} yrs.",
         "zh-CN": "顺序回测使用 {y0}–{yEnd}（前 {sim} 年 / 共 {w} 年）；随机模拟从全部 {w} 年中抽样。"
       },
+      lbl_stress_scenarios: { "en-UK": "Stress-test scenarios", "zh-CN": "压力测试情景" },
+      tip_stress_scenarios: {
+        "en-UK": "Three common advisor failure modes: 1966 Stagflation (high CPI + weak stocks & bonds), 2000/1929 Early Crash (immediate bear market), and Lower-Return CMA (−2.0%/yr stocks, −1.0%/yr bonds).",
+        "zh-CN": "理财顾问常用的三种压力测试：1966 滞胀（高通胀叠加股债双杀）、2000/1929 开局崩盘（退休初期遭遇熊市），以及低收益 CMA 假设（股票 −2.0%/年、债券 −1.0%/年）。"
+      },
+      aria_info_scenarios: { "en-UK": "About stress-test scenarios", "zh-CN": "关于压力测试情景" },
+      aria_crash_variant: { "en-UK": "Early crash historical period", "zh-CN": "开局崩盘历史起点" },
+      btn_scenario_reset: { "en-UK": "Reset", "zh-CN": "重置" },
+      sc_stagflation: { "en-UK": "Stagflation", "zh-CN": "滞胀考验" },
+      tip_sc_stagflation: {
+        "en-UK": "1966–2025 (NYU S&P 500 + 10Y Treasury): high inflation (~7%) with weak stocks & bonds — hardest test for balanced portfolios",
+        "zh-CN": "1966–2025（NYU 标普 500 + 10 年美债）：高通胀 (~7%) 叠加股债双杀，对股债平衡组合考验最大"
+      },
+      sc_early_crash: { "en-UK": "Early Crash", "zh-CN": "开局崩盘" },
+      tip_sc_early_crash: {
+        "en-UK": "Immediate sequence-of-returns shock at retirement start (2000 Dot-Com + GFC or 1929 Great Depression)",
+        "zh-CN": "退休初期遭遇剧烈回撤的收益率顺序风险（可选 2000 互联网泡沫 + 金融危机，或 1929 大萧条）"
+      },
+      sc_low_return: { "en-UK": "Low Return", "zh-CN": "低收益 CMA" },
+      tip_sc_low_return: {
+        "en-UK": "High-valuation / lower-return CMA haircut: reduces every year's equity return by −2.0% and bond return by −1.0%",
+        "zh-CN": "高估值 / 低回报资本市场假设 (CMA)：每年股票收益率下调 2.0%、债券收益率下调 1.0%"
+      },
+      sc_crash_2000: { "en-UK": "2000 Dot-Com", "zh-CN": "2000 互联网泡沫" },
+      sc_crash_1929: { "en-UK": "1929 Depression", "zh-CN": "1929 大萧条" },
+      sc_desc_stagflation: {
+        "en-UK": "1966 Stagflation (1966–2025): High US CPI (~7%/yr) with negative real stock & bond returns — hardest historical test for balanced plans.",
+        "zh-CN": "1966 滞胀（1966–2025）：美国高通胀（约 7%/年）叠加股债实际收益均为负，对平衡型组合最具考验。"
+      },
+      sc_desc_crash_2000: {
+        "en-UK": "2000 Early Crash (2000–2025): Back-to-back Dot-Com & 2008 GFC bear markets on global equities (MSCI ACWI + US Agg).",
+        "zh-CN": "2000 开局崩盘（2000–2025）：全球股市连遭互联网泡沫与 2008 金融危机双重打击（MSCI ACWI + 美国综合债）。"
+      },
+      sc_desc_crash_1929: {
+        "en-UK": "1929 Great Depression (1929–2025): −80%+ early equity collapse — hardest historical test for equity-heavy portfolios.",
+        "zh-CN": "1929 大萧条（1929–2025）：退休初期股市暴跌超 80%，对高股票仓位计划最具考验。"
+      },
+      sc_desc_low_return: {
+        "en-UK": "Lower-return CMA active: −2.0%/yr stocks and −1.0%/yr bonds applied across Sequential, Random, and Compare.",
+        "zh-CN": "低收益 CMA 生效中：所有年份股票 −2.0%/年、债券 −1.0%/年（适用于顺序、随机与对比模式）。"
+      },
+      cma_tag_short: {
+        "en-UK": "CMA −2% eq / −1% bd",
+        "zh-CN": "CMA 股−2% / 债−1%"
+      },
 
       // Series Short Labels
       series_SP500_Official_TR_pct: { "en-UK": "S&P 500 Official TR", "zh-CN": "标普 500 全收益" },
@@ -2515,6 +2689,14 @@
       nyu_full:    { start: 1928, end: 2025, eq: "NYU_SP500_pct", bd: "NYU_US_10Y_TBond_pct" }
     };
 
+    const STRESS_SCENARIOS = {
+      stagflation: { preset: "nyu_full", start: 1966, end: 2025, eq: "NYU_SP500_pct", bd: "NYU_US_10Y_TBond_pct" },
+      crash_2000:  { preset: "all_country", start: 2000, end: 2025, eq: "MSCI_ACWI_Gross_USD_pct", bd: "Bloomberg_US_Agg_Bond_pct" },
+      crash_1929:  { preset: "nyu_full", start: 1929, end: 2025, eq: "NYU_SP500_pct", bd: "NYU_US_10Y_TBond_pct" },
+      cma_eq_shift: -2,
+      cma_bd_shift: -1
+    };
+
     // UI Elements
     const elInitial = document.getElementById("initialAsset");
     const elRatioSelect = document.getElementById("ratioSelect");
@@ -2561,6 +2743,10 @@
       centerStat: "median",
       ledgerFilter: "all",
       seed: 20261123,
+      eqReturnShiftPct: 0,
+      bdReturnShiftPct: 0,
+      earlyCrashVariant: "2000",
+      preScenarioBaseline: null,
       sampledSequence: [],
       sequenceKey: "",
       batchCache: null,
@@ -3017,6 +3203,9 @@
         dd: 0
       }];
 
+      const eqShiftPct = cfg.eqReturnShiftPct || 0;
+      const bdShiftPct = cfg.bdReturnShiftPct || 0;
+
       for (let i = 0; i < yearSeq.length; i++) {
         const step = i + 1;
         const yr = yearSeq[i];
@@ -3024,8 +3213,8 @@
 
         const infPct = inflationSource === "historical" ? d.NYU_US_CPI_Inflation_pct : fixedInfPct;
         const infRate = infPct / 100.0;
-        const rEqNom = d[eqKey] / 100.0;
-        const rBdNom = d[bdKey] / 100.0;
+        const rEqNom = Math.max(-0.9999, (d[eqKey] + eqShiftPct) / 100.0);
+        const rBdNom = Math.max(-0.9999, (d[bdKey] + bdShiftPct) / 100.0);
         const rRfNom = d.NYU_US_3M_TBill_pct / 100.0;
 
         const startNom = eqVal + bdVal;
@@ -3615,10 +3804,12 @@
       const rfArr = new Float64Array(W);
       const infPctArr = new Float64Array(W);
       const useHistInf = cfg.inflationSource === "historical";
+      const eqShiftPct = cfg.eqReturnShiftPct || 0;
+      const bdShiftPct = cfg.bdReturnShiftPct || 0;
       for (let k = 0; k < W; k++) {
         const d = DATA_BY_YEAR[poolYears[k]];
-        eqArr[k] = d[cfg.eqKey] / 100.0;
-        bdArr[k] = d[cfg.bdKey] / 100.0;
+        eqArr[k] = Math.max(-0.9999, (d[cfg.eqKey] + eqShiftPct) / 100.0);
+        bdArr[k] = Math.max(-0.9999, (d[cfg.bdKey] + bdShiftPct) / 100.0);
         rfArr[k] = d.NYU_US_3M_TBill_pct / 100.0;
         infPctArr[k] = useHistInf ? d.NYU_US_CPI_Inflation_pct : cfg.fixedInfPct;
       }
@@ -5094,6 +5285,7 @@
 
     function syncCompareHeaderMeta(varKey, baseCfg, simYears, numRuns, poolYears, basisTag) {
       const trigLabel = t("trig_" + (baseCfg.badYearTrigger || "neg_return"));
+      const hasCma = (baseCfg.eqReturnShiftPct || 0) !== 0 || (baseCfg.bdReturnShiftPct || 0) !== 0;
       const parts = [
         `${fmtCompactMoney(baseCfg.initialAsset)}`,
         ...(varKey !== "equity_pct" ? [`${Math.round(baseCfg.eqWeight * 100)}/${100 - Math.round(baseCfg.eqWeight * 100)}`] : []),
@@ -5102,6 +5294,7 @@
         ...(varKey === "expense_floor" ? [t("cmp_trigger_note", { trig: trigLabel })] : []),
         `${simYears}y`,
         `${poolYears[0]}–${poolYears[poolYears.length - 1]}`,
+        ...(hasCma ? [t("cma_tag_short")] : []),
         `${numRuns.toLocaleString("en-US")} ${t("cmp_paired_runs")}`
       ];
       const baseNoteEl = document.getElementById("compareBaselineNote");
@@ -5414,9 +5607,13 @@
         <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
         <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
       `;
-      document.getElementById("chartSubhead").textContent = cfg.inflationSource === "historical"
+      const randSubBase = cfg.inflationSource === "historical"
         ? t("sub_wealth_rand_hist", { y0: poolYears[0], y1: poolYears[poolYears.length - 1] })
         : t("sub_wealth_rand_fix", { y0: poolYears[0], y1: poolYears[poolYears.length - 1], rate: cfg.fixedInfPct });
+      const randHasCma = (cfg.eqReturnShiftPct || 0) !== 0 || (cfg.bdReturnShiftPct || 0) !== 0;
+      document.getElementById("chartSubhead").textContent = randHasCma
+        ? `${randSubBase} · ${t("cma_tag_short")}`
+        : randSubBase;
       document.getElementById("ddLegendItems").innerHTML = `
         <div class="legend-item"><span class="swatch" style="background:var(--expense); height:4px;"></span><strong>${t("leg_exp_rand", { stat: statLong })}</strong></div>
         <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
@@ -5593,7 +5790,9 @@
         inflationSource,
         fixedInfPct,
         withdrawTiming,
-        displayBasis
+        displayBasis,
+        eqReturnShiftPct: state.eqReturnShiftPct,
+        bdReturnShiftPct: state.bdReturnShiftPct
       };
 
       const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
@@ -5665,7 +5864,10 @@
           <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>100% ${getSeriesLabel(eqKey)}</span></div>
           <div class="legend-item"><span class="swatch" style="background:var(--bond)"></span><span>100% ${getSeriesLabel(bdKey)}</span></div>
         `;
-        document.getElementById("chartSubhead").textContent = t("sub_wealth_seq");
+        const seqHasCma = (cfg.eqReturnShiftPct || 0) !== 0 || (cfg.bdReturnShiftPct || 0) !== 0;
+        document.getElementById("chartSubhead").textContent = seqHasCma
+          ? `${t("sub_wealth_seq")} · ${t("cma_tag_short")}`
+          : t("sub_wealth_seq");
         document.getElementById("ddLegendItems").innerHTML = `
           <div class="legend-item"><span class="swatch" style="background:var(--accent); height:8px;"></span><span>${t("leg_port_ret")}</span></div>
           <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span>${t("leg_dd_peak")}</span></div>
@@ -5901,6 +6103,184 @@
         updateAll({ forceResample: true });
       });
     });
+
+    // Stress-Test Scenario Presets (Advisor Failure Modes)
+    function getActiveScenario() {
+      if (state.eqReturnShiftPct !== 0 || state.bdReturnShiftPct !== 0) return "low_return";
+      const y0 = parseInt(elStartYr.value, 10);
+      const y1 = parseInt(elEndYr.value, 10);
+      if (y0 === 1966 && y1 === 2025) return "stagflation";
+      if ((y0 === 2000 || y0 === 1929) && y1 === 2025) return "early_crash";
+      return null;
+    }
+
+    function syncScenarioUI() {
+      const activeSc = getActiveScenario();
+      const y0 = parseInt(elStartYr.value, 10);
+      if (activeSc === "early_crash" && (y0 === 1929 || y0 === 2000)) {
+        state.earlyCrashVariant = String(y0);
+      }
+
+      document.querySelectorAll("#scenarioChips .scenario-chip").forEach(btn => {
+        setBtnActive(btn, btn.dataset.scenario === activeSc);
+      });
+
+      const resetBtn = document.getElementById("btnScenarioReset");
+      if (resetBtn) resetBtn.style.display = activeSc ? "inline-flex" : "none";
+
+      const crashMeta = document.getElementById("scEarlyCrashMeta");
+      if (crashMeta) {
+        crashMeta.textContent = activeSc === "early_crash" ? state.earlyCrashVariant : "2000 · 1929";
+      }
+
+      const noticeEl = document.getElementById("scenarioNotice");
+      const textEl = document.getElementById("scenarioNoticeText");
+      const toggleEl = document.getElementById("scenarioCrashToggle");
+      if (!noticeEl || !textEl || !toggleEl) return;
+
+      if (!activeSc) {
+        noticeEl.style.display = "none";
+        noticeEl.classList.remove("warn");
+        toggleEl.style.display = "none";
+        return;
+      }
+
+      noticeEl.style.display = "block";
+      if (activeSc === "stagflation") {
+        noticeEl.classList.remove("warn");
+        textEl.textContent = t("sc_desc_stagflation");
+        toggleEl.style.display = "none";
+      } else if (activeSc === "early_crash") {
+        noticeEl.classList.remove("warn");
+        textEl.textContent = state.earlyCrashVariant === "1929"
+          ? t("sc_desc_crash_1929")
+          : t("sc_desc_crash_2000");
+        toggleEl.style.display = "flex";
+        toggleEl.querySelectorAll(".scenario-var-btn").forEach(b => {
+          setBtnActive(b, b.dataset.crash === state.earlyCrashVariant);
+        });
+      } else {
+        noticeEl.classList.add("warn");
+        textEl.textContent = t("sc_desc_low_return");
+        toggleEl.style.display = "none";
+      }
+    }
+
+    function capturePreScenarioBaseline() {
+      if (getActiveScenario() === null) {
+        state.preScenarioBaseline = {
+          preset: elPreset.value,
+          eq: elEquity.value,
+          bd: elBond.value,
+          start: parseInt(elStartYr.value, 10) || 1988,
+          end: parseInt(elEndYr.value, 10) || 2025
+        };
+      }
+    }
+
+    function restoreDatasetWindow(target) {
+      const p = target || PRESETS[elPreset.value] || PRESETS.all_country;
+      if (target && hasSelectOption(elPreset, target.preset)) elPreset.value = target.preset;
+      elEquity.value = p.eq;
+      elBond.value = p.bd;
+      populateYearSelects(p.start, p.end);
+    }
+
+    function resetScenario() {
+      flushScheduledUpdate();
+      const wasCmaOnly = state.eqReturnShiftPct !== 0 || state.bdReturnShiftPct !== 0;
+      state.eqReturnShiftPct = 0;
+      state.bdReturnShiftPct = 0;
+      const base = state.preScenarioBaseline;
+      state.preScenarioBaseline = null;
+      if (!wasCmaOnly) {
+        if (base) {
+          restoreDatasetWindow(base);
+        } else {
+          const p = PRESETS[elPreset.value] || PRESETS.all_country;
+          restoreDatasetWindow({ preset: elPreset.value, eq: p.eq, bd: p.bd, start: p.start, end: p.end });
+        }
+      }
+      updateAll({ forceResample: true });
+    }
+
+    function applyScenario(kind, crashOverride = null) {
+      flushScheduledUpdate();
+      const cur = getActiveScenario();
+
+      if (kind === "low_return") {
+        if (cur === "low_return") {
+          state.eqReturnShiftPct = 0;
+          state.bdReturnShiftPct = 0;
+          state.preScenarioBaseline = null;
+          updateAll({ forceResample: true });
+          return;
+        }
+        capturePreScenarioBaseline();
+        if (cur === "stagflation" || cur === "early_crash") {
+          restoreDatasetWindow(state.preScenarioBaseline || { preset: "all_country", ...PRESETS.all_country });
+        }
+        state.eqReturnShiftPct = STRESS_SCENARIOS.cma_eq_shift;
+        state.bdReturnShiftPct = STRESS_SCENARIOS.cma_bd_shift;
+        if (state.tab === "data") {
+          setActiveTab("sequential");
+        } else {
+          updateAll({ forceResample: true });
+        }
+        return;
+      }
+
+      if (kind === "stagflation") {
+        if (cur === "stagflation" && state.tab === "sequential") {
+          resetScenario();
+          return;
+        }
+        capturePreScenarioBaseline();
+        state.eqReturnShiftPct = 0;
+        state.bdReturnShiftPct = 0;
+        const sc = STRESS_SCENARIOS.stagflation;
+        elPreset.value = sc.preset;
+        elEquity.value = sc.eq;
+        elBond.value = sc.bd;
+        populateYearSelects(sc.start, sc.end);
+        if (state.tab !== "sequential") setActiveTab("sequential");
+        else updateAll({ forceResample: true });
+        return;
+      }
+
+      if (kind === "early_crash") {
+        if (crashOverride === null && cur === "early_crash" && state.tab === "sequential") {
+          resetScenario();
+          return;
+        }
+        capturePreScenarioBaseline();
+        if (crashOverride === "1929" || crashOverride === "2000") {
+          state.earlyCrashVariant = crashOverride;
+        }
+        state.eqReturnShiftPct = 0;
+        state.bdReturnShiftPct = 0;
+        const sc = state.earlyCrashVariant === "1929"
+          ? STRESS_SCENARIOS.crash_1929
+          : STRESS_SCENARIOS.crash_2000;
+        elPreset.value = sc.preset;
+        elEquity.value = sc.eq;
+        elBond.value = sc.bd;
+        populateYearSelects(sc.start, sc.end);
+        if (state.tab !== "sequential") setActiveTab("sequential");
+        else updateAll({ forceResample: true });
+      }
+    }
+
+    document.querySelectorAll("#scenarioChips .scenario-chip").forEach(btn => {
+      btn.addEventListener("click", () => applyScenario(btn.dataset.scenario));
+    });
+    document.querySelectorAll("#scenarioCrashToggle .scenario-var-btn").forEach(btn => {
+      btn.addEventListener("click", () => applyScenario("early_crash", btn.dataset.crash));
+    });
+    const elBtnScenarioReset = document.getElementById("btnScenarioReset");
+    if (elBtnScenarioReset) {
+      elBtnScenarioReset.addEventListener("click", resetScenario);
+    }
 
     [elRebalance, elDisplayBasis].forEach(el => {
       el.addEventListener("change", () => updateAll());
@@ -6557,6 +6937,7 @@
       const scopeBtn = document.getElementById("btnScopeWindow");
       if (scopeBtn) scopeBtn.textContent = t("btn_scope_win", { range: winRange });
 
+      syncScenarioUI();
       syncCompareSidebarLock();
       saveSettingsToStorage();
     }
@@ -6613,6 +6994,9 @@
           bond: elBond.value,
           startYear: parseInt(elStartYr.value, 10) || 1988,
           endYear: parseInt(elEndYr.value, 10) || 2025,
+          eqReturnShiftPct: state.eqReturnShiftPct,
+          bdReturnShiftPct: state.bdReturnShiftPct,
+          earlyCrashVariant: state.earlyCrashVariant,
           expenseFloorPct: elExpFloorPct.value,
           lastFloorPct,
           badYearTrigger: elBadYearTrigger.value,
@@ -6689,6 +7073,16 @@
         const wantStart = (typeof saved.startYear === "number" && isFinite(saved.startYear)) ? saved.startYear : p.start;
         const wantEnd = (typeof saved.endYear === "number" && isFinite(saved.endYear)) ? saved.endYear : p.end;
         populateYearSelects(wantStart, wantEnd);
+
+        if (typeof saved.eqReturnShiftPct === "number" && isFinite(saved.eqReturnShiftPct)) {
+          state.eqReturnShiftPct = Math.max(-10, Math.min(10, saved.eqReturnShiftPct));
+        }
+        if (typeof saved.bdReturnShiftPct === "number" && isFinite(saved.bdReturnShiftPct)) {
+          state.bdReturnShiftPct = Math.max(-10, Math.min(10, saved.bdReturnShiftPct));
+        }
+        if (saved.earlyCrashVariant === "1929" || saved.earlyCrashVariant === "2000") {
+          state.earlyCrashVariant = saved.earlyCrashVariant;
+        }
 
         if (saved.lastFloorPct && hasSelectOption(elExpFloorPct, saved.lastFloorPct) && String(saved.lastFloorPct) !== "100") {
           lastFloorPct = String(saved.lastFloorPct);
