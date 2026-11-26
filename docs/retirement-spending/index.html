@@ -768,10 +768,27 @@
     }
 
 
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    #ch1-calculator { scroll-margin-top: 18px; }
+
     .hub-wrap { max-width: 1080px; margin: 0 auto; padding: 28px 22px 56px; }
     .hub-intro { margin-bottom: 24px; max-width: 72ch; }
-    .hub-intro h2 { margin: 0 0 6px; font-size: 21px; font-weight: 650; letter-spacing: -0.02em; text-wrap: balance; }
-    .hub-intro p { margin: 0; color: var(--text-soft); font-size: 13.5px; text-wrap: pretty; }
+    .hub-intro h2 { margin: 0 0 8px; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; text-wrap: balance; }
+    .hub-intro p { margin: 0; color: var(--text-soft); font-size: 13.5px; line-height: 1.52; text-wrap: pretty; }
+
+    .hub-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; }
+    .cta-calc-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 14px; min-height: 36px; border-radius: 6px;
+      background: var(--accent); color: #ffffff;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      transition: opacity 0.14s, transform 0.12s;
+    }
+    html[data-theme="dark"] .cta-calc-link { color: #0c0d0f; }
+    .cta-calc-link:hover { opacity: 0.92; }
+    .cta-calc-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .hub-dir-note { font-size: 12.5px; color: var(--muted); }
 
     .lab-grid {
       display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -792,19 +809,53 @@
       padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
     }
     .lab-title { margin: 0; font-size: 15px; font-weight: 620; text-wrap: balance; }
-    .lab-desc { margin: 5px 0 0; font-size: 12.8px; color: var(--muted); line-height: 1.48; text-wrap: pretty; }
+    .lab-question { margin: 7px 0 4px; font-size: 13.5px; font-weight: 560; color: var(--text); line-height: 1.42; text-wrap: pretty; }
+    .lab-desc { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.46; text-wrap: pretty; }
     .lab-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-soft); border-top: 1px solid var(--border); padding-top: 9px; }
 
     .primer-grid {
-      display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 1px;
+      display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 1px;
       background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px;
     }
     @media (max-width: 900px) { .primer-grid { grid-template-columns: 1fr; } }
     .primer-controls { background: var(--panel); padding: 18px; }
     .primer-outputs { background: var(--panel); padding: 18px 20px; min-width: 0; }
+    .primer-outputs .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (max-width: 640px) { .primer-outputs .kpis { grid-template-columns: 1fr; } }
+    .kpi-val.kpi-prose {
+      font-family: var(--font); font-size: 14.5px; font-weight: 620;
+      letter-spacing: -0.01em; line-height: 1.38; white-space: normal; color: var(--text);
+    }
+    .primer-outputs .kpi-sub { white-space: normal; text-wrap: pretty; }
+
+    .primer-charts {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px; padding-top: 18px;
+    }
+    @media (max-width: 760px) { .primer-charts { grid-template-columns: 1fr; gap: 20px; } }
+    .primer-chart-box { min-width: 0; display: flex; flex-direction: column; }
+    .primer-chart-box .chart-wrap { margin-top: auto; }
+    .chart-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      flex-wrap: wrap; gap: 4px 10px; margin-bottom: 10px;
+    }
+    .chart-title { margin: 0; font-size: 13px; font-weight: 620; color: var(--text); text-wrap: balance; }
+    .chart-head .legend-items { gap: 10px; font-size: 11.5px; color: var(--text-soft); }
 
     .matrix-panel {
       background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px;
+    }
+    .matrix-panel th { white-space: normal; line-height: 1.35; }
+
+    @media (max-width: 480px) {
+      .hub-wrap { padding: 18px 12px 42px; }
+      .primer-controls { padding: 14px; }
+      .primer-outputs { padding: 14px; --body-px: 14px; --body-py: 14px; }
+      .matrix-panel { padding: 14px; }
+      .chapter-jump { max-width: 100%; }
+    }
+    @media (pointer: coarse) {
+      .cta-calc-link { min-height: 42px; padding: 9px 15px; }
     }
 
   </style>
@@ -832,8 +883,15 @@
   </header>
   <main class="hub-wrap">
     <div class="hub-intro">
-      <h2 data-i18n="hub_heading">How Much Can I Spend in Retirement? — Interactive Quantitative Suite</h2>
-      <p data-i18n="hub_sub">Eight self-contained interactive laboratories implementing the historical simulations, 10,000-run stochastic models, variable spending rules, bond ladders, and balance-sheet diagnostics from Wade D. Pfau’s book.</p>
+      <h2 data-i18n="hub_heading">How Much Can I Spend in Retirement? Quantitative Labs</h2>
+      <p data-i18n="hub_sub">Eight self-contained interactive tools implementing the historical simulations, 10,000-run Monte Carlo engines, variable spending rules, bond ladders, and balance-sheet models across Chapters 1–9 of Wade D. Pfau's guide.</p>
+      <div class="hub-actions">
+        <a class="cta-calc-link" href="#ch1-calculator">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>
+          <span data-i18n="cta_try_ch1">Try the Chapter 1 calculator</span>
+        </a>
+        <span class="hub-dir-note" data-i18n="cta_or_browse">or choose a chapter lab below</span>
+      </div>
     </div>
 
     <div class="lab-grid">
@@ -843,7 +901,8 @@
             <h3 class="lab-title" data-i18n="card_t_fixed_returns_longevity">Fixed Returns & Longevity Risk</h3>
             <span class="lab-ch" data-i18n="card_ch_fixed_returns_longevity">Ch. 2</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_fixed_returns_longevity">Deterministic PMT / NPER / RATE solvers, Exhibit 2.1 return waterfall, SOA 2012 IAM vs. SSA mortality survival curves, and Exhibits 2.8–2.10 Horizon × Return matrices.</p>
+          <p class="lab-question" data-i18n="card_q_fixed_returns_longevity">How long might my retirement last, and what can I spend if returns are steady?</p>
+          <p class="lab-desc" data-i18n="card_d_fixed_returns_longevity">Compare steady-return spending schedules with single and couple survival odds.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -856,7 +915,8 @@
             <h3 class="lab-title" data-i18n="card_t_sequence_of_returns_risk">Sequence-of-Returns Risk</h3>
             <span class="lab-ch" data-i18n="card_ch_sequence_of_returns_risk">Ch. 3</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_sequence_of_returns_risk">Wealth glide paths and >10% withdrawal spirals (Ex. 3.1–3.3), Adam's 60-year lifecycle & regression R² attribution (Ex. 3.4–3.6), and reverse-engineered IRR percentiles (Ex. 3.7–3.9).</p>
+          <p class="lab-question" data-i18n="card_q_sequence_of_returns_risk">What happens if my worst investment years come first?</p>
+          <p class="lab-desc" data-i18n="card_d_sequence_of_returns_risk">See how early downturns drain a portfolio under withdrawals even when average returns look fine.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -869,7 +929,8 @@
             <h3 class="lab-title" data-i18n="card_t_safe_withdrawal_rates">Safe Withdrawal Rates & Trinity Study</h3>
             <span class="lab-ch" data-i18n="card_ch_safe_withdrawal_rates">Ch. 4</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_safe_withdrawal_rates">Bengen SAFEMAX across 1871–2025 / 1928–2025 (Ex. 4.1–4.4), full Trinity Study success grid (Ex. 4.5), historical overlap bias vs. Monte Carlo (Ex. 4.6), and Markowitz SWR isoquants (Ex. 4.7–4.8).</p>
+          <p class="lab-question" data-i18n="card_q_safe_withdrawal_rates">Where does the 4% rule come from, and how often has a fixed budget survived?</p>
+          <p class="lab-desc" data-i18n="card_d_safe_withdrawal_rates">Test historical US retirements since 1871 and low-yield simulations across stock-bond mixes.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -882,7 +943,8 @@
             <h3 class="lab-title" data-i18n="card_t_valuations_and_savings">Valuations, Safe Savings & Drag</h3>
             <span class="lab-ch" data-i18n="card_ch_valuations_and_savings">Ch. 5A</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_valuations_and_savings">Shiller PE10 & 10Y yield MWR regression (Ex. 5.4–5.8), Safe Savings Rate SAFEMIN lifecycle (Ex. 5.9–5.11), 20-country DMS & 5-asset optimization (Ex. 5.2–5.3, 5.26–5.28), and fee/tax/mistiming drag (Ex. 5.12–5.13).</p>
+          <p class="lab-question" data-i18n="card_q_valuations_and_savings">How do high market prices, global history, and fees change a safe spending rate?</p>
+          <p class="lab-desc" data-i18n="card_d_valuations_and_savings">Explore valuation-based forecasts, career savings rates, 20-country history, and fee drag.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -895,7 +957,8 @@
             <h3 class="lab-title" data-i18n="card_t_spending_smiles_glidepaths">Spending Smiles & Bond Tents</h3>
             <span class="lab-ch" data-i18n="card_ch_spending_smiles_glidepaths">Ch. 5B</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_spending_smiles_glidepaths">Blanchett HRS Spending Smile & Basu 4-category Age-Banding (Ex. 5.16–5.21), nominal/real legacy targets & competing mortality ruin (Ex. 5.14–5.15, 5.22–5.25), and Rising Equity Glidepath 2D heatmap (Ex. 5.29).</p>
+          <p class="lab-question" data-i18n="card_q_spending_smiles_glidepaths">Do retirees spend the same real amount every year, and can a bond tent help?</p>
+          <p class="lab-desc" data-i18n="card_d_spending_smiles_glidepaths">Model age-related spending changes, legacy goals, lifetime mortality, and rising-equity paths.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -908,7 +971,8 @@
             <h3 class="lab-title" data-i18n="card_t_variable_spending">Variable Spending & PAY Rule™</h3>
             <span class="lab-ch" data-i18n="card_ch_variable_spending">Ch. 6</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_variable_spending">All 10 variable rules (Constant, Fixed %, Hybrid, 3Y MA, Bengen F/C, Vanguard F/C, Kitces Ratchet, Guyton-Klinger 2006, Zolt Glidepath, Modified RMD), PAY Rule™ auto-calibration, and 1966/1982/1946 head-to-head.</p>
+          <p class="lab-question" data-i18n="card_q_variable_spending">How much more can I start with if I adjust spending after good and bad years?</p>
+          <p class="lab-desc" data-i18n="card_d_variable_spending">Compare ten flexible withdrawal rules for income stability, upside, and remaining wealth.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -921,7 +985,8 @@
             <h3 class="lab-title" data-i18n="card_t_bonds_and_buckets">Bond Ladders & Time Segmentation</h3>
             <span class="lab-ch" data-i18n="card_ch_bonds_and_buckets">Ch. 7</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_bonds_and_buckets">Forward 30-yr Treasury STRIPS & backward-induction TIPS ladders (Ex. 7.11–7.12), bond duration/convexity/pull-to-par (Ex. 7.1–7.9), and 7-way Time Segmentation MC simulator (Ex. 7.13–7.21).</p>
+          <p class="lab-question" data-i18n="card_q_bonds_and_buckets">Should I lock in upcoming years of spending with individual bonds instead of a fund?</p>
+          <p class="lab-desc" data-i18n="card_d_bonds_and_buckets">Build year-by-year Treasury and inflation-protected bond ladders, and test bucket strategies.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -934,7 +999,8 @@
             <h3 class="lab-title" data-i18n="card_t_funded_ratio_and_gamma">Funded Ratio, CARE & Advisor Gamma</h3>
             <span class="lab-ch" data-i18n="card_ch_funded_ratio_and_gamma">Ch. 8–9</span>
           </div>
-          <p class="lab-desc" data-i18n="card_d_funded_ratio_and_gamma">Risk-free TIPS Funded Ratio & Essential Floor balance sheet (Ex. 1.2, 8.2), interactive 13-factor CARE diagnostic (Ex. 8.6), and Morningstar Gamma / Vanguard Advisor Alpha simulator (Ex. 9.1–9.2).</p>
+          <p class="lab-question" data-i18n="card_q_funded_ratio_and_gamma">Are my total resources enough for essentials, and which income style fits me?</p>
+          <p class="lab-desc" data-i18n="card_d_funded_ratio_and_gamma">Measure your household funded ratio, score planning preferences, and estimate tax and claiming gains.</p>
         </div>
         <div class="lab-meta">
           <span data-i18n="open_lab">Open interactive lab</span>
@@ -943,74 +1009,87 @@
       </a>
     </div>
 
-    <section class="primer-grid" aria-label="Chapter 1 Liquidity & Safe Spending Calculator" data-i18n-aria-label="aria_ch1_calc">
+    <section id="ch1-calculator" class="primer-grid" aria-label="Chapter 1 Liquidity and Inflation Calculator" data-i18n-aria-label="aria_ch1_calc">
       <div class="primer-controls">
         <div class="sec-head-static">
           <h3 class="sec-title" data-i18n="ch1_calc_title">Chapter 1: Nest Egg, Inflation &amp; True Liquidity</h3>
         </div>
         <div class="control-group">
-          <label for="ch1Portfolio"><span data-i18n="lbl_total_assets">Total financial assets</span></label>
+          <label for="ch1Portfolio"><span data-i18n="lbl_total_assets">Total retirement savings</span></label>
           <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="ch1Portfolio" value="1,500,000" inputmode="numeric" /></div>
         </div>
         <div class="control-group">
-          <label for="ch1Spend"><span data-i18n="lbl_target_spend">Target annual spending (S₁)</span></label>
+          <label for="ch1Spend"><span data-i18n="lbl_target_spend">First-year annual spending</span></label>
           <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="ch1Spend" value="40,000" inputmode="numeric" /></div>
         </div>
-        <div class="control-group row-2">
-          <div>
-            <label for="ch1Swr"><span data-i18n="lbl_swr_pct">Safe WR (%)</span></label>
-            <input type="number" id="ch1Swr" value="4.0" min="1.5" max="10" step="0.1" />
-          </div>
-          <div>
-            <label for="ch1Inf"><span data-i18n="lbl_inf_pct">Inflation (%/yr)</span></label>
-            <input type="number" id="ch1Inf" value="3.0" min="0" max="12" step="0.1" />
-          </div>
+        <div class="control-group">
+          <label for="ch1Swr"><span data-i18n="lbl_swr_pct">Withdrawal rate (%/yr)</span></label>
+          <input type="number" id="ch1Swr" value="4.0" min="1.5" max="10" step="0.1" />
         </div>
-        <div class="control-group row-2">
-          <div>
-            <label for="ch1InfYrs"><span data-i18n="lbl_inf_yrs">Horizon (yrs)</span></label>
-            <input type="number" id="ch1InfYrs" value="25" min="5" max="50" step="1" />
-          </div>
-          <div>
-            <label for="ch1AnnuityPct"><span data-i18n="lbl_spia_rate">SPIA Payout (%)</span></label>
-            <input type="number" id="ch1AnnuityPct" value="5.0" min="3" max="12" step="0.1" />
-          </div>
+        <div class="control-group">
+          <label for="ch1AnnuityPct"><span data-i18n="lbl_spia_rate">Income annuity payout rate (%/yr)</span></label>
+          <input type="number" id="ch1AnnuityPct" value="5.0" min="3" max="12" step="0.1" />
+        </div>
+        <div class="control-group">
+          <label for="ch1Inf"><span data-i18n="lbl_inf_pct">Annual inflation rate (%/yr)</span></label>
+          <input type="number" id="ch1Inf" value="3.0" min="0" max="12" step="0.1" />
+        </div>
+        <div class="control-group">
+          <label for="ch1InfYrs"><span data-i18n="lbl_inf_yrs">Time horizon (years)</span></label>
+          <input type="number" id="ch1InfYrs" value="25" min="5" max="50" step="1" />
         </div>
       </div>
+
       <div class="primer-outputs">
-        <div class="kpis kpis-4 kpis-flush-top">
+        <div class="kpis kpis-flush-top">
           <div class="kpi">
-            <div class="kpi-label" data-i18n="kpi_nest_egg">Target Portfolio (W₀)</div>
-            <div class="kpi-val" id="ch1NestEgg">—</div>
-            <div class="kpi-sub" id="ch1NestSub">—</div>
+            <div class="kpi-label" data-i18n="kpi_nest_egg">Savings needed to self-fund</div>
+            <div class="kpi-val" id="ch1NestEgg">--</div>
+            <div class="kpi-sub" id="ch1NestSub">--</div>
           </div>
           <div class="kpi">
-            <div class="kpi-label" data-i18n="kpi_purch_power">$1 Real Power Left</div>
-            <div class="kpi-val neg" id="ch1RealVal">—</div>
-            <div class="kpi-sub" id="ch1PriceMult">—</div>
+            <div class="kpi-label" data-i18n="kpi_purch_power">Purchasing power of $1</div>
+            <div class="kpi-val kpi-prose" id="ch1RealVal">--</div>
+            <div class="kpi-sub" id="ch1PriceMult">--</div>
           </div>
           <div class="kpi">
-            <div class="kpi-label" data-i18n="kpi_true_liq_self">True Liquidity (Self-Fund)</div>
-            <div class="kpi-val" id="ch1LiqSelf">—</div>
-            <div class="kpi-sub" id="ch1LiqSelfSub">—</div>
+            <div class="kpi-label" data-i18n="kpi_true_liq_self">Available after self-funding</div>
+            <div class="kpi-val" id="ch1LiqSelf">--</div>
+            <div class="kpi-sub" id="ch1LiqSelfSub">--</div>
           </div>
           <div class="kpi">
-            <div class="kpi-label" data-i18n="kpi_true_liq_spia">True Liquidity (SPIA Pool)</div>
-            <div class="kpi-val pos" id="ch1LiqSpia">—</div>
-            <div class="kpi-sub" id="ch1LiqSpiaSub">—</div>
+            <div class="kpi-label" data-i18n="kpi_true_liq_spia">Available with an income annuity</div>
+            <div class="kpi-val pos" id="ch1LiqSpia">--</div>
+            <div class="kpi-sub" id="ch1LiqSpiaSub">--</div>
           </div>
         </div>
-        <div style="padding-top:16px;">
-          <div class="legend">
-            <div class="legend-items">
-              <div class="legend-item"><span class="swatch" style="background:var(--port);height:8px;"></span><span data-i18n="leg_earmarked">Earmarked Capital (Technical Liquidity Only)</span></div>
-              <div class="legend-item"><span class="swatch" style="background:var(--success);height:8px;"></span><span data-i18n="leg_true_liq">Unencumbered True Liquidity</span></div>
-              <div class="legend-item"><span class="swatch" style="background:var(--inflation);height:3px;"></span><span data-i18n="leg_inf_erosion">Purchasing Power Curve</span></div>
+
+        <div class="primer-charts">
+          <div class="primer-chart-box">
+            <div class="chart-head">
+              <div class="chart-title" data-i18n="ch1_avail_heading">How much money stays available?</div>
+              <div class="legend-items">
+                <div class="legend-item"><span class="swatch" style="background:var(--port);height:8px;"></span><span data-i18n="leg_earmarked">Set aside</span></div>
+                <div class="legend-item"><span class="swatch" style="background:var(--success);height:8px;"></span><span data-i18n="leg_true_liq">Available</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="ch1AvailCanvas" height="220"></canvas>
+              <div class="tooltip" id="ch1AvailTip"></div>
             </div>
           </div>
-          <div class="chart-wrap">
-            <canvas id="ch1Canvas" height="235"></canvas>
-            <div class="tooltip" id="ch1Tip"></div>
+
+          <div class="primer-chart-box">
+            <div class="chart-head">
+              <div class="chart-title" data-i18n="ch1_power_heading">What will $1 buy over time?</div>
+              <div class="legend-items">
+                <div class="legend-item"><span class="swatch" style="background:var(--inflation);height:3px;"></span><span data-i18n="leg_inf_erosion">Today's prices</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="ch1PowerCanvas" height="220"></canvas>
+              <div class="tooltip" id="ch1PowerTip"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1018,7 +1097,7 @@
 
     <section class="matrix-panel">
       <div class="card-title" style="margin-bottom:8px;">
-        <h3 class="sec-title" data-i18n="ch1_schools_title">Chapter 1: Probability-Based vs. Safety-First Frameworks (Exhibits 1.2–1.6)</h3>
+        <h3 class="sec-title" data-i18n="ch1_schools_title">Chapter 1: Probability-Based vs. Safety-First Frameworks</h3>
       </div>
       <div class="table-container" style="max-height:none;">
         <table>
@@ -1026,7 +1105,7 @@
             <tr>
               <th data-i18n="th_dim">Dimension</th>
               <th data-i18n="th_prob">Probability-Based (Investments / Total Return)</th>
-              <th data-i18n="th_safe">Safety-First (Insurance / Asset-Liability Match)</th>
+              <th data-i18n="th_safe">Safety-First (Insurance / Liability Matching)</th>
             </tr>
           </thead>
           <tbody id="ch1MatrixBody"></tbody>
@@ -1060,7 +1139,7 @@
       age_lbl: { "en-UK": "Age {a}", "zh-CN": "{a} 岁" }
     };
 
-    const PAGE_I18N = {"page_title":{"en-UK":"Retirement Spending Strategies (Pfau)","zh-CN":"退休支出策略分析（Pfau）"},"app_title":{"en-UK":"Retirement Spending Strategies (Pfau)","zh-CN":"退休支出策略分析（Pfau）"},"hub_heading":{"en-UK":"How Much Can I Spend in Retirement? — Quantitative Labs","zh-CN":"《退休后我能花多少钱？》—— 量化分析交互实验室"},"hub_sub":{"en-UK":"Eight self-contained interactive tools implementing the historical simulations, 10,000-run Monte Carlo engines, variable spending rules, bond ladders, and balance-sheet models across Chapters 1–9 of Wade D. Pfau's guide.","zh-CN":"全套 8 个纯本地单文件交互实验室，完整复现 Wade D. Pfau 专著第 1–9 章的历史回测、万次蒙特卡洛模拟、动态支出规则、债券阶梯与家庭资产负债表模型。"},"open_lab":{"en-UK":"Open interactive lab","zh-CN":"进入交互实验室"},"aria_ch1_calc":{"en-UK":"Chapter 1 Liquidity and Inflation Calculator","zh-CN":"第1章流动性与通胀计算器"},"ch1_calc_title":{"en-UK":"Ch. 1: Nest Egg, Inflation & True Liquidity","zh-CN":"第1章：目标本金、通胀侵蚀与真实流动性"},"lbl_total_assets":{"en-UK":"Total financial assets","zh-CN":"家庭总金融资产"},"lbl_target_spend":{"en-UK":"Target annual spending (S₁)","zh-CN":"目标首年支出 (S₁)"},"lbl_swr_pct":{"en-UK":"Safe WR (%)","zh-CN":"安全提取率 (%)"},"lbl_inf_pct":{"en-UK":"Inflation (%/yr)","zh-CN":"年通胀率 (%/年)"},"lbl_inf_yrs":{"en-UK":"Horizon (yrs)","zh-CN":"年数 (年)"},"lbl_spia_rate":{"en-UK":"SPIA Payout (%)","zh-CN":"即期年金给付率 (%)"},"kpi_nest_egg":{"en-UK":"Self-Fund Target (W₀)","zh-CN":"自筹目标本金 (W₀)"},"kpi_purch_power":{"en-UK":"$1 Real Power Left","zh-CN":"$1 剩余购买力"},"kpi_true_liq_self":{"en-UK":"True Liquidity (Self-Fund)","zh-CN":"真实流动性（纯自筹）"},"kpi_true_liq_spia":{"en-UK":"True Liquidity (Annuity Pool)","zh-CN":"真实流动性（年金池）"},"leg_earmarked":{"en-UK":"Earmarked Capital (Allocation Liquidity Only)","zh-CN":"专款占用本金（仅配置流动性）"},"leg_true_liq":{"en-UK":"Unencumbered True Liquidity","zh-CN":"可自由支配真实流动性"},"leg_inf_erosion":{"en-UK":"$1 Purchasing Power Over Horizon","zh-CN":"$1 购买力随时间衰减曲线"},"ch1_schools_title":{"en-UK":"Ch. 1: Probability-Based vs. Safety-First Schools (Exhibits 1.2–1.6)","zh-CN":"第1章：概率学派 vs 安全优先学派框架对比（图 1.2–1.6）"},"th_dim":{"en-UK":"Dimension","zh-CN":"对比维度"},"th_prob":{"en-UK":"Probability-Based (Investments / Total Return)","zh-CN":"概率学派（投资组合 / 总收益）"},"th_safe":{"en-UK":"Safety-First (Insurance / Liability Matching)","zh-CN":"安全优先学派（保险 / 资产负债匹配）"},"sub_mult":{"en-UK":"{x}× annual spending","zh-CN":"年支出的 {x} 倍"},"sub_price_mult":{"en-UK":"Price level: {m}× in {y} yrs","zh-CN":"{y} 年后物价倍数为 {m}×"},"sub_spia_cost":{"en-UK":"Annuity cost: {c} ({x}×)","zh-CN":"年金所需本金：{c}（{x}×）"},"sub_self_cost":{"en-UK":"Earmarked: {c}","zh-CN":"专款锁定：{c}"},"card_t_fixed_returns_longevity":{"en-UK":"Fixed Returns & Longevity Risk","zh-CN":"固定收益与长寿风险"},"card_ch_fixed_returns_longevity":{"en-UK":"Ch. 2","zh-CN":"第2章"},"card_d_fixed_returns_longevity":{"en-UK":"Deterministic PMT / NPER / RATE solvers, Exhibit 2.1 return waterfall, SOA 2012 IAM vs. SSA mortality survival curves, and Exhibits 2.8–2.10 Horizon × Return matrices.","zh-CN":"第2章：确定性 PMT/NPER/RATE 求解、收益拆解瀑布图、SOA 与 SSA 生存曲线对比，以及退休年限 × 收益率支出矩阵。"},"card_t_sequence_of_returns_risk":{"en-UK":"Sequence-of-Returns Risk","zh-CN":"收益率顺序风险"},"card_ch_sequence_of_returns_risk":{"en-UK":"Ch. 3","zh-CN":"第3章"},"card_d_sequence_of_returns_risk":{"en-UK":"Wealth glide paths and >10% withdrawal spirals (Ex. 3.1–3.3), Adam's 60-year lifecycle & regression R² attribution (Ex. 3.4–3.6), and reverse-engineered IRR percentiles (Ex. 3.7–3.9).","zh-CN":"第3章：资产下滑路径与 >10% 提取率螺旋、60年全生命周期顺序风险归因（回归 R²），以及反推固定收益率分位数（10,000次蒙特卡洛）。"},"card_t_safe_withdrawal_rates":{"en-UK":"Safe Withdrawal Rates & Trinity Study","zh-CN":"安全提取率与 Trinity 研究"},"card_ch_safe_withdrawal_rates":{"en-UK":"Ch. 4","zh-CN":"第4章"},"card_d_safe_withdrawal_rates":{"en-UK":"Bengen SAFEMAX across 1871–2025 / 1928–2025 (Ex. 4.1–4.4), full Trinity Study success grid (Ex. 4.5), historical overlap bias vs. Monte Carlo (Ex. 4.6), and Markowitz SWR isoquants (Ex. 4.7–4.8).","zh-CN":"第4章：Bengen 历史最差安全提取率 (SAFEMAX)、完整 Trinity 研究成功率矩阵、历史窗口重叠偏差对比，以及均值-方差有效前沿与等提取率曲线。"},"card_t_valuations_and_savings":{"en-UK":"Valuations, Safe Savings & Drag","zh-CN":"市场估值、安全储蓄率与损耗"},"card_ch_valuations_and_savings":{"en-UK":"Ch. 5A","zh-CN":"第5章上"},"card_d_valuations_and_savings":{"en-UK":"Shiller PE10 & 10Y yield MWR regression (Ex. 5.4–5.8), Safe Savings Rate SAFEMIN lifecycle (Ex. 5.9–5.11), 20-country DMS & 5-asset optimization (Ex. 5.2–5.3, 5.26–5.28), and fee/tax/mistiming drag (Ex. 5.12–5.13).","zh-CN":"第5章上：席勒 PE10 与美债利率回归预测、安全储蓄率 (SAFEMIN) 全周期模拟、20国历史与5资产配置优化，以及费用/税负/择时失误损耗。"},"card_t_spending_smiles_glidepaths":{"en-UK":"Spending Smiles & Bond Tents","zh-CN":"支出微笑曲线与动态股债滑道"},"card_ch_spending_smiles_glidepaths":{"en-UK":"Ch. 5B","zh-CN":"第5章下"},"card_d_spending_smiles_glidepaths":{"en-UK":"Blanchett HRS Spending Smile & Basu 4-category Age-Banding (Ex. 5.16–5.21), nominal/real legacy targets & competing mortality ruin (Ex. 5.14–5.15, 5.22–5.25), and Rising Equity Glidepath 2D heatmap (Ex. 5.29).","zh-CN":"第5章下：Blanchett 退休支出微笑曲线与 Basu 分年龄段通胀模型、本金/购买力留存与寿命竞争风险、以及“债券帐篷”递增股票滑道热力图。"},"card_t_variable_spending":{"en-UK":"Variable Spending & PAY Rule™","zh-CN":"可变支出策略与 PAY 准则"},"card_ch_variable_spending":{"en-UK":"Ch. 6","zh-CN":"第6章"},"card_d_variable_spending":{"en-UK":"All 10 variable rules (Constant, Fixed %, Hybrid, 3Y MA, Bengen F/C, Vanguard F/C, Kitces Ratchet, Guyton-Klinger 2006, Zolt Glidepath, Modified RMD), PAY Rule™ auto-calibration, and 1966/1982/1946 head-to-head.","zh-CN":"第6章：完整实现全书 10 种动态支出规则、PAY 准则自动校准器（保守/稳健/进取），以及 1966 滞胀/1982 牛市/1946 高通胀年份正面交锋。"},"card_t_bonds_and_buckets":{"en-UK":"Bond Ladders & Time Segmentation","zh-CN":"债券阶梯与时间分段策略"},"card_ch_bonds_and_buckets":{"en-UK":"Ch. 7","zh-CN":"第7章"},"card_d_bonds_and_buckets":{"en-UK":"Forward 30-yr Treasury STRIPS & backward-induction TIPS ladders (Ex. 7.11–7.12), bond duration/convexity/pull-to-par (Ex. 7.1–7.9), and 7-way Time Segmentation MC simulator (Ex. 7.13–7.21).","zh-CN":"第7章：30年期零息国债 STRIPS 与抗通胀债券 TIPS 反向归纳阶梯、久期/凸性/回面值演示，以及 7 种时间分段桶策略与动态总收益对比。"},"card_t_funded_ratio_and_gamma":{"en-UK":"Funded Ratio, CARE & Advisor Gamma","zh-CN":"资金充足率、CARE 与规划 Gamma"},"card_ch_funded_ratio_and_gamma":{"en-UK":"Ch. 8–9","zh-CN":"第8–9章"},"card_d_funded_ratio_and_gamma":{"en-UK":"Risk-free TIPS Funded Ratio & Essential Floor balance sheet (Ex. 1.2, 8.2), interactive 13-factor CARE diagnostic (Ex. 8.6), and Morningstar Gamma / Vanguard Advisor Alpha simulator (Ex. 9.1–9.2).","zh-CN":"第8–9章：基于 TIPS 贴现的无风险资金充足率资产负债表、13因子 CARE 财务诊断评估，以及晨星 Gamma 六大维度与先锋顾问 Alpha 量化模拟器。"}};
+    const PAGE_I18N = {"page_title":{"en-UK":"Retirement Spending Strategies (Pfau)","zh-CN":"退休支出策略分析（Pfau）"},"app_title":{"en-UK":"Retirement Spending Strategies (Pfau)","zh-CN":"退休支出策略分析（Pfau）"},"hub_heading":{"en-UK":"How Much Can I Spend in Retirement? Quantitative Labs","zh-CN":"《退休后我能花多少钱？》量化分析交互实验室"},"hub_sub":{"en-UK":"Eight self-contained interactive tools implementing the historical simulations, 10,000-run Monte Carlo engines, variable spending rules, bond ladders, and balance-sheet models across Chapters 1–9 of Wade D. Pfau's guide.","zh-CN":"全套 8 个纯本地单文件交互实验室，完整复现 Wade D. Pfau 专著第 1–9 章的历史回测、万次蒙特卡洛模拟、动态支出规则、债券阶梯与家庭资产负债表模型。"},"cta_try_ch1":{"en-UK":"Try the Chapter 1 calculator","zh-CN":"体验第 1 章快速测算器"},"cta_or_browse":{"en-UK":"or choose a chapter lab below","zh-CN":"或直接选择下方章节实验室"},"open_lab":{"en-UK":"Open interactive lab","zh-CN":"进入交互实验室"},"aria_ch1_calc":{"en-UK":"Chapter 1 Liquidity and Inflation Calculator","zh-CN":"第1章流动性与通胀计算器"},"ch1_calc_title":{"en-UK":"Chapter 1: Nest Egg, Inflation & True Liquidity","zh-CN":"第 1 章：目标本金、通胀侵蚀与真实流动性"},"lbl_total_assets":{"en-UK":"Total retirement savings","zh-CN":"退休储蓄总额"},"lbl_target_spend":{"en-UK":"First-year annual spending","zh-CN":"首年计划支出"},"lbl_swr_pct":{"en-UK":"Withdrawal rate (%/yr)","zh-CN":"初始提取率 (%/年)"},"lbl_spia_rate":{"en-UK":"Income annuity payout rate (%/yr)","zh-CN":"终身年金给付率 (%/年)"},"lbl_inf_pct":{"en-UK":"Annual inflation rate (%/yr)","zh-CN":"年通胀率 (%/年)"},"lbl_inf_yrs":{"en-UK":"Time horizon (years)","zh-CN":"时间跨度 (年)"},"kpi_nest_egg":{"en-UK":"Savings needed to self-fund","zh-CN":"纯自筹所需本金"},"kpi_purch_power":{"en-UK":"Purchasing power of $1","zh-CN":"$1 的实际购买力"},"kpi_true_liq_self":{"en-UK":"Available after self-funding","zh-CN":"纯自筹后可支配资金"},"kpi_true_liq_spia":{"en-UK":"Available with an income annuity","zh-CN":"配终身年金后可支配资金"},"ch1_avail_heading":{"en-UK":"How much money stays available?","zh-CN":"有多少资金仍可自由支配？"},"ch1_power_heading":{"en-UK":"What will $1 buy over time?","zh-CN":"$1 的购买力随时间如何变化？"},"leg_earmarked":{"en-UK":"Set aside","zh-CN":"专款支应开销"},"leg_true_liq":{"en-UK":"Available","zh-CN":"可自由支配"},"leg_inf_erosion":{"en-UK":"Today's prices","zh-CN":"按今日物价折算"},"ch1_schools_title":{"en-UK":"Chapter 1: Probability-Based vs. Safety-First Frameworks","zh-CN":"第 1 章：概率学派 vs 安全优先学派框架对比"},"th_dim":{"en-UK":"Dimension","zh-CN":"对比维度"},"th_prob":{"en-UK":"Probability-Based (Investments / Total Return)","zh-CN":"概率学派（投资组合 / 总收益）"},"th_safe":{"en-UK":"Safety-First (Insurance / Liability Matching)","zh-CN":"安全优先学派（保险 / 资产负债匹配）"},"sub_nest":{"en-UK":"Covers {s}/yr at a {w} withdrawal rate ({x}× annual spending).","zh-CN":"按 {w} 提取率满足 {s}/年支出（年支出的 {x} 倍）。"},"prose_real_power":{"en-UK":"In {y} {yw}, $1 will buy about {amt} worth of goods at today's prices.","zh-CN":"{y}年后，$1 大约能买到相当于今天{amt}的商品。"},"sub_price_mult":{"en-UK":"Assumes {r} annual inflation (prices reach {m}× today's level).","zh-CN":"假设年通胀率 {r}（物价升至今日的 {m} 倍）。"},"sub_liq_self_ok":{"en-UK":"After setting aside {c} for spending, {f} stays uncommitted.","zh-CN":"扣除用于支出的专款 {c} 后，剩余 {f} 可自由支配。"},"sub_liq_self_gap":{"en-UK":"Self-funding needs {c}, leaving a {g} shortfall.","zh-CN":"纯自筹需本金 {c}，当前资金尚有 {g} 缺口。"},"sub_liq_spia_ok":{"en-UK":"An annuity paying {r} costs {c} for {s}/yr, freeing {f}.","zh-CN":"按 {r} 给付率购买年金仅需 {c} 即可锁定 {s}/年，可释放 {f}。"},"sub_liq_spia_gap":{"en-UK":"An annuity paying {r} costs {c}, leaving a {g} shortfall.","zh-CN":"按 {r} 给付率购买年金需本金 {c}，当前资金尚有 {g} 缺口。"},"bar_self":{"en-UK":"Self-funded","zh-CN":"纯自筹"},"bar_annuity":{"en-UK":"With annuity","zh-CN":"配年金"},"lbl_today":{"en-UK":"Today","zh-CN":"今天"},"card_t_fixed_returns_longevity":{"en-UK":"Fixed Returns & Longevity Risk","zh-CN":"固定收益与长寿风险"},"card_ch_fixed_returns_longevity":{"en-UK":"Ch. 2","zh-CN":"第2章"},"card_q_fixed_returns_longevity":{"en-UK":"How long might my retirement last, and what can I spend if returns are steady?","zh-CN":"退休可能持续多少年？如果投资收益稳定，每年可以花多少钱？"},"card_d_fixed_returns_longevity":{"en-UK":"Compare steady-return spending schedules with single and couple survival odds.","zh-CN":"结合单人与夫妻生存概率曲线，测算稳定回报下的可持续支出与规划年限。"},"card_t_sequence_of_returns_risk":{"en-UK":"Sequence-of-Returns Risk","zh-CN":"收益率顺序风险"},"card_ch_sequence_of_returns_risk":{"en-UK":"Ch. 3","zh-CN":"第3章"},"card_q_sequence_of_returns_risk":{"en-UK":"What happens if my worst investment years come first?","zh-CN":"如果最差的投资年份恰好出现在刚退休时，会发生什么？"},"card_d_sequence_of_returns_risk":{"en-UK":"See how early downturns drain a portfolio under withdrawals even when average returns look fine.","zh-CN":"观察早期市场下跌叠加持续取款如何加速消耗本金，即便长期平均回报并不低。"},"card_t_safe_withdrawal_rates":{"en-UK":"Safe Withdrawal Rates & Trinity Study","zh-CN":"安全提取率与 Trinity 研究"},"card_ch_safe_withdrawal_rates":{"en-UK":"Ch. 4","zh-CN":"第4章"},"card_q_safe_withdrawal_rates":{"en-UK":"Where does the 4% rule come from, and how often has a fixed budget survived?","zh-CN":"“4% 法则”从何而来？按通胀调整的固定预算在历史上有多稳妥？"},"card_d_safe_withdrawal_rates":{"en-UK":"Test historical US retirements since 1871 and low-yield simulations across stock-bond mixes.","zh-CN":"跨越 1871 年以来的历史退休队列与低利率模拟，检验不同股债配比的成功率。"},"card_t_valuations_and_savings":{"en-UK":"Valuations, Safe Savings & Drag","zh-CN":"市场估值、安全储蓄率与损耗"},"card_ch_valuations_and_savings":{"en-UK":"Ch. 5A","zh-CN":"第5章上"},"card_q_valuations_and_savings":{"en-UK":"How do high market prices, global history, and fees change a safe spending rate?","zh-CN":"偏高的市场估值、海外历史经验与投资费用，会如何改变安全提取率？"},"card_d_valuations_and_savings":{"en-UK":"Explore valuation-based forecasts, career savings rates, 20-country history, and fee drag.","zh-CN":"结合市场估值预测、工作期储蓄率、20 国历史数据以及费用与税负损耗进行评估。"},"card_t_spending_smiles_glidepaths":{"en-UK":"Spending Smiles & Bond Tents","zh-CN":"支出微笑曲线与动态股债滑道"},"card_ch_spending_smiles_glidepaths":{"en-UK":"Ch. 5B","zh-CN":"第5章下"},"card_q_spending_smiles_glidepaths":{"en-UK":"Do retirees spend the same real amount every year, and can a bond tent help?","zh-CN":"退休后每年的真实开销固定不变吗？阶段性增配债券能否降低风险？"},"card_d_spending_smiles_glidepaths":{"en-UK":"Model age-related spending changes, legacy goals, lifetime mortality, and rising-equity paths.","zh-CN":"模拟随年龄变化的支出微笑曲线、遗产目标、寿命竞争风险与递增股票滑道。"},"card_t_variable_spending":{"en-UK":"Variable Spending & PAY Rule™","zh-CN":"可变支出策略与 PAY 准则"},"card_ch_variable_spending":{"en-UK":"Ch. 6","zh-CN":"第6章"},"card_q_variable_spending":{"en-UK":"How much more can I start with if I adjust spending after good and bad years?","zh-CN":"如果愿意随市场好坏灵活调整开销，起步时能多花多少钱？"},"card_d_variable_spending":{"en-UK":"Compare ten flexible withdrawal rules for income stability, upside, and remaining wealth.","zh-CN":"横向对比十种可变提取规则在支出稳定性、上行空间与剩余资产之间的权衡。"},"card_t_bonds_and_buckets":{"en-UK":"Bond Ladders & Time Segmentation","zh-CN":"债券阶梯与时间分段策略"},"card_ch_bonds_and_buckets":{"en-UK":"Ch. 7","zh-CN":"第7章"},"card_q_bonds_and_buckets":{"en-UK":"Should I lock in upcoming years of spending with individual bonds instead of a fund?","zh-CN":"是否应该用单只到期国债锁定未来几年的开销，而不是依赖债券基金？"},"card_d_bonds_and_buckets":{"en-UK":"Build year-by-year Treasury and inflation-protected bond ladders, and test bucket strategies.","zh-CN":"构建逐年到期的零息与抗通胀国债阶梯，并对比时间分段策略与总回报组合。"},"card_t_funded_ratio_and_gamma":{"en-UK":"Funded Ratio, CARE & Advisor Gamma","zh-CN":"资金充足率、CARE 与规划 Gamma"},"card_ch_funded_ratio_and_gamma":{"en-UK":"Ch. 8–9","zh-CN":"第8–9章"},"card_q_funded_ratio_and_gamma":{"en-UK":"Are my total resources enough for essentials, and which income style fits me?","zh-CN":"我的家庭总资源足以覆盖基本开支吗？哪种退休收入风格更适合我？"},"card_d_funded_ratio_and_gamma":{"en-UK":"Measure your household funded ratio, score planning preferences, and estimate tax and claiming gains.","zh-CN":"测算家庭资产负债充足率，完成规划偏好评估，并估算社保与税务筹划的增益。"}};
 
     function detectInitialLang() {
       try {
@@ -1368,15 +1447,33 @@
 
 
 
-    const MATRIX_ROWS = [["Monte Carlo 90% Success","90% 成功率标准","Acceptable baseline; relies on ability to adjust later","可接受基准；依赖后期动态削减支出的弹性","Rejected for essentials; 10% ruin risk is unacceptable for core needs","基本生活开支不接受 10% 失败概率"],["Objective Function","优化目标函数","Minimize depletion probability for unified lifestyle spending","最小化统一生活预算的资产耗尽概率","Maximize expected lifetime utility; separate essentials from discretionary","最大化终身效用；严格区分刚性开支与弹性开支"],["Goal Hierarchy (4 Ls)","目标层级（4L 模型）","Single pooled lifestyle budget; precautionary leftovers for contingencies","单一汇总预算；靠剩余资金充当应急缓冲","1. Longevity floor (SS/TIPS/SPIA) → 2. Liquidity reserves → 3. Lifestyle → 4. Legacy","1.长寿底线（社保/TIPS/年金）→ 2.流动性储备 → 3.品质生活 → 4.遗产"],["True vs. Technical Liquidity","真实流动性 vs 配置流动性","High allocation liquidity, but capital earmarked for spending cannot be freely spent","账面均可调仓，但锁定用于未来支出的资金并无真实支配自由","Risk pooling (mortality credits) lowers floor cost (~20× vs ~25–35×), freeing true liquidity","长寿风险池降低刚性底线资金占用，反而释放更多可自由支配流动性"]];
+    const MATRIX_ROWS = [["Monte Carlo 90% Success","90% 成功率标准","Acceptable baseline; relies on ability to adjust later","可接受基准；依赖后期动态削减支出的弹性","Rejected for essentials; 10% ruin risk is unacceptable for core needs","基本生活开支不接受 10% 失败概率"],["Objective Function","优化目标函数","Minimize depletion probability for unified lifestyle spending","最小化统一生活预算的资产耗尽概率","Maximize expected lifetime utility; separate essentials from discretionary","最大化终身效用；严格区分刚性开支与弹性开支"],["Goal Hierarchy (4 Ls)","目标层级（4L 模型）","Single pooled lifestyle budget; precautionary leftovers for contingencies","单一汇总预算；靠剩余资金充当应急缓冲","1. Longevity floor (Social Security / TIPS / annuity) → 2. Reserves → 3. Lifestyle → 4. Legacy","1.长寿底线（社保/TIPS/年金）→ 2.储备金 → 3.品质生活 → 4.遗产"],["True vs. Technical Liquidity","真实流动性 vs 配置流动性","High allocation liquidity, but capital earmarked for spending cannot be freely spent","账面均可调仓，但锁定用于未来支出的资金并无真实支配自由","Risk pooling (mortality credits) lowers floor cost (~20× vs ~25–35×), freeing true liquidity","长寿风险池降低刚性底线资金占用，反而释放更多可自由支配流动性"]];
+    const state = { bars: null, powerPts: null };
+
+    function fmtRateStr(pct) {
+      const rounded = Math.round(pct * 10) / 10;
+      return (Math.abs(rounded - Math.round(rounded)) < 0.05 ? String(Math.round(rounded)) : rounded.toFixed(1)) + "%";
+    }
+
+    function fmtDollarFraction(val, isZh) {
+      if (val >= 0.995) return "$" + val.toFixed(2);
+      const cents = Math.round(val * 100);
+      if (cents < 1) return isZh ? "不足1美分" : "<1¢";
+      return isZh ? (cents + "美分") : (cents + "¢");
+    }
 
     function updateCh1() {
       const assets = Math.max(0, parseMoney(document.getElementById("ch1Portfolio")));
       const spend = Math.max(0, parseMoney(document.getElementById("ch1Spend")));
-      const swr = Math.max(0.5, parseFloat(document.getElementById("ch1Swr").value) || 4.0) / 100;
-      const inf = Math.max(-5, parseFloat(document.getElementById("ch1Inf").value) || 3.0) / 100;
+      const swrPct = Math.max(0.5, parseFloat(document.getElementById("ch1Swr").value) || 4.0);
+      const infRaw = parseFloat(document.getElementById("ch1Inf").value);
+      const infPct = isFinite(infRaw) ? Math.max(-5, Math.min(20, infRaw)) : 3.0;
       const yrs = Math.max(1, Math.min(60, parseInt(document.getElementById("ch1InfYrs").value, 10) || 25));
-      const spiaRate = Math.max(1, parseFloat(document.getElementById("ch1AnnuityPct").value) || 5.0) / 100;
+      const spiaPct = Math.max(1, parseFloat(document.getElementById("ch1AnnuityPct").value) || 5.0);
+
+      const swr = swrPct / 100;
+      const inf = infPct / 100;
+      const spiaRate = spiaPct / 100;
 
       const w0Self = spend / swr;
       const w0Spia = spend / spiaRate;
@@ -1384,21 +1481,33 @@
       const priceMult = Math.pow(1 + inf, yrs);
       const liqSelf = assets - w0Self;
       const liqSpia = assets - w0Spia;
+      const isZh = currentLang === "zh-CN";
 
       document.getElementById("ch1NestEgg").textContent = fmtExactMoney(w0Self);
-      document.getElementById("ch1NestSub").textContent = t("sub_mult", { x: (1 / swr).toFixed(1) });
-      document.getElementById("ch1RealVal").textContent = "$" + realDollar.toFixed(3);
-      document.getElementById("ch1PriceMult").textContent = t("sub_price_mult", { m: priceMult.toFixed(2), y: yrs });
+      document.getElementById("ch1NestSub").textContent = t("sub_nest", {
+        s: fmtExactMoney(spend), w: fmtRateStr(swrPct), x: (1 / swr).toFixed(1)
+      });
+
+      document.getElementById("ch1RealVal").textContent = t("prose_real_power", {
+        y: yrs, yw: yrs === 1 ? "year" : "years", amt: fmtDollarFraction(realDollar, isZh)
+      });
+      document.getElementById("ch1PriceMult").textContent = t("sub_price_mult", {
+        r: fmtRateStr(infPct), m: priceMult.toFixed(2)
+      });
+
       document.getElementById("ch1LiqSelf").textContent = fmtExactMoney(liqSelf);
       document.getElementById("ch1LiqSelf").className = "kpi-val " + (liqSelf >= 0 ? "" : "neg");
-      document.getElementById("ch1LiqSelfSub").textContent = t("sub_self_cost", { c: fmtCompactMoney(w0Self) });
+      document.getElementById("ch1LiqSelfSub").textContent = liqSelf >= 0
+        ? t("sub_liq_self_ok", { c: fmtExactMoney(w0Self), f: fmtExactMoney(liqSelf) })
+        : t("sub_liq_self_gap", { c: fmtExactMoney(w0Self), g: fmtExactMoney(Math.abs(liqSelf)) });
+
       document.getElementById("ch1LiqSpia").textContent = fmtExactMoney(liqSpia);
       document.getElementById("ch1LiqSpia").className = "kpi-val " + (liqSpia >= 0 ? "pos" : "neg");
-      document.getElementById("ch1LiqSpiaSub").textContent = t("sub_spia_cost", { c: fmtCompactMoney(w0Spia), x: (1 / spiaRate).toFixed(1) });
+      document.getElementById("ch1LiqSpiaSub").textContent = liqSpia >= 0
+        ? t("sub_liq_spia_ok", { r: fmtRateStr(spiaPct), c: fmtExactMoney(w0Spia), s: fmtExactMoney(spend), f: fmtExactMoney(liqSpia) })
+        : t("sub_liq_spia_gap", { r: fmtRateStr(spiaPct), c: fmtExactMoney(w0Spia), g: fmtExactMoney(Math.abs(liqSpia)) });
 
-      // Render Matrix
       const tbody = document.getElementById("ch1MatrixBody");
-      const isZh = currentLang === "zh-CN";
       tbody.innerHTML = MATRIX_ROWS.map(r => `
         <tr>
           <td style="white-space:normal;font-family:var(--font);font-weight:600;">${isZh ? r[1] : r[0]}</td>
@@ -1407,75 +1516,139 @@
         </tr>
       `).join("");
 
-      drawCh1Chart({ assets, w0Self, w0Spia, inf, yrs });
+      drawAvailChart({ assets, w0Self, w0Spia });
+      drawPowerChart({ inf, yrs, infPct });
     }
 
-    function drawCh1Chart(m) {
-      const canvas = document.getElementById("ch1Canvas");
+    function drawAvailChart(m) {
+      const canvas = document.getElementById("ch1AvailCanvas");
       const sc = setupCanvas(canvas);
       if (!sc) return;
       const { ctx, w, h } = sc;
       const C = getThemeColors();
       ctx.clearRect(0, 0, w, h);
 
-      // Left half: Capital Earmarked vs True Liquidity stacked bars; Right half: $1 Real Purchasing Power decay
-      const midX = w * 0.48;
-      const padL = 58, padR = 24, padT = 22, padB = 30;
-      const ch = h - padT - padB;
+      const padL = 54, padR = 14, padT = 18, padB = 30;
+      const cw = w - padL - padR, ch = h - padT - padB;
+      const maxCap = Math.max(m.assets, m.w0Self, m.w0Spia, 100000) * 1.12;
+      const yMap = v => padT + ch - (v / maxCap) * ch;
 
-      // Left panel
-      const maxCap = Math.max(m.assets, m.w0Self, m.w0Spia, 100000) * 1.1;
-      const yMapCap = v => padT + ch - (v / maxCap) * ch;
       ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.fillStyle = C.muted; ctx.font = CANVAS_FONT; ctx.textAlign = "right";
       computeNiceLinearTicks(0, maxCap, 4).forEach(v => {
-        const y = yMapCap(v);
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(midX - 24, y); ctx.stroke();
+        const y = yMap(v);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
         ctx.fillText(fmtCompactMoney(v), padL - 6, y + 4);
       });
 
       const bars = [
-        { lbl: currentLang === "zh-CN" ? "纯自筹组合" : "Self-Fund", ear: Math.min(m.assets, m.w0Self), free: Math.max(0, m.assets - m.w0Self) },
-        { lbl: currentLang === "zh-CN" ? "年金风险池" : "SPIA Pool", ear: Math.min(m.assets, m.w0Spia), free: Math.max(0, m.assets - m.w0Spia) }
+        { lbl: t("bar_self"), need: m.w0Self, ear: Math.min(m.assets, m.w0Self), free: Math.max(0, m.assets - m.w0Self) },
+        { lbl: t("bar_annuity"), need: m.w0Spia, ear: Math.min(m.assets, m.w0Spia), free: Math.max(0, m.assets - m.w0Spia) }
       ];
-      const lw = midX - 24 - padL;
-      const bw = Math.min(48, lw * 0.28);
+      const bw = Math.min(64, cw * 0.26);
+      const hitBars = [];
       bars.forEach((b, idx) => {
-        const cx = padL + ((idx + 0.5) / 2) * lw;
-        const y0 = yMapCap(0), yEar = yMapCap(b.ear), yTot = yMapCap(b.ear + b.free);
+        const cx = padL + ((idx + 0.5) / 2) * cw;
+        const y0 = yMap(0), yEar = yMap(b.ear), yTot = yMap(b.ear + b.free);
         ctx.fillStyle = C.port;
         ctx.fillRect(cx - bw / 2, yEar, bw, y0 - yEar);
         if (b.free > 0) {
           ctx.fillStyle = C.success;
           ctx.fillRect(cx - bw / 2, yTot, bw, yEar - yTot);
         }
-        ctx.fillStyle = C.muted; ctx.textAlign = "center";
-        ctx.fillText(b.lbl, cx, h - 9);
+        if (b.need > m.assets) {
+          const yNeed = yMap(b.need);
+          ctx.save();
+          ctx.setLineDash([4, 3]);
+          ctx.strokeStyle = C.danger;
+          ctx.lineWidth = 1.6;
+          ctx.strokeRect(cx - bw / 2, yNeed, bw, yEar - yNeed);
+          ctx.restore();
+        }
+        ctx.fillStyle = C.text; ctx.textAlign = "center"; ctx.font = CANVAS_LABEL_FONT;
+        const topVal = b.free > 0 ? b.free : (m.assets - b.need);
+        ctx.fillText(fmtCompactMoney(topVal), cx, Math.max(12, Math.min(yTot, yMap(b.need)) - 6));
+        ctx.fillStyle = C.muted; ctx.font = CANVAS_FONT;
+        ctx.fillText(b.lbl, cx, h - 10);
+        hitBars.push({ ...b, x0: cx - bw / 2, x1: cx + bw / 2, cx });
+      });
+      state.bars = hitBars;
+    }
+
+    function drawPowerChart(m) {
+      const canvas = document.getElementById("ch1PowerCanvas");
+      const sc = setupCanvas(canvas);
+      if (!sc) return;
+      const { ctx, w, h } = sc;
+      const C = getThemeColors();
+      const isZh = currentLang === "zh-CN";
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 46, padR = 16, padT = 18, padB = 30;
+      const cw = w - padL - padR, ch = h - padT - padB;
+      let maxVal = 1.0;
+      for (let yr = 0; yr <= m.yrs; yr++) maxVal = Math.max(maxVal, Math.pow(1 + m.inf, -yr));
+      maxVal = Math.max(1.0, Math.ceil(maxVal * 4) / 4);
+
+      const mapX = yr => padL + (yr / m.yrs) * cw;
+      const mapY = v => padT + ch - (v / maxVal) * ch;
+
+      ctx.textAlign = "right"; ctx.font = CANVAS_FONT;
+      [0, 0.25, 0.5, 0.75, 1.0].concat(maxVal > 1.05 ? [maxVal] : []).forEach(v => {
+        const y = mapY(v);
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+        ctx.fillStyle = C.muted;
+        ctx.fillText("$" + v.toFixed(2), padL - 6, y + 4);
       });
 
-      // Right panel: Purchasing power curve
-      const rx0 = midX + 34, rx1 = w - padR, rw = rx1 - rx0;
-      const mapX = yr => rx0 + (yr / m.yrs) * rw;
-      const mapYP = v => padT + ch - v * ch;
-      ctx.textAlign = "right";
-      [0, 0.25, 0.5, 0.75, 1.0].forEach(v => {
-        const y = mapYP(v);
-        ctx.strokeStyle = C.grid;
-        ctx.beginPath(); ctx.moveTo(rx0, y); ctx.lineTo(rx1, y); ctx.stroke();
-        ctx.fillStyle = C.muted;
-        ctx.fillText("$" + v.toFixed(2), rx0 - 6, y + 4);
-      });
+      const pts = [];
       ctx.beginPath();
-      ctx.strokeStyle = C.inflation; ctx.lineWidth = 2.4;
+      ctx.strokeStyle = C.inflation; ctx.lineWidth = 2.6;
       for (let yr = 0; yr <= m.yrs; yr++) {
-        const px = mapX(yr), py = mapYP(Math.min(1.05, Math.pow(1 + m.inf, -yr)));
+        const v = Math.pow(1 + m.inf, -yr);
+        const px = mapX(yr), py = mapY(v);
+        pts.push({ yr, v, px, py });
         if (yr === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
       }
       ctx.stroke();
-      ctx.fillStyle = C.muted; ctx.textAlign = "center";
-      [0, Math.round(m.yrs / 2), m.yrs].forEach(yr => {
-        ctx.fillText((currentLang === "zh-CN" ? "第" + yr + "年" : "Yr " + yr), mapX(yr), h - 9);
-      });
+
+      const lastPt = pts[pts.length - 1];
+      ctx.beginPath(); ctx.arc(lastPt.px, lastPt.py, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = C.inflation; ctx.fill();
+      ctx.fillStyle = C.text; ctx.textAlign = "right"; ctx.font = CANVAS_LABEL_FONT;
+      ctx.fillText(fmtDollarFraction(lastPt.v, isZh), lastPt.px - 2, Math.max(14, lastPt.py - 8));
+
+      ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.font = CANVAS_FONT;
+      const midYr = Math.round(m.yrs / 2);
+      ctx.fillText(t("lbl_today"), mapX(0) + 12, h - 10);
+      if (m.yrs >= 6) ctx.fillText(isZh ? (midYr + "年") : ("Yr " + midYr), mapX(midYr), h - 10);
+      ctx.fillText(isZh ? (m.yrs + "年") : ("Yr " + m.yrs), mapX(m.yrs) - 10, h - 10);
+      state.powerPts = pts;
     }
+
+    attachCanvasHover(document.getElementById("ch1AvailCanvas"), document.getElementById("ch1AvailTip"), (e, canvas, tip) => {
+      if (!e || !state.bars) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const bar = Math.abs(mx - state.bars[0].cx) <= Math.abs(mx - state.bars[1].cx) ? state.bars[0] : state.bars[1];
+      tip.innerHTML = `<strong>${bar.lbl}</strong>` +
+        `<div class="tip-row"><span>${t("leg_earmarked")}</span><span>${fmtExactMoney(bar.need)}</span></div>` +
+        `<div class="tip-row"><span>${t("leg_true_liq")}</span><span>${fmtExactMoney(bar.free)}</span></div>`;
+      placeTooltip(tip, canvas, e.clientX, e.clientY);
+    });
+
+    attachCanvasHover(document.getElementById("ch1PowerCanvas"), document.getElementById("ch1PowerTip"), (e, canvas, tip) => {
+      if (!e || !state.powerPts || !state.powerPts.length) return;
+      const rect = canvas.getBoundingClientRect();
+      const padL = 46, padR = 16, cw = rect.width - padL - padR;
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left - padL) / Math.max(1, cw)));
+      const idx = Math.round(ratio * (state.powerPts.length - 1));
+      const pt = state.powerPts[idx];
+      const isZh = currentLang === "zh-CN";
+      tip.innerHTML = `<strong>${pt.yr === 0 ? t("lbl_today") : (isZh ? ("第 " + pt.yr + " 年") : ("Year " + pt.yr))}</strong>` +
+        `<div class="tip-row"><span>${t("kpi_purch_power")}</span><span>${fmtDollarFraction(pt.v, isZh)} ($${pt.v.toFixed(3)})</span></div>`;
+      placeTooltip(tip, canvas, e.clientX, e.clientY);
+    });
 
     function onThemeOrLangChange() { updateCh1(); }
 
