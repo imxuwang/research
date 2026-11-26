@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funded Ratio, CARE & Advisor Gamma</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("site_theme_v1");
+        if (t !== "dark" && t !== "light") {
+          t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = t;
+      } catch (_) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --bg-subtle: #fafaf8;
+      --panel: #ffffff;
+      --panel-alt: #f3f3ef;
+      --seg-bg: #efefeb;
+      --seg-active: #ffffff;
+      --seg-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
+      --thumb-shadow: 0 1px 3px rgba(24, 24, 27, 0.22);
+      --switch-knob: #ffffff;
+      --switch-knob-shadow: 0 1px 2px rgba(24, 24, 27, 0.22);
+      --input-bg: #ffffff;
+      --canvas-bg: transparent;
+      --thead-bg: #fafaf8;
+      --tooltip-bg: rgba(255, 255, 255, 0.98);
+      --border: rgba(24, 24, 27, 0.09);
+      --border-strong: rgba(24, 24, 27, 0.18);
+      --border-hover: rgba(24, 24, 27, 0.32);
+      --tip-shadow: 0 8px 24px rgba(24, 24, 27, 0.10), 0 1px 3px rgba(24, 24, 27, 0.06);
+      --text: #18181b;
+      --text-soft: #3f3f46;
+      --muted: #52525b;
+      --grid: rgba(24, 24, 27, 0.07);
+      --zero-line: rgba(24, 24, 27, 0.24);
+      --crosshair: rgba(24, 24, 27, 0.30);
+      --accent: #1d4ed8;
+      --accent-soft: rgba(29, 78, 216, 0.10);
+      --accent-border: rgba(29, 78, 216, 0.24);
+      --equity: #4338ca;
+      --bond: #047857;
+      --port: #b45309;
+      --port-fill-top: rgba(180, 83, 9, 0.12);
+      --port-fill-bot: rgba(180, 83, 9, 0.00);
+      --expense: #9a3412;
+      --inflation: #7e22ce;
+      --danger: #be123c;
+      --success: #047857;
+      --warn-bg: rgba(180, 83, 9, 0.08);
+      --warn-border: rgba(180, 83, 9, 0.24);
+      --mc-outer-band: rgba(29, 78, 216, 0.08);
+      --mc-inner-band: rgba(29, 78, 216, 0.18);
+      --exp-outer-band: rgba(180, 83, 9, 0.10);
+      --exp-inner-band: rgba(180, 83, 9, 0.22);
+      --dd-band: rgba(190, 18, 60, 0.12);
+      --pill-bg: #f3f3ef;
+      --pill-text: #3f3f46;
+      --row-alt: rgba(24, 24, 27, 0.018);
+      --row-hover: rgba(29, 78, 216, 0.045);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color-scheme: light;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0c0d0f;
+      --bg-subtle: #111316;
+      --panel: #15171b;
+      --panel-alt: #1d2026;
+      --seg-bg: #111316;
+      --seg-active: #262a32;
+      --seg-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+      --switch-knob: #f4f4f5;
+      --switch-knob-shadow: 0 1px 2px rgba(0, 0, 0, 0.40);
+      --input-bg: #101215;
+      --canvas-bg: transparent;
+      --thead-bg: #191c21;
+      --tooltip-bg: rgba(21, 23, 27, 0.97);
+      --border: rgba(244, 244, 245, 0.09);
+      --border-strong: rgba(244, 244, 245, 0.19);
+      --border-hover: rgba(244, 244, 245, 0.30);
+      --tip-shadow: 0 12px 28px rgba(0, 0, 0, 0.50);
+      --text: #f4f4f5;
+      --text-soft: #d4d4d8;
+      --muted: #a1a1aa;
+      --grid: rgba(244, 244, 245, 0.08);
+      --zero-line: rgba(244, 244, 245, 0.24);
+      --crosshair: rgba(244, 244, 245, 0.32);
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.16);
+      --accent-border: rgba(96, 165, 250, 0.30);
+      --equity: #818cf8;
+      --bond: #34d399;
+      --port: #f59e0b;
+      --port-fill-top: rgba(245, 158, 11, 0.18);
+      --port-fill-bot: rgba(245, 158, 11, 0.00);
+      --expense: #fbbf24;
+      --inflation: #c084fc;
+      --danger: #fb7185;
+      --success: #34d399;
+      --warn-bg: rgba(245, 158, 11, 0.12);
+      --warn-border: rgba(245, 158, 11, 0.30);
+      --mc-outer-band: rgba(96, 165, 250, 0.10);
+      --mc-inner-band: rgba(96, 165, 250, 0.22);
+      --exp-outer-band: rgba(251, 191, 36, 0.11);
+      --exp-inner-band: rgba(251, 191, 36, 0.24);
+      --dd-band: rgba(251, 113, 133, 0.15);
+      --pill-bg: #22262d;
+      --pill-text: #d4d4d8;
+      --row-alt: rgba(255, 255, 255, 0.02);
+      --row-hover: rgba(96, 165, 250, 0.07);
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+    *::-webkit-scrollbar { width: 6px; height: 6px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+    ::selection { background: var(--accent-soft); color: var(--text); }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      caret-color: var(--accent);
+      line-height: 1.48;
+      font-size: 13.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a:focus-visible, button:focus-visible, summary:focus-visible,
+    input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .tabular { font-variant-numeric: tabular-nums; }
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .pos { color: var(--success); }
+    .neg { color: var(--danger); }
+    .muted { color: var(--muted); }
+    .exp-col { color: var(--expense); }
+    .inf-col { color: var(--inflation); font-weight: 600; }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      padding: 8px 22px;
+      min-height: 52px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 14px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+    .hdr-left { display: flex; align-items: center; min-width: 0; }
+    .hdr-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .hdr-home-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 2px;
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.12s;
+      white-space: nowrap;
+    }
+    .hdr-home-link:hover { color: var(--text); }
+    .hdr-sep { color: var(--border-strong); font-size: 13px; user-select: none; }
+    header h1 {
+      margin: 0;
+      font-size: 16.5px;
+      font-weight: 620;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+    .hdr-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .chapter-jump {
+      width: auto;
+      max-width: 255px;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 4px 8px;
+      min-height: 32px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+    }
+
+    /* APP-SHELL SPLIT LAYOUT */
+    .layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 356px minmax(0, 1fr);
+    }
+    .sidebar {
+      padding: 0 0 28px;
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+    }
+    .workspace {
+      padding: 18px 24px 36px;
+      min-width: 0;
+    }
+    @media (min-width: 1100px) {
+      body.app-shell {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      body.app-shell .layout { flex: 1; overflow: hidden; }
+      body.app-shell .sidebar, body.app-shell .workspace { height: 100%; overflow-y: auto; }
+    }
+    @media (max-width: 1099px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .workspace { padding: 14px 14px 28px; }
+    }
+    @media (max-width: 720px) {
+      header { padding: 8px 12px; gap: 6px 10px; }
+    }
+
+    /* SIDEBAR SECTIONS */
+    .side-section {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+    }
+    .side-section:last-of-type { border-bottom: none; }
+    .sec-head-static {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .sec-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 620;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-wrap: balance;
+    }
+    details.side-section > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 28px;
+      user-select: none;
+    }
+    details.side-section > summary::-webkit-details-marker { display: none; }
+    details.side-section[open] > summary { margin-bottom: 12px; }
+    .sec-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .sec-summary {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    details[open] > summary .sec-summary { display: none; }
+    .chev { color: var(--muted); font-size: 12px; transition: transform 0.15s; flex-shrink: 0; }
+    details[open] > summary .chev { transform: rotate(90deg); }
+    details.side-section > summary:hover .sec-title { color: var(--accent); }
+
+    .control-group { margin-bottom: 13px; }
+    .control-group:last-child { margin-bottom: 0; }
+    label, .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+      gap: 6px;
+    }
+    .label-row label { margin-bottom: 0; justify-content: flex-start; }
+    .label-lead { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+    .label-hint {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 6px 9px;
+      min-height: 32px;
+      font-size: 13px;
+      font-family: var(--font);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+      outline: 2px solid transparent;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+    /* CURRENCY FIELD */
+    .currency-field {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 0 9px;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .currency-field:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+    .currency-prefix {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 13px;
+      margin-right: 6px;
+      user-select: none;
+    }
+    .currency-field input {
+      border: none;
+      background: transparent;
+      padding: 6px 0;
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: none !important;
+      outline: none;
+    }
+
+    /* CHIPS, SEGMENTED CONTROLS & SLIDERS */
+    .chips { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .chips .chip {
+      flex: 1 1 0;
+      text-align: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      padding: 4px 6px;
+      min-height: 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .chip:hover:not(:disabled) { border-color: var(--border-strong); color: var(--text); }
+    .chip.active {
+      background: var(--panel-alt);
+      border-color: var(--border-strong);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--seg-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      gap: 2px;
+      flex-wrap: wrap;
+    }
+    .scale-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 4px 8px;
+      min-height: 26px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.12s, background 0.12s;
+    }
+    .scale-btn:hover { color: var(--text); }
+    .scale-btn.active {
+      background: var(--seg-active);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: var(--seg-shadow);
+    }
+
+    .seg-ctl {
+      display: flex;
+      background: var(--seg-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .seg-ctl button {
+      flex: 1 1 0;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 5px 8px;
+      min-height: 28px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font);
+      transition: color 0.12s, background 0.12s;
+    }
+    .seg-ctl button:hover { color: var(--text); }
+    .seg-ctl button.active {
+      background: var(--seg-active);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: var(--seg-shadow);
+    }
+
+    .ratio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 26px;
+      margin: 2px 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .ratio-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--equity) 0 var(--pct, 50%), var(--bond) var(--pct, 50%) 100%);
+    }
+    .ratio-slider::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--equity) 0 var(--pct, 50%), var(--bond) var(--pct, 50%) 100%);
+    }
+    .ratio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px; margin-top: -6px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--text);
+      box-shadow: var(--thumb-shadow);
+    }
+    .ratio-slider::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--panel); border: 2px solid var(--text);
+    }
+    .ratio-labels {
+      display: flex; justify-content: space-between;
+      font-size: 12px; font-family: var(--mono);
+      margin-top: 2px; color: var(--text-soft); font-weight: 500;
+    }
+
+    .range-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 24px;
+      margin: 2px 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .range-slider::-webkit-slider-runnable-track {
+      height: 5px; border-radius: 999px; background: var(--border-strong);
+    }
+    .range-slider::-moz-range-track {
+      height: 5px; border-radius: 999px; background: var(--border-strong);
+    }
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px; margin-top: -5.5px;
+      border-radius: 50%; background: var(--accent);
+      border: 2px solid var(--panel); box-shadow: var(--thumb-shadow);
+    }
+    .range-slider::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--accent); border: 2px solid var(--panel);
+    }
+
+    .switch-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .switch-row label { margin-bottom: 0; cursor: pointer; }
+    .switch {
+      -webkit-appearance: none; appearance: none;
+      width: 38px; height: 24px; padding: 2px;
+      border-radius: 999px; background: var(--border-strong);
+      position: relative; cursor: pointer; flex-shrink: 0;
+      transition: background 0.15s; margin: 0;
+    }
+    .switch::after {
+      content: ""; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--switch-knob); box-shadow: var(--switch-knob-shadow);
+      transition: transform 0.15s;
+    }
+    .switch:checked { background: var(--accent); }
+    .switch:checked::after { transform: translateX(14px); }
+
+    /* BUTTONS & POPOVERS */
+    .btn {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-soft);
+      padding: 5px 10px;
+      min-height: 32px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .btn:hover:not(:disabled) { background: var(--panel-alt); color: var(--text); }
+    .btn:disabled { opacity: 0.52; cursor: not-allowed; }
+    .btn-accent { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); font-weight: 600; }
+    .link-btn {
+      background: none; border: none; color: var(--accent);
+      font-size: 12px; font-weight: 500; font-family: var(--font);
+      cursor: pointer; padding: 3px 4px; min-height: 24px;
+      display: inline-flex; align-items: center; border-radius: 4px;
+    }
+    .link-btn:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+    .info-btn {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1px solid var(--border-strong); background: transparent;
+      color: var(--muted); font-size: 11px; font-weight: 600;
+      font-family: var(--font); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; flex-shrink: 0;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .info-btn:hover, .info-btn[aria-expanded="true"] {
+      border-color: var(--text-soft); color: var(--text); background: var(--panel-alt);
+    }
+    .info-popover {
+      margin: 0;
+      width: min(330px, calc(100vw - 24px));
+      background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 11px 13px;
+      box-shadow: var(--tip-shadow);
+      font-size: 12px;
+      line-height: 1.48;
+      color: var(--text-soft);
+      text-wrap: pretty;
+    }
+    .info-popover:not([popover]) { display: none; position: fixed; z-index: 60; }
+    .info-popover.open { display: block; }
+
+    /* NOTICES & BOOK PRESETS */
+    .notice {
+      font-size: 12px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-top: 8px;
+      text-wrap: pretty;
+    }
+    .notice.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--port); }
+    .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+    .preset-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font);
+      color: var(--text-soft);
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .preset-btn:hover { border-color: var(--border-strong); background: var(--panel-alt); color: var(--text); }
+    .preset-btn.active { background: var(--accent-soft); border-color: var(--accent-border); color: var(--text); }
+    .preset-btn .p-title { display: block; font-size: 12px; font-weight: 600; line-height: 1.25; }
+    .preset-btn .p-meta { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.2; }
+
+    /* RESULTS SHELL, TABS & KPIs */
+    .results-shell {
+      --body-px: 20px;
+      --body-py: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: visible;
+    }
+    @media (max-width: 680px) {
+      .results-shell { --body-px: 14px; --body-py: 14px; }
+    }
+    .tabs-bar {
+      display: flex; gap: 8px; padding: 10px var(--body-px);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; align-items: center; justify-content: space-between;
+    }
+    .tab-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tab-btn {
+      background: transparent; border: 1px solid transparent; border-radius: 6px;
+      color: var(--muted); padding: 7px 11px;
+      font-size: 12.5px; font-weight: 500; font-family: var(--font);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--panel-alt); }
+    .tab-btn.active { background: var(--accent-soft); border-color: var(--accent-border); color: var(--text); font-weight: 620; }
+    .tabs-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 6px 0; margin-left: auto; }
+    .results-body { padding: var(--body-py) var(--body-px) 20px; }
+    .tab-pane > .panel-block {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-pane > .panel-block:first-child { padding-top: 0; }
+    .tab-pane > .panel-block:last-child { padding-bottom: 0; border-bottom: none; }
+    .card-title {
+      font-size: 13.5px; font-weight: 620; letter-spacing: -0.01em; color: var(--text);
+      margin: 0 0 10px 0; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap; text-wrap: balance;
+    }
+    .subhead { color: var(--muted); font-size: 12px; text-wrap: pretty; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      margin: 0 calc(var(--body-px, 20px) * -1);
+    }
+    .kpis.kpis-flush-top { margin-top: calc(var(--body-py, 18px) * -1); border-top: none; }
+    .kpis.kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpis.kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .kpis.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    @media (max-width: 1280px) {
+      .kpis.kpis-6, .kpis.kpis-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .kpis, .kpis.kpis-3, .kpis.kpis-4, .kpis.kpis-5, .kpis.kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .kpi { background: var(--bg-subtle); padding: 12px 14px; min-width: 0; }
+    .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.3; }
+    .kpi-val {
+      font-size: clamp(14.5px, 1.25vw, 18.5px); font-weight: 650;
+      font-family: var(--mono); font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em; margin-top: 4px; line-height: 1.25; white-space: nowrap;
+    }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.35; font-variant-numeric: tabular-nums; }
+
+    /* CHARTS & TOOLTIPS */
+    .chart-wrap { position: relative; width: 100%; }
+    canvas { width: 100%; display: block; background: var(--canvas-bg); touch-action: pan-y; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 12px;
+      color: var(--text-soft); margin-bottom: 10px; align-items: center; justify-content: space-between;
+    }
+    .legend-items { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .swatch { width: 11px; height: 3px; border-radius: 1px; display: inline-block; }
+    .tooltip {
+      position: absolute; pointer-events: none; background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong); border-radius: 6px; padding: 8px 10px;
+      font-size: 12px; font-family: var(--mono); font-variant-numeric: tabular-nums;
+      color: var(--text); box-shadow: var(--tip-shadow); display: none; z-index: 15;
+      min-width: min(220px, calc(100% - 16px)); max-width: calc(100% - 16px);
+    }
+    .tip-row { display: flex; justify-content: space-between; gap: 14px; line-height: 1.5; }
+
+    /* 2-COL GRID INSIDE RESULTS */
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 0 calc(var(--body-px, 20px) * -1);
+    }
+    .split-grid > .grid-cell { background: var(--panel); padding: 16px var(--body-px, 20px); min-width: 0; }
+    @media (max-width: 960px) { .split-grid { grid-template-columns: 1fr; } }
+
+    /* TABLES */
+    .table-container {
+      max-height: 460px; overflow: auto;
+    }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+      font-family: var(--mono); font-variant-numeric: tabular-nums;
+    }
+    th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      position: sticky; top: 0; background: var(--thead-bg); color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-family: var(--font); font-size: 12px; font-weight: 600; z-index: 2;
+    }
+    tbody tr:nth-child(even) td { background: var(--row-alt); }
+    tbody tr:hover td { background: var(--row-hover); }
+    tr.highlight-row td { background: var(--accent-soft) !important; font-weight: 600; }
+    .year-pill {
+      display: inline-block; padding: 1px 6px; border-radius: 4px;
+      background: var(--pill-bg); color: var(--pill-text); font-size: 11px; font-weight: 500;
+    }
+    .hm-cell { text-align: center !important; font-weight: 500; }
+
+    /* PROSE NOTES BLOCK */
+    .method-note {
+      font-size: 12.5px; color: var(--text-soft); line-height: 1.55; max-width: 74ch; text-wrap: pretty;
+    }
+    .method-note strong { color: var(--text); }
+
+    @media (pointer: coarse) {
+      .hdr-home-link { min-height: 40px; }
+      .btn { min-height: 40px; padding: 8px 12px; font-size: 13px; }
+      .tab-btn { min-height: 44px; padding: 12px 2px 10px; font-size: 13px; }
+      .scale-btn, .seg-ctl button, .chips .chip { min-height: 38px; padding: 7px 10px; font-size: 12.5px; }
+      input[type="number"], input[type="text"], select { font-size: 16px; min-height: 40px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+
+  </style>
+</head>
+<body class="app-shell">
+  <header>
+    <div class="hdr-left">
+      <div class="hdr-title-row"><a href="../../" class="hdr-home-link"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg><span data-i18n="nav_home">Home</span></a><span class="hdr-sep" aria-hidden="true">/</span><a href="../" class="hdr-home-link" data-i18n="nav_suite">Retirement Spending</a><span class="hdr-sep" aria-hidden="true">/</span><h1 data-i18n="app_title">Funded Ratio, CARE & Advisor Gamma</h1></div>
+    </div>
+    <div class="hdr-right">
+      <select id="chapterJump" class="chapter-jump" data-is-hub="0" aria-label="Jump to chapter lab" data-i18n-aria-label="aria_jump">
+        <option value="" data-en="Suite Overview & Ch. 1" data-zh="全书总览与第1章">Suite Overview & Ch. 1</option><option value="fixed-returns-longevity" data-en="Ch. 2 · Fixed Returns & Longevity" data-zh="第2章 · 固定收益与长寿风险">Ch. 2 · Fixed Returns & Longevity</option><option value="sequence-of-returns-risk" data-en="Ch. 3 · Sequence-of-Returns Risk" data-zh="第3章 · 收益率顺序风险">Ch. 3 · Sequence-of-Returns Risk</option><option value="safe-withdrawal-rates" data-en="Ch. 4 · Safe Withdrawal Rates" data-zh="第4章 · 安全提取率">Ch. 4 · Safe Withdrawal Rates</option><option value="valuations-and-savings" data-en="Ch. 5A · Valuations & Safe Savings" data-zh="第5章上 · 估值与安全储蓄率">Ch. 5A · Valuations & Safe Savings</option><option value="spending-smiles-glidepaths" data-en="Ch. 5B · Smiles & Bond Tents" data-zh="第5章下 · 支出微笑与滑道">Ch. 5B · Smiles & Bond Tents</option><option value="variable-spending" data-en="Ch. 6 · Variable Spending & PAY" data-zh="第6章 · 可变支出与 PAY 准则">Ch. 6 · Variable Spending & PAY</option><option value="bonds-and-buckets" data-en="Ch. 7 · Bond Ladders & Buckets" data-zh="第7章 · 债券阶梯与时间分段">Ch. 7 · Bond Ladders & Buckets</option><option value="funded-ratio-and-gamma" data-en="Ch. 8–9 · Funded Ratio & Gamma" data-zh="第8–9章 · 充足率与 Gamma" selected>Ch. 8–9 · Funded Ratio & Gamma</option>
+      </select>
+      <div class="seg-group" id="langSwitch" role="group" aria-label="Language" data-i18n-aria-label="aria_lang">
+        <button type="button" class="scale-btn active" data-lang="en-UK" aria-pressed="true">EN</button>
+        <button type="button" class="scale-btn" data-lang="zh-CN" aria-pressed="false">中文</button>
+      </div>
+      <button type="button" class="btn" id="btnThemeToggle" aria-pressed="false" data-i18n-title="theme_title" title="Toggle Dark / Light Theme">
+        <svg class="icon-moon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M13.5 9.8A5.8 5.8 0 016.2 2.5a5.8 5.8 0 107.3 7.3z"/></svg>
+        <svg class="icon-sun" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none;" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1"/></svg>
+        <span class="theme-lbl" data-i18n="theme_dark">Dark</span>
+      </button>
+      <button type="button" class="btn" id="btnExportCsv" data-i18n="btn_export_csv">Export CSV</button>
+    </div>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Simulation parameters" data-i18n-aria-label="aria_sidebar">
+      <div class="side-section">
+        <div class="sec-head-static">
+          <h2 class="sec-title" data-i18n="sec_presets">Household Plan Presets</h2>
+          <button type="button" class="link-btn" id="btnReset" data-i18n="btn_reset">Reset</button>
+        </div>
+        <div class="preset-grid">
+          <button type="button" class="preset-btn active" data-preset="balanced">
+            <span class="p-title" data-i18n="pre_bal_t">Funded Couple (FR ~112%)</span>
+            <span class="p-meta" data-i18n="pre_bal_m">$1.2M Port + SS67 @ $85k</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="safety">
+            <span class="p-title" data-i18n="pre_saf_t">Safety-First (CARE)</span>
+            <span class="p-meta" data-i18n="pre_saf_m">SS70 + SPIA Floor Coverage</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="under">
+            <span class="p-title" data-i18n="pre_und_t">Constrained (FR &lt; 95%)</span>
+            <span class="p-meta" data-i18n="pre_und_m">High Longevity / Low Floor</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="gamma">
+            <span class="p-title" data-i18n="pre_gam_t">Ex. 9.1–9.2 · Gamma</span>
+            <span class="p-meta" data-i18n="pre_gam_m">+2.3% Gamma-Equiv Alpha</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="sec-head-static"><h2 class="sec-title" data-i18n="sec_assets">Household Assets &amp; Discount Curve</h2></div>
+        <div class="control-group">
+          <label for="tipsCurveSel"><span data-i18n="lbl_disc">TIPS Real Discount Curve</span></label>
+          <select id="tipsCurveSel"></select>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="hhType"><span data-i18n="lbl_hh">Household Mortality</span></label>
+            <select id="hhType">
+              <option value="couple" selected data-i18n="hh_cpl">Couple (SOA 2017)</option>
+              <option value="female" data-i18n="hh_fem">Female (SOA 2017)</option>
+              <option value="male" data-i18n="hh_mal">Male (SOA 2017)</option>
+            </select>
+          </div>
+          <div>
+            <label for="ssAge"><span data-i18n="lbl_ssage">SS Claim Age</span></label>
+            <input type="number" id="ssAge" value="67" min="62" max="70" step="1" />
+          </div>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="finPort"><span data-i18n="lbl_port">Portfolio ($)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="finPort" value="1,200,000" inputmode="numeric" /></div>
+          </div>
+          <div>
+            <label for="cashRes"><span data-i18n="lbl_res">Emergency Reserves ($)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="cashRes" value="100,000" inputmode="numeric" /></div>
+          </div>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="ssPia"><span data-i18n="lbl_pia">SS FRA-67 PIA ($/yr)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="ssPia" value="36,000" inputmode="numeric" /></div>
+          </div>
+          <div>
+            <label for="spiaAlloc"><span data-i18n="lbl_spia">SPIA Purchase ($)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="spiaAlloc" value="0" inputmode="numeric" /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="sec-head-static"><h2 class="sec-title" data-i18n="sec_liab">Retirement Liabilities</h2></div>
+        <div class="control-group row-2">
+          <div>
+            <label for="essSpend"><span data-i18n="lbl_ess">Essential Floor ($/yr)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="essSpend" value="55,000" inputmode="numeric" /></div>
+          </div>
+          <div>
+            <label for="discSpend"><span data-i18n="lbl_dspend">Discretionary ($/yr)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="discSpend" value="30,000" inputmode="numeric" /></div>
+          </div>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="ltcRes"><span data-i18n="lbl_ltc">LTC / Contingency ($)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="ltcRes" value="200,000" inputmode="numeric" /></div>
+          </div>
+          <div>
+            <label for="legGoal"><span data-i18n="lbl_leg">Legacy Goal PV ($)</span></label>
+            <div class="currency-field"><span class="currency-prefix">$</span><input type="text" id="legGoal" value="150,000" inputmode="numeric" /></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="workspace" aria-label="Simulation outputs" data-i18n-aria-label="aria_workspace">
+      <div class="results-shell">
+        <div class="tabs-bar">
+          <div class="tab-strip" role="tablist">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="funded" data-i18n="tab_funded">Funded Ratio &amp; Balance Sheet</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="care" data-i18n="tab_care">13-Factor CARE Diagnostic</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="gamma" data-i18n="tab_gamma">Morningstar Gamma &amp; Advisor Alpha</button>
+          </div>
+        </div>
+
+        <div class="results-body">
+          <div id="paneFunded" class="tab-pane">
+            <div class="kpis kpis-4 kpis-flush-top">
+              <div class="kpi"><div class="kpi-label" data-i18n="kf_fr">Aggregate Funded Ratio</div><div class="kpi-val pos" id="kfFr">—</div><div class="kpi-sub" id="kfFrSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kf_floor">Reliable Floor Coverage</div><div class="kpi-val" id="kfFloor">—</div><div class="kpi-sub" id="kfFloorSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kf_liq">True Liquidity (Assets − Floor Gap)</div><div class="kpi-val" id="kfLiq">—</div><div class="kpi-sub" id="kfLiqSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kf_spia">Actuarial SPIA Payout Rate</div><div class="kpi-val" id="kfSpia">—</div><div class="kpi-sub" id="kfSpiaSub">—</div></div>
+            </div>
+
+            <div class="panel-block">
+              <div class="legend"><strong data-i18n="ttl_bs">Economic Retirement Balance Sheet: Present Value of Assets vs. Liabilities (TIPS-Discounted)</strong></div>
+              <div class="chart-wrap"><canvas id="bsCanvas" height="235"></canvas><div class="tooltip" id="bsTip"></div></div>
+            </div>
+
+            <div class="panel-block">
+              <div class="card-title"><h3 class="sec-title" data-i18n="ttl_bs_tbl">Household Economic Balance Sheet Line Items</h3></div>
+              <div class="table-container" style="max-height:none;"><table><thead id="bsHead"></thead><tbody id="bsBody"></tbody></table></div>
+            </div>
+          </div>
+
+          <div id="paneCare" class="tab-pane" style="display:none;">
+            <div class="kpis kpis-4 kpis-flush-top">
+              <div class="kpi"><div class="kpi-label" data-i18n="kc_cap">Risk Capacity Score</div><div class="kpi-val" id="kcCap">—</div><div class="kpi-sub" id="kcCapSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kc_com">Emotional Comfort Score</div><div class="kpi-val" id="kcCom">—</div><div class="kpi-sub" id="kcComSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kc_style">Recommended Income School</div><div class="kpi-val pos" id="kcStyle">—</div><div class="kpi-sub" id="kcStyleSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kc_band">Suggested Planning Age &amp; Equity</div><div class="kpi-val" id="kcBand">—</div><div class="kpi-sub" id="kcBandSub">—</div></div>
+            </div>
+
+            <div class="split-grid">
+              <div class="grid-cell">
+                <div class="card-title"><h3 class="sec-title" data-i18n="ttl_care_sliders">Interactive 13-Factor CARE Scorecard (1 = Low / Conservative, 5 = High / Growth)</h3></div>
+                <div id="careSliders" style="display:grid;grid-template-columns:1fr;gap:8px;max-height:420px;overflow-y:auto;padding-right:4px;"></div>
+              </div>
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_care_quad">Retirement Income Style Quadrant (Capacity vs. Safety-First Orientation)</strong></div>
+                <div class="chart-wrap"><canvas id="careCanvas" height="270"></canvas><div class="tooltip" id="careTip"></div></div>
+                <div class="notice" id="careRecBox" style="margin-top:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="paneGamma" class="tab-pane" style="display:none;">
+            <div class="kpis kpis-4 kpis-flush-top">
+              <div class="kpi"><div class="kpi-label" data-i18n="kg_gross">Gross Gamma-Equiv Alpha</div><div class="kpi-val pos" id="kgGross">—</div><div class="kpi-sub" id="kgGrossSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kg_net">Net Fee-Adjusted Alpha</div><div class="kpi-val" id="kgNet">—</div><div class="kpi-sub" id="kgNetSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kg_ce">Certainty-Equiv Income Lift</div><div class="kpi-val pos" id="kgCe">—</div><div class="kpi-sub" id="kgCeSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="kg_van">Ex. 9.1 Net Portfolio Return</div><div class="kpi-val" id="kgVan">—</div><div class="kpi-sub" id="kgVanSub">—</div></div>
+            </div>
+
+            <div class="split-grid">
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_gam_bar">Ex. 9.2: Blanchett &amp; Kaplan Morningstar Gamma Levers (Toggle to Simulate)</strong></div>
+                <div id="gammaChecks" style="display:grid;gap:8px;margin-bottom:12px;"></div>
+                <div class="control-group">
+                  <label for="advFeeBps"><span data-i18n="lbl_fee">Advisory + Fund Fee Drag (bps / yr)</span></label>
+                  <input type="number" id="advFeeBps" value="65" min="0" max="200" step="5" />
+                </div>
+              </div>
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_gam_wf">Annual Gamma-Equivalent Alpha Attribution &amp; Fee Hurdle</strong></div>
+                <div class="chart-wrap"><canvas id="gammaCanvas" height="265"></canvas><div class="tooltip" id="gammaTip"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="infoPopover" class="info-popover" popover="auto" role="note"></div>
+  <script>
+
+    const LANG_STORAGE_KEY = "site_lang_v1";
+    const THEME_STORAGE_KEY = "site_theme_v1";
+    const CANVAS_FONT = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+    const CANVAS_LABEL_FONT = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
+
+    const SHARED_I18N = {
+      nav_home: { "en-UK": "Home", "zh-CN": "首页" },
+      nav_suite: { "en-UK": "Retirement Spending", "zh-CN": "退休支出策略" },
+      theme_dark: { "en-UK": "Dark", "zh-CN": "深色" },
+      theme_light: { "en-UK": "Light", "zh-CN": "浅色" },
+      theme_title: { "en-UK": "Toggle Dark / Light Theme", "zh-CN": "切换深色 / 浅色主题" },
+      btn_export_csv: { "en-UK": "Export CSV", "zh-CN": "导出 CSV" },
+      btn_reset: { "en-UK": "Reset", "zh-CN": "重置" },
+      aria_lang: { "en-UK": "Language", "zh-CN": "语言切换" },
+      aria_jump: { "en-UK": "Jump to chapter lab", "zh-CN": "跳转至章节实验室" },
+      aria_sidebar: { "en-UK": "Simulation parameters", "zh-CN": "模拟参数设置" },
+      aria_workspace: { "en-UK": "Simulation outputs", "zh-CN": "模拟结果输出" },
+      lbl_presets: { "en-UK": "Book exhibit presets", "zh-CN": "全书图表预设" },
+      yr_prefix: { "en-UK": "Yr ", "zh-CN": "第" },
+      yr_suffix: { "en-UK": "", "zh-CN": "年" },
+      age_lbl: { "en-UK": "Age {a}", "zh-CN": "{a} 岁" }
+    };
+
+    const PAGE_I18N = {"page_title":{"en-UK":"Funded Ratio, CARE & Advisor Gamma · Ch. 1, 8, 9","zh-CN":"资金充足率、CARE 诊断与 Gamma 价值 · 第1/8/9章"},"app_title":{"en-UK":"Ch. 1, 8, 9 · Funded Ratio, CARE & Gamma","zh-CN":"第1/8/9章 · 家庭资产负债表、CARE 与 Gamma"},"sec_presets":{"en-UK":"Household Plan Presets","zh-CN":"家庭财务情境预设"},"pre_bal_t":{"en-UK":"Funded Couple (FR ~112%)","zh-CN":"稳健充裕夫妻 (充足率 ~112%)"},"pre_bal_m":{"en-UK":"$1.2M Port + SS67 @ $85k","zh-CN":"$1.2M 组合 + 67岁社保 @ $85k"},"pre_saf_t":{"en-UK":"Safety-First (CARE)","zh-CN":"安全优先型 (CARE)"},"pre_saf_m":{"en-UK":"SS70 + SPIA Floor Coverage","zh-CN":"70岁领社保 + 年金锁定底线"},"pre_und_t":{"en-UK":"Constrained (FR < 95%)","zh-CN":"资金偏紧型 (充足率 < 95%)"},"pre_und_m":{"en-UK":"High Longevity / Low Floor","zh-CN":"长寿风险高 / 刚性底线高"},"pre_gam_t":{"en-UK":"Ex. 9.1–9.2 · Gamma","zh-CN":"第9章 · 顾问 Gamma 增值"},"pre_gam_m":{"en-UK":"+2.3% Gamma-Equiv Alpha","zh-CN":"+2.3% 等效年化超额收益"},"sec_assets":{"en-UK":"Household Assets & Discount Curve","zh-CN":"家庭经济资产与折现曲线"},"lbl_disc":{"en-UK":"TIPS Real Discount Curve","zh-CN":"TIPS 真实折现曲线"},"lbl_hh":{"en-UK":"Household Mortality","zh-CN":"家庭成员结构"},"hh_cpl":{"en-UK":"Couple (SOA 2017)","zh-CN":"夫妻双人 (SOA 2017)"},"hh_fem":{"en-UK":"Female (SOA 2017)","zh-CN":"单身女性 (SOA 2017)"},"hh_mal":{"en-UK":"Male (SOA 2017)","zh-CN":"单身男性 (SOA 2017)"},"lbl_ssage":{"en-UK":"SS Claim Age","zh-CN":"社保申领年龄"},"lbl_port":{"en-UK":"Portfolio ($)","zh-CN":"金融投资组合 ($)"},"lbl_res":{"en-UK":"Emergency Reserves ($)","zh-CN":"应急备用现金 ($)"},"lbl_pia":{"en-UK":"SS FRA-67 PIA ($/yr)","zh-CN":"67岁全额社保基数 ($/年)"},"lbl_spia":{"en-UK":"SPIA Purchase ($)","zh-CN":"即期终身年金配置 ($)"},"sec_liab":{"en-UK":"Retirement Liabilities","zh-CN":"退休经济负债结构"},"lbl_ess":{"en-UK":"Essential Floor ($/yr)","zh-CN":"刚性基本生活 ($/年)"},"lbl_dspend":{"en-UK":"Discretionary ($/yr)","zh-CN":"弹性享乐支出 ($/年)"},"lbl_ltc":{"en-UK":"LTC / Contingency ($)","zh-CN":"医疗长护应急储备 ($)"},"lbl_leg":{"en-UK":"Legacy Goal PV ($)","zh-CN":"遗产传承现值目标 ($)"},"tab_funded":{"en-UK":"Funded Ratio & Balance Sheet","zh-CN":"资金充足率与资产负债表"},"tab_care":{"en-UK":"13-Factor CARE Diagnostic","zh-CN":"13因子 CARE 规划诊断"},"tab_gamma":{"en-UK":"Morningstar Gamma & Advisor Alpha","zh-CN":"晨星 Gamma 与顾问 Alpha"},"kf_fr":{"en-UK":"Aggregate Funded Ratio","zh-CN":"家庭总资金充足率 FR"},"kf_floor":{"en-UK":"Reliable Floor Coverage","zh-CN":"可靠收入对刚性底线覆盖率"},"kf_liq":{"en-UK":"True Liquidity (Assets − Floor Gap)","zh-CN":"真实自由流动性"},"kf_spia":{"en-UK":"Actuarial SPIA Payout Rate","zh-CN":"精算 SPIA 终身派息率"},"ttl_bs":{"en-UK":"Economic Retirement Balance Sheet: PV of Assets vs. Liabilities (TIPS-Discounted)","zh-CN":"退休经济资产负债表：TIPS 贴现资产现值 vs 负债现值"},"ttl_bs_tbl":{"en-UK":"Household Economic Balance Sheet Line Items","zh-CN":"家庭资产负债表分项明细"},"kc_cap":{"en-UK":"Risk Capacity Score","zh-CN":"客观风险承受力得分"},"kc_com":{"en-UK":"Emotional Comfort Score","zh-CN":"心理波动舒适度得分"},"kc_style":{"en-UK":"Recommended Income School","zh-CN":"匹配退休收入流派"},"kc_band":{"en-UK":"Suggested Planning Age & Equity","zh-CN":"建议规划年龄与股债区间"},"ttl_care_sliders":{"en-UK":"Interactive 13-Factor CARE Scorecard (1 = Low / Safety, 5 = High / Growth)","zh-CN":"13因子 CARE 评分卡 (1=安全优先, 5=概率进取)"},"ttl_care_quad":{"en-UK":"Retirement Income Style Quadrant (Capacity vs. Safety-First Orientation)","zh-CN":"退休收入策略象限图（客观能力 vs 心理倾向）"},"kg_gross":{"en-UK":"Gross Gamma-Equiv Alpha","zh-CN":"税前总 Gamma 等效 Alpha"},"kg_net":{"en-UK":"Net Fee-Adjusted Alpha","zh-CN":"扣除顾问费净超额 Alpha"},"kg_ce":{"en-UK":"Certainty-Equiv Income Lift","zh-CN":"确定性等值退休收入提升"},"kg_van":{"en-UK":"Ex. 9.1 Net Portfolio Return","zh-CN":"图 9.1 净回报示例 (7%−费 vs 4%)"},"ttl_gam_bar":{"en-UK":"Ex. 9.2: Blanchett & Kaplan Morningstar Gamma Levers (Toggle to Simulate)","zh-CN":"图 9.2：Blanchett & Kaplan 晨星 Gamma 六大来源开关"},"lbl_fee":{"en-UK":"Advisory + Fund Fee Drag (bps / yr)","zh-CN":"年化顾问与基金总费率 (基点 bps)"},"ttl_gam_wf":{"en-UK":"Annual Gamma-Equivalent Alpha Attribution & Fee Hurdle","zh-CN":"年度 Gamma 超额收益拆解与费率门槛"}};
+
+    function detectInitialLang() {
+      try {
+        const saved = localStorage.getItem(LANG_STORAGE_KEY);
+        if (saved === "en-UK" || saved === "zh-CN") return saved;
+      } catch (_) {}
+      const nav = (navigator.language || "").toLowerCase();
+      return nav.startsWith("zh") ? "zh-CN" : "en-UK";
+    }
+
+    function detectInitialTheme() {
+      try {
+        const t = localStorage.getItem(THEME_STORAGE_KEY);
+        if (t === "dark" || t === "light") return t;
+      } catch (_) {}
+      if (document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "light") {
+        return document.documentElement.dataset.theme;
+      }
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    let currentLang = detectInitialLang();
+    const I18N = Object.assign({}, SHARED_I18N, typeof PAGE_I18N !== "undefined" ? PAGE_I18N : {});
+
+    function t(key, vars) {
+      const entry = I18N[key];
+      let str = entry ? (entry[currentLang] !== undefined ? entry[currentLang] : entry["en-UK"]) : key;
+      if (vars && typeof vars === "object") {
+        for (const k of Object.keys(vars)) {
+          str = str.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+        }
+      }
+      return str;
+    }
+
+    function setBtnActive(btn, active) {
+      btn.classList.toggle("active", !!active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    }
+
+    function syncThemeBtn() {
+      const btn = document.getElementById("btnThemeToggle");
+      if (!btn) return;
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const lbl = btn.querySelector(".theme-lbl");
+      const sun = btn.querySelector(".icon-sun");
+      const moon = btn.querySelector(".icon-moon");
+      if (lbl) lbl.textContent = isDark ? t("theme_light") : t("theme_dark");
+      if (sun) sun.style.display = isDark ? "inline" : "none";
+      if (moon) moon.style.display = isDark ? "none" : "inline";
+      btn.setAttribute("title", t("theme_title"));
+      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    }
+
+    function applyTheme(next) {
+      const th = next === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = th;
+      syncThemeBtn();
+      try { localStorage.setItem(THEME_STORAGE_KEY, th); } catch (_) {}
+      if (typeof onThemeOrLangChange === "function") onThemeOrLangChange();
+    }
+
+    function applyStaticI18n() {
+      document.documentElement.lang = currentLang === "zh-CN" ? "zh-CN" : "en-GB";
+      document.title = t("page_title");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach(el => {
+        el.setAttribute("title", t(el.dataset.i18nTitle));
+      });
+      document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+        el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel));
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+      });
+      document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+        setBtnActive(btn, btn.dataset.lang === currentLang);
+      });
+      const sel = document.getElementById("chapterJump");
+      if (sel) {
+        Array.from(sel.options).forEach(opt => {
+          const txt = currentLang === "zh-CN" ? opt.dataset.zh : opt.dataset.en;
+          if (txt) opt.textContent = txt;
+        });
+      }
+      syncThemeBtn();
+    }
+
+    function parseMoney(el) {
+      const n = parseFloat(String(el.value).replace(/[^0-9.-]/g, ""));
+      return isFinite(n) ? n : 0;
+    }
+    function formatMoneyEl(el, val) {
+      el.value = Math.max(0, Math.round(val)).toLocaleString("en-US");
+    }
+    function fmtCompactMoney(v) {
+      if (!isFinite(v)) return "—";
+      const abs = Math.abs(v), s = v < 0 ? "-" : "";
+      if (abs >= 1e9) return s + "$" + (abs / 1e9).toFixed(2) + "B";
+      if (abs >= 1e6) {
+        const m = abs / 1e6;
+        return s + "$" + (Math.abs(m - Math.round(m)) < 0.005 ? Math.round(m) : m.toFixed(2)) + "M";
+      }
+      if (abs >= 1e3) {
+        const k = abs / 1e3;
+        return s + "$" + (Math.abs(k - Math.round(k)) < 0.05 ? Math.round(k) : k.toFixed(1)) + "k";
+      }
+      return s + "$" + Math.round(abs).toLocaleString("en-US");
+    }
+    function fmtExactMoney(v) {
+      if (!isFinite(v)) return "—";
+      const abs = Math.abs(v), s = v < 0 ? "-" : "";
+      return s + "$" + Math.round(abs).toLocaleString("en-US");
+    }
+    function fmtPct(v, d = 2, plus = true) {
+      if (v === null || v === undefined || !isFinite(v)) return "—";
+      const s = v > 0 && plus ? "+" : "";
+      return s + v.toFixed(d) + "%";
+    }
+
+    function getThemeColors() {
+      const cs = getComputedStyle(document.documentElement);
+      const g = k => cs.getPropertyValue(k).trim();
+      return {
+        panel: g("--panel"), bgSubtle: g("--bg-subtle"), text: g("--text"), textSoft: g("--text-soft"),
+        muted: g("--muted"), grid: g("--grid"), zeroLine: g("--zero-line"), crosshair: g("--crosshair"),
+        accent: g("--accent"), accentSoft: g("--accent-soft"), equity: g("--equity"), bond: g("--bond"),
+        port: g("--port"), portFillTop: g("--port-fill-top"), portFillBot: g("--port-fill-bot"),
+        expense: g("--expense"), inflation: g("--inflation"), danger: g("--danger"), success: g("--success"),
+        mcOuterBand: g("--mc-outer-band"), mcInnerBand: g("--mc-inner-band"),
+        expOuterBand: g("--exp-outer-band"), expInnerBand: g("--exp-inner-band"), ddBand: g("--dd-band")
+      };
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      if (!canvas.dataset.baseHeight) {
+        canvas.dataset.baseHeight = canvas.getAttribute("height") || "290";
+      }
+      const h = parseInt(canvas.dataset.baseHeight, 10);
+      canvas.style.height = h + "px";
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 20) return null;
+      const w = rect.width;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w, h };
+    }
+
+    function computeNiceLinearTicks(minVal, maxVal, targetCount = 5) {
+      if (!isFinite(minVal) || !isFinite(maxVal)) return [0, 1];
+      if (maxVal <= minVal) maxVal = minVal + 1;
+      const rawStep = (maxVal - minVal) / Math.max(1, targetCount);
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const frac = rawStep / mag;
+      const nice = frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10;
+      const step = nice * mag;
+      const tickMin = Math.floor(minVal / step) * step;
+      const tickMax = Math.ceil(maxVal / step) * step;
+      const ticks = [];
+      const cnt = Math.round((tickMax - tickMin) / step);
+      for (let i = 0; i <= cnt; i++) {
+        const v = tickMin + i * step;
+        ticks.push(Math.abs(v) < step * 1e-9 ? 0 : Number(v.toPrecision(10)));
+      }
+      return ticks;
+    }
+
+    function mulberry32(a) {
+      let s = a >>> 0;
+      return function () {
+        s = (s + 0x6D2B79F5) >>> 0;
+        let r = Math.imul(s ^ (s >>> 15), 1 | s);
+        r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function randNormal(rng) {
+      let u = 0, v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function quantileSorted(sorted, q) {
+      if (!sorted || !sorted.length) return 0;
+      if (sorted.length === 1) return sorted[0];
+      const pos = (sorted.length - 1) * q;
+      const b = Math.floor(pos), r = pos - b;
+      return b + 1 < sorted.length ? sorted[b] + r * (sorted[b + 1] - sorted[b]) : sorted[b];
+    }
+
+    function meanArr(arr) {
+      if (!arr || !arr.length) return 0;
+      let s = 0;
+      for (let i = 0; i < arr.length; i++) s += arr[i];
+      return s / arr.length;
+    }
+
+    function placeTooltip(tipEl, canvas, clientX, clientY) {
+      const wrap = canvas.parentElement.getBoundingClientRect();
+      const x = clientX - wrap.left, y = clientY - wrap.top;
+      tipEl.style.display = "block";
+      const tw = tipEl.offsetWidth || 210, th = tipEl.offsetHeight || 90;
+      let left = x + 14;
+      if (left + tw > wrap.width - 8) left = Math.max(8, x - tw - 14);
+      let top = Math.max(8, Math.min(wrap.height - th - 8, y - th * 0.4));
+      tipEl.style.left = Math.round(left) + "px";
+      tipEl.style.top = Math.round(top) + "px";
+    }
+
+    function attachCanvasHover(canvas, tipEl, onHover) {
+      if (!canvas) return;
+      canvas.addEventListener("mousemove", e => onHover(e, canvas, tipEl));
+      canvas.addEventListener("mouseleave", () => {
+        tipEl.style.display = "none";
+        onHover(null, canvas, tipEl);
+      });
+    }
+
+    function downloadCsv(filename, headers, rows) {
+      const esc = v => {
+        const s = v === null || v === undefined ? "" : String(v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const lines = [headers.map(esc).join(",")];
+      for (const r of rows) lines.push(r.map(esc).join(","));
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function initSharedControls() {
+      const langSwitch = document.getElementById("langSwitch");
+      if (langSwitch) {
+        langSwitch.querySelectorAll("button[data-lang]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const next = btn.dataset.lang === "zh-CN" ? "zh-CN" : "en-UK";
+            if (currentLang === next) return;
+            currentLang = next;
+            try { localStorage.setItem(LANG_STORAGE_KEY, currentLang); } catch (_) {}
+            applyStaticI18n();
+            if (typeof onThemeOrLangChange === "function") onThemeOrLangChange();
+          });
+        });
+      }
+      const themeBtn = document.getElementById("btnThemeToggle");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+        });
+      }
+      const jump = document.getElementById("chapterJump");
+      if (jump) {
+        jump.addEventListener("change", () => {
+          const slug = jump.value;
+          const isHub = jump.dataset.isHub === "1";
+          const prefix = isHub ? "./" : "../";
+          window.location.href = slug ? (prefix + slug + "/") : (isHub ? "./" : "../");
+        });
+      }
+      // Top-layer accessible popovers
+      const pop = document.getElementById("infoPopover");
+      const supportsPop = typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.showPopover === "function";
+      let activeBtn = null;
+      if (pop) {
+        document.querySelectorAll(".info-btn[data-info-key]").forEach(btn => {
+          btn.addEventListener("click", e => {
+            e.preventDefault(); e.stopPropagation();
+            const isOpen = supportsPop ? pop.matches(":popover-open") : pop.classList.contains("open");
+            if (isOpen && activeBtn === btn) {
+              if (supportsPop) pop.hidePopover(); else pop.classList.remove("open");
+              btn.setAttribute("aria-expanded", "false"); activeBtn = null; return;
+            }
+            document.querySelectorAll(".info-btn").forEach(b => b.setAttribute("aria-expanded", "false"));
+            pop.innerHTML = t(btn.dataset.infoKey);
+            activeBtn = btn;
+            if (supportsPop) { if (!pop.matches(":popover-open")) pop.showPopover(); }
+            else pop.classList.add("open");
+            const a = btn.getBoundingClientRect();
+            const pw = Math.min(330, window.innerWidth - 24);
+            const left = Math.max(12, Math.min(window.innerWidth - pw - 12, a.left - pw * 0.4));
+            const top = (a.bottom + 140 > window.innerHeight) ? Math.max(12, a.top - 120) : a.bottom + 8;
+            pop.style.left = Math.round(left) + "px"; pop.style.top = Math.round(top) + "px";
+            btn.setAttribute("aria-expanded", "true");
+          });
+        });
+        if (!supportsPop) {
+          document.addEventListener("click", e => {
+            if (pop.classList.contains("open") && !pop.contains(e.target) && !e.target.closest(".info-btn")) {
+              pop.classList.remove("open");
+              document.querySelectorAll(".info-btn").forEach(b => b.setAttribute("aria-expanded", "false"));
+            }
+          });
+        }
+      }
+    }
+
+    const CURVES = [{"Date":"2003-01-02","Label":"2003-01","DGS1":1.42,"DGS2":1.8,"DGS3":2.22,"DGS5":3.05,"DGS7":3.62,"DGS10":4.07,"DGS20":5.05,"DGS30":5.18,"DFII5":1.75,"DFII7":2.24,"DFII10":2.43,"DFII20":null,"DFII30":null,"BEI_5Y":1.3,"BEI_7Y":1.38,"BEI_10Y":1.64,"BEI_20Y":null,"BEI_30Y":null},{"Date":"2004-01-02","Label":"2004-01","DGS1":1.31,"DGS2":1.94,"DGS3":2.47,"DGS5":3.36,"DGS7":3.9,"DGS10":4.38,"DGS20":5.21,"DGS30":5.3,"DFII5":1.28,"DFII7":1.7,"DFII10":2.06,"DFII20":null,"DFII30":null,"BEI_5Y":2.08,"BEI_7Y":2.2,"BEI_10Y":2.32,"BEI_20Y":null,"BEI_30Y":null},{"Date":"2005-01-03","Label":"2005-01","DGS1":2.79,"DGS2":3.1,"DGS3":3.28,"DGS5":3.64,"DGS7":3.94,"DGS10":4.23,"DGS20":4.84,"DGS30":4.85,"DFII5":1.02,"DFII7":1.33,"DFII10":1.7,"DFII20":1.96,"DFII30":null,"BEI_5Y":2.62,"BEI_7Y":2.61,"BEI_10Y":2.53,"BEI_20Y":2.88,"BEI_30Y":null},{"Date":"2006-01-03","Label":"2006-01","DGS1":4.38,"DGS2":4.34,"DGS3":4.3,"DGS5":4.3,"DGS7":4.32,"DGS10":4.37,"DGS20":4.62,"DGS30":4.52,"DFII5":2.0,"DFII7":2.03,"DFII10":2.03,"DFII20":2.06,"DFII30":null,"BEI_5Y":2.3,"BEI_7Y":2.29,"BEI_10Y":2.34,"BEI_20Y":2.56,"BEI_30Y":null},{"Date":"2007-01-02","Label":"2007-01","DGS1":5.0,"DGS2":4.8,"DGS3":4.71,"DGS5":4.68,"DGS7":4.68,"DGS10":4.68,"DGS20":4.87,"DGS30":4.79,"DFII5":2.41,"DFII7":2.42,"DFII10":2.38,"DFII20":2.36,"DFII30":null,"BEI_5Y":2.27,"BEI_7Y":2.26,"BEI_10Y":2.3,"BEI_20Y":2.51,"BEI_30Y":null},{"Date":"2008-01-02","Label":"2008-01","DGS1":3.17,"DGS2":2.88,"DGS3":2.89,"DGS5":3.28,"DGS7":3.54,"DGS10":3.91,"DGS20":4.39,"DGS30":4.35,"DFII5":1.0,"DFII7":1.41,"DFII10":1.59,"DFII20":1.89,"DFII30":null,"BEI_5Y":2.28,"BEI_7Y":2.13,"BEI_10Y":2.32,"BEI_20Y":2.5,"BEI_30Y":null},{"Date":"2009-01-02","Label":"2009-01","DGS1":0.4,"DGS2":0.88,"DGS3":1.14,"DGS5":1.72,"DGS7":2.07,"DGS10":2.46,"DGS20":3.22,"DGS30":2.83,"DFII5":1.97,"DFII7":2.12,"DFII10":2.29,"DFII20":2.51,"DFII30":null,"BEI_5Y":-0.25,"BEI_7Y":-0.05,"BEI_10Y":0.17,"BEI_20Y":0.71,"BEI_30Y":null},{"Date":"2010-01-04","Label":"2010-01","DGS1":0.45,"DGS2":1.09,"DGS3":1.66,"DGS5":2.65,"DGS7":3.36,"DGS10":3.85,"DGS20":4.6,"DGS30":4.65,"DFII5":0.52,"DFII7":0.97,"DFII10":1.47,"DFII20":2.04,"DFII30":null,"BEI_5Y":2.13,"BEI_7Y":2.39,"BEI_10Y":2.38,"BEI_20Y":2.56,"BEI_30Y":null},{"Date":"2011-01-03","Label":"2011-01","DGS1":0.29,"DGS2":0.61,"DGS3":1.03,"DGS5":2.02,"DGS7":2.74,"DGS10":3.36,"DGS20":4.18,"DGS30":4.39,"DFII5":0.2,"DFII7":0.68,"DFII10":1.05,"DFII20":1.64,"DFII30":1.9,"BEI_5Y":1.82,"BEI_7Y":2.06,"BEI_10Y":2.31,"BEI_20Y":2.54,"BEI_30Y":2.49},{"Date":"2012-01-03","Label":"2012-01","DGS1":0.12,"DGS2":0.27,"DGS3":0.4,"DGS5":0.89,"DGS7":1.41,"DGS10":1.97,"DGS20":2.67,"DGS30":2.98,"DFII5":-0.77,"DFII7":-0.43,"DFII10":-0.04,"DFII20":0.55,"DFII30":0.81,"BEI_5Y":1.66,"BEI_7Y":1.84,"BEI_10Y":2.01,"BEI_20Y":2.12,"BEI_30Y":2.17},{"Date":"2013-01-02","Label":"2013-01","DGS1":0.15,"DGS2":0.27,"DGS3":0.37,"DGS5":0.76,"DGS7":1.25,"DGS10":1.86,"DGS20":2.63,"DGS30":3.04,"DFII5":-1.36,"DFII7":-1.06,"DFII10":-0.62,"DFII20":0.22,"DFII30":0.47,"BEI_5Y":2.12,"BEI_7Y":2.31,"BEI_10Y":2.48,"BEI_20Y":2.41,"BEI_30Y":2.57},{"Date":"2014-01-02","Label":"2014-01","DGS1":0.13,"DGS2":0.39,"DGS3":0.76,"DGS5":1.72,"DGS7":2.41,"DGS10":3.0,"DGS20":3.68,"DGS30":3.92,"DFII5":0.01,"DFII7":0.57,"DFII10":0.74,"DFII20":1.3,"DFII30":1.58,"BEI_5Y":1.71,"BEI_7Y":1.84,"BEI_10Y":2.26,"BEI_20Y":2.38,"BEI_30Y":2.34},{"Date":"2015-01-02","Label":"2015-01","DGS1":0.25,"DGS2":0.66,"DGS3":1.07,"DGS5":1.61,"DGS7":1.92,"DGS10":2.12,"DGS20":2.41,"DGS30":2.69,"DFII5":0.31,"DFII7":0.37,"DFII10":0.41,"DFII20":0.61,"DFII30":0.76,"BEI_5Y":1.3,"BEI_7Y":1.55,"BEI_10Y":1.71,"BEI_20Y":1.8,"BEI_30Y":1.93},{"Date":"2016-01-04","Label":"2016-01","DGS1":0.61,"DGS2":1.02,"DGS3":1.31,"DGS5":1.73,"DGS7":2.06,"DGS10":2.24,"DGS20":2.64,"DGS30":2.98,"DFII5":0.42,"DFII7":0.55,"DFII10":0.69,"DFII20":1.04,"DFII30":1.25,"BEI_5Y":1.31,"BEI_7Y":1.51,"BEI_10Y":1.55,"BEI_20Y":1.6,"BEI_30Y":1.73},{"Date":"2017-01-03","Label":"2017-01 (Pfau Book Baseline)","DGS1":0.89,"DGS2":1.22,"DGS3":1.5,"DGS5":1.94,"DGS7":2.26,"DGS10":2.45,"DGS20":2.78,"DGS30":3.04,"DFII5":0.08,"DFII7":0.3,"DFII10":0.47,"DFII20":0.78,"DFII30":0.94,"BEI_5Y":1.86,"BEI_7Y":1.96,"BEI_10Y":1.98,"BEI_20Y":2.0,"BEI_30Y":2.1},{"Date":"2018-01-02","Label":"2018-01","DGS1":1.83,"DGS2":1.92,"DGS3":2.01,"DGS5":2.25,"DGS7":2.38,"DGS10":2.46,"DGS20":2.64,"DGS30":2.81,"DFII5":0.35,"DFII7":0.42,"DFII10":0.46,"DFII20":0.64,"DFII30":0.77,"BEI_5Y":1.9,"BEI_7Y":1.96,"BEI_10Y":2.0,"BEI_20Y":2.0,"BEI_30Y":2.04},{"Date":"2019-01-02","Label":"2019-01","DGS1":2.6,"DGS2":2.5,"DGS3":2.47,"DGS5":2.49,"DGS7":2.56,"DGS10":2.66,"DGS20":2.83,"DGS30":2.97,"DFII5":1.0,"DFII7":0.98,"DFII10":0.96,"DFII20":1.07,"DFII30":1.19,"BEI_5Y":1.49,"BEI_7Y":1.58,"BEI_10Y":1.7,"BEI_20Y":1.76,"BEI_30Y":1.78},{"Date":"2020-01-02","Label":"2020-01","DGS1":1.56,"DGS2":1.58,"DGS3":1.59,"DGS5":1.67,"DGS7":1.79,"DGS10":1.88,"DGS20":2.19,"DGS30":2.33,"DFII5":-0.05,"DFII7":0.01,"DFII10":0.08,"DFII20":0.32,"DFII30":0.5,"BEI_5Y":1.72,"BEI_7Y":1.78,"BEI_10Y":1.8,"BEI_20Y":1.87,"BEI_30Y":1.83},{"Date":"2021-01-04","Label":"2021-01","DGS1":0.1,"DGS2":0.11,"DGS3":0.16,"DGS5":0.36,"DGS7":0.64,"DGS10":0.93,"DGS20":1.46,"DGS30":1.66,"DFII5":-1.62,"DFII7":-1.34,"DFII10":-1.08,"DFII20":-0.63,"DFII30":-0.39,"BEI_5Y":1.98,"BEI_7Y":1.98,"BEI_10Y":2.01,"BEI_20Y":2.09,"BEI_30Y":2.05},{"Date":"2022-01-03","Label":"2022-01","DGS1":0.4,"DGS2":0.78,"DGS3":1.04,"DGS5":1.37,"DGS7":1.55,"DGS10":1.63,"DGS20":2.05,"DGS30":2.01,"DFII5":-1.58,"DFII7":-1.25,"DFII10":-0.97,"DFII20":-0.55,"DFII30":-0.36,"BEI_5Y":2.95,"BEI_7Y":2.8,"BEI_10Y":2.6,"BEI_20Y":2.6,"BEI_30Y":2.37},{"Date":"2023-01-03","Label":"2023-01","DGS1":4.72,"DGS2":4.4,"DGS3":4.18,"DGS5":3.94,"DGS7":3.89,"DGS10":3.79,"DGS20":4.06,"DGS30":3.88,"DFII5":1.65,"DFII7":1.58,"DFII10":1.53,"DFII20":1.56,"DFII30":1.61,"BEI_5Y":2.29,"BEI_7Y":2.31,"BEI_10Y":2.26,"BEI_20Y":2.5,"BEI_30Y":2.27},{"Date":"2024-01-02","Label":"2024-01","DGS1":4.8,"DGS2":4.33,"DGS3":4.09,"DGS5":3.93,"DGS7":3.95,"DGS10":3.95,"DGS20":4.25,"DGS30":4.08,"DFII5":1.76,"DFII7":1.75,"DFII10":1.74,"DFII20":1.84,"DFII30":1.91,"BEI_5Y":2.17,"BEI_7Y":2.2,"BEI_10Y":2.21,"BEI_20Y":2.41,"BEI_30Y":2.17},{"Date":"2025-01-02","Label":"2025-01","DGS1":4.17,"DGS2":4.25,"DGS3":4.29,"DGS5":4.38,"DGS7":4.47,"DGS10":4.57,"DGS20":4.86,"DGS30":4.79,"DFII5":1.97,"DFII7":2.11,"DFII10":2.23,"DFII20":2.4,"DFII30":2.48,"BEI_5Y":2.41,"BEI_7Y":2.36,"BEI_10Y":2.34,"BEI_20Y":2.46,"BEI_30Y":2.31},{"Date":"2026-01-02","Label":"2026-01","DGS1":3.47,"DGS2":3.47,"DGS3":3.55,"DGS5":3.74,"DGS7":3.95,"DGS10":4.19,"DGS20":4.81,"DGS30":4.86,"DFII5":1.46,"DFII7":1.69,"DFII10":1.94,"DFII20":2.39,"DFII30":2.63,"BEI_5Y":2.28,"BEI_7Y":2.26,"BEI_10Y":2.25,"BEI_20Y":2.42,"BEI_30Y":2.23},{"Date":"2026-11-24","Label":"2026-11 (Latest)","DGS1":4.59,"DGS2":4.63,"DGS3":4.67,"DGS5":4.69,"DGS7":4.79,"DGS10":4.91,"DGS20":5.33,"DGS30":5.3,"DFII5":2.58,"DFII7":2.67,"DFII10":2.79,"DFII20":3.05,"DFII30":3.19,"BEI_5Y":2.11,"BEI_7Y":2.12,"BEI_10Y":2.12,"BEI_20Y":2.28,"BEI_30Y":2.11}];
+    const MORT = [{"Age":50,"SSA_Period_Male_qx":0.006671,"SSA_Period_Female_qx":0.004011,"SOA_2012_IAM_Basic_Male_qx":0.002285,"SOA_2012_IAM_Basic_Female_qx":0.00129,"SOA_2012_IAM_Period_Male_qx":0.002057,"SOA_2012_IAM_Period_Female_qx":0.001161,"SOA_ScaleG2_Male":0.01,"SOA_ScaleG2_Female":0.01,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":51,"SSA_Period_Male_qx":0.007167,"SSA_Period_Female_qx":0.004306,"SOA_2012_IAM_Basic_Male_qx":0.002557,"SOA_2012_IAM_Basic_Female_qx":0.001453,"SOA_2012_IAM_Period_Male_qx":0.002302,"SOA_2012_IAM_Period_Female_qx":0.001308,"SOA_ScaleG2_Male":0.011,"SOA_ScaleG2_Female":0.01,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":52,"SSA_Period_Male_qx":0.007736,"SSA_Period_Female_qx":0.004634,"SOA_2012_IAM_Basic_Male_qx":0.002828,"SOA_2012_IAM_Basic_Female_qx":0.001622,"SOA_2012_IAM_Period_Male_qx":0.002545,"SOA_2012_IAM_Period_Female_qx":0.00146,"SOA_ScaleG2_Male":0.011,"SOA_ScaleG2_Female":0.011,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":53,"SSA_Period_Male_qx":0.008351,"SSA_Period_Female_qx":0.004981,"SOA_2012_IAM_Basic_Male_qx":0.003088,"SOA_2012_IAM_Basic_Female_qx":0.001792,"SOA_2012_IAM_Period_Male_qx":0.002779,"SOA_2012_IAM_Period_Female_qx":0.001613,"SOA_ScaleG2_Male":0.012,"SOA_ScaleG2_Female":0.011,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":54,"SSA_Period_Male_qx":0.009035,"SSA_Period_Female_qx":0.00537,"SOA_2012_IAM_Basic_Male_qx":0.003345,"SOA_2012_IAM_Basic_Female_qx":0.001972,"SOA_2012_IAM_Period_Male_qx":0.003011,"SOA_2012_IAM_Period_Female_qx":0.001774,"SOA_ScaleG2_Male":0.012,"SOA_ScaleG2_Female":0.011,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":55,"SSA_Period_Male_qx":0.00977,"SSA_Period_Female_qx":0.005831,"SOA_2012_IAM_Basic_Male_qx":0.003616,"SOA_2012_IAM_Basic_Female_qx":0.002166,"SOA_2012_IAM_Period_Male_qx":0.003254,"SOA_2012_IAM_Period_Female_qx":0.00195,"SOA_ScaleG2_Male":0.013,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":56,"SSA_Period_Male_qx":0.010567,"SSA_Period_Female_qx":0.006326,"SOA_2012_IAM_Basic_Male_qx":0.003922,"SOA_2012_IAM_Basic_Female_qx":0.002393,"SOA_2012_IAM_Period_Male_qx":0.003529,"SOA_2012_IAM_Period_Female_qx":0.002154,"SOA_ScaleG2_Male":0.013,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":57,"SSA_Period_Male_qx":0.011398,"SSA_Period_Female_qx":0.006837,"SOA_2012_IAM_Basic_Male_qx":0.004272,"SOA_2012_IAM_Basic_Female_qx":0.002666,"SOA_2012_IAM_Period_Male_qx":0.003845,"SOA_2012_IAM_Period_Female_qx":0.002399,"SOA_ScaleG2_Male":0.014,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":58,"SSA_Period_Male_qx":0.012291,"SSA_Period_Female_qx":0.007399,"SOA_2012_IAM_Basic_Male_qx":0.004681,"SOA_2012_IAM_Basic_Female_qx":0.003,"SOA_2012_IAM_Period_Male_qx":0.004213,"SOA_2012_IAM_Period_Female_qx":0.0027,"SOA_ScaleG2_Male":0.014,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":59,"SSA_Period_Male_qx":0.013224,"SSA_Period_Female_qx":0.008033,"SOA_2012_IAM_Basic_Male_qx":0.005146,"SOA_2012_IAM_Basic_Female_qx":0.003393,"SOA_2012_IAM_Period_Male_qx":0.004631,"SOA_2012_IAM_Period_Female_qx":0.003054,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":null,"IRS_RMD_Divisor_2022Plus":null},{"Age":60,"SSA_Period_Male_qx":0.014267,"SSA_Period_Female_qx":0.008687,"SOA_2012_IAM_Basic_Male_qx":0.005662,"SOA_2012_IAM_Basic_Female_qx":0.003844,"SOA_2012_IAM_Period_Male_qx":0.005096,"SOA_2012_IAM_Period_Female_qx":0.00346,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":34.4,"IRS_RMD_Divisor_2022Plus":37.6},{"Age":61,"SSA_Period_Male_qx":0.015353,"SSA_Period_Female_qx":0.009411,"SOA_2012_IAM_Basic_Male_qx":0.006237,"SOA_2012_IAM_Basic_Female_qx":0.004352,"SOA_2012_IAM_Period_Male_qx":0.005614,"SOA_2012_IAM_Period_Female_qx":0.003916,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":33.7,"IRS_RMD_Divisor_2022Plus":36.8},{"Age":62,"SSA_Period_Male_qx":0.016484,"SSA_Period_Female_qx":0.010139,"SOA_2012_IAM_Basic_Male_qx":0.006854,"SOA_2012_IAM_Basic_Female_qx":0.004899,"SOA_2012_IAM_Period_Male_qx":0.006169,"SOA_2012_IAM_Period_Female_qx":0.004409,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":33.0,"IRS_RMD_Divisor_2022Plus":35.9},{"Age":63,"SSA_Period_Male_qx":0.017617,"SSA_Period_Female_qx":0.010849,"SOA_2012_IAM_Basic_Male_qx":0.00751,"SOA_2012_IAM_Basic_Female_qx":0.005482,"SOA_2012_IAM_Period_Male_qx":0.006759,"SOA_2012_IAM_Period_Female_qx":0.004933,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":32.3,"IRS_RMD_Divisor_2022Plus":35.1},{"Age":64,"SSA_Period_Male_qx":0.018759,"SSA_Period_Female_qx":0.01155,"SOA_2012_IAM_Basic_Male_qx":0.00822,"SOA_2012_IAM_Basic_Female_qx":0.006118,"SOA_2012_IAM_Period_Male_qx":0.007398,"SOA_2012_IAM_Period_Female_qx":0.005507,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":31.7,"IRS_RMD_Divisor_2022Plus":34.2},{"Age":65,"SSA_Period_Male_qx":0.019914,"SSA_Period_Female_qx":0.012216,"SOA_2012_IAM_Basic_Male_qx":0.009007,"SOA_2012_IAM_Basic_Female_qx":0.006829,"SOA_2012_IAM_Period_Male_qx":0.008106,"SOA_2012_IAM_Period_Female_qx":0.006146,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":31.0,"IRS_RMD_Divisor_2022Plus":33.4},{"Age":66,"SSA_Period_Male_qx":0.021104,"SSA_Period_Female_qx":0.012952,"SOA_2012_IAM_Basic_Male_qx":0.009497,"SOA_2012_IAM_Basic_Female_qx":0.007279,"SOA_2012_IAM_Period_Male_qx":0.008548,"SOA_2012_IAM_Period_Female_qx":0.006551,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":30.3,"IRS_RMD_Divisor_2022Plus":32.5},{"Age":67,"SSA_Period_Male_qx":0.022423,"SSA_Period_Female_qx":0.013844,"SOA_2012_IAM_Basic_Male_qx":0.010085,"SOA_2012_IAM_Basic_Female_qx":0.007821,"SOA_2012_IAM_Period_Male_qx":0.009076,"SOA_2012_IAM_Period_Female_qx":0.007039,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":29.6,"IRS_RMD_Divisor_2022Plus":31.7},{"Age":68,"SSA_Period_Male_qx":0.023847,"SSA_Period_Female_qx":0.014863,"SOA_2012_IAM_Basic_Male_qx":0.010787,"SOA_2012_IAM_Basic_Female_qx":0.008475,"SOA_2012_IAM_Period_Male_qx":0.009708,"SOA_2012_IAM_Period_Female_qx":0.007628,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":28.9,"IRS_RMD_Divisor_2022Plus":30.8},{"Age":69,"SSA_Period_Male_qx":0.025357,"SSA_Period_Female_qx":0.016028,"SOA_2012_IAM_Basic_Male_qx":0.011625,"SOA_2012_IAM_Basic_Female_qx":0.009234,"SOA_2012_IAM_Period_Male_qx":0.010463,"SOA_2012_IAM_Period_Female_qx":0.008311,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":28.1,"IRS_RMD_Divisor_2022Plus":30.0},{"Age":70,"SSA_Period_Male_qx":0.02705,"SSA_Period_Female_qx":0.017329,"SOA_2012_IAM_Basic_Male_qx":0.012619,"SOA_2012_IAM_Basic_Female_qx":0.010083,"SOA_2012_IAM_Period_Male_qx":0.011357,"SOA_2012_IAM_Period_Female_qx":0.009074,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":27.4,"IRS_RMD_Divisor_2022Plus":29.1},{"Age":71,"SSA_Period_Male_qx":0.02897,"SSA_Period_Female_qx":0.018859,"SOA_2012_IAM_Basic_Male_qx":0.013798,"SOA_2012_IAM_Basic_Female_qx":0.011011,"SOA_2012_IAM_Period_Male_qx":0.012418,"SOA_2012_IAM_Period_Female_qx":0.00991,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":26.5,"IRS_RMD_Divisor_2022Plus":28.2},{"Age":72,"SSA_Period_Male_qx":0.031188,"SSA_Period_Female_qx":0.020609,"SOA_2012_IAM_Basic_Male_qx":0.015195,"SOA_2012_IAM_Basic_Female_qx":0.01203,"SOA_2012_IAM_Period_Male_qx":0.013675,"SOA_2012_IAM_Period_Female_qx":0.010827,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":25.6,"IRS_RMD_Divisor_2022Plus":27.4},{"Age":73,"SSA_Period_Male_qx":0.033754,"SSA_Period_Female_qx":0.02262,"SOA_2012_IAM_Basic_Male_qx":0.016834,"SOA_2012_IAM_Basic_Female_qx":0.013154,"SOA_2012_IAM_Period_Male_qx":0.01515,"SOA_2012_IAM_Period_Female_qx":0.011839,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":24.7,"IRS_RMD_Divisor_2022Plus":26.5},{"Age":74,"SSA_Period_Male_qx":0.036747,"SSA_Period_Female_qx":0.024958,"SOA_2012_IAM_Basic_Male_qx":0.018733,"SOA_2012_IAM_Basic_Female_qx":0.014415,"SOA_2012_IAM_Period_Male_qx":0.01686,"SOA_2012_IAM_Period_Female_qx":0.012974,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":23.8,"IRS_RMD_Divisor_2022Plus":25.5},{"Age":75,"SSA_Period_Male_qx":0.040563,"SSA_Period_Female_qx":0.027906,"SOA_2012_IAM_Basic_Male_qx":0.020905,"SOA_2012_IAM_Basic_Female_qx":0.015869,"SOA_2012_IAM_Period_Male_qx":0.018815,"SOA_2012_IAM_Period_Female_qx":0.014282,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":22.9,"IRS_RMD_Divisor_2022Plus":24.6},{"Age":76,"SSA_Period_Male_qx":0.044308,"SSA_Period_Female_qx":0.030925,"SOA_2012_IAM_Basic_Male_qx":0.023367,"SOA_2012_IAM_Basic_Female_qx":0.017555,"SOA_2012_IAM_Period_Male_qx":0.021031,"SOA_2012_IAM_Period_Female_qx":0.015799,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":22.0,"IRS_RMD_Divisor_2022Plus":23.7},{"Age":77,"SSA_Period_Male_qx":0.048498,"SSA_Period_Female_qx":0.03414,"SOA_2012_IAM_Basic_Male_qx":0.026155,"SOA_2012_IAM_Basic_Female_qx":0.0195,"SOA_2012_IAM_Period_Male_qx":0.02354,"SOA_2012_IAM_Period_Female_qx":0.01755,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":21.2,"IRS_RMD_Divisor_2022Plus":22.9},{"Age":78,"SSA_Period_Male_qx":0.053229,"SSA_Period_Female_qx":0.03762,"SOA_2012_IAM_Basic_Male_qx":0.029306,"SOA_2012_IAM_Basic_Female_qx":0.021758,"SOA_2012_IAM_Period_Male_qx":0.026375,"SOA_2012_IAM_Period_Female_qx":0.019582,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":20.3,"IRS_RMD_Divisor_2022Plus":22.0},{"Age":79,"SSA_Period_Male_qx":0.058778,"SSA_Period_Female_qx":0.041725,"SOA_2012_IAM_Basic_Male_qx":0.032858,"SOA_2012_IAM_Basic_Female_qx":0.024412,"SOA_2012_IAM_Period_Male_qx":0.029572,"SOA_2012_IAM_Period_Female_qx":0.02197,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":19.5,"IRS_RMD_Divisor_2022Plus":21.1},{"Age":80,"SSA_Period_Male_qx":0.064617,"SSA_Period_Female_qx":0.046324,"SOA_2012_IAM_Basic_Male_qx":0.036927,"SOA_2012_IAM_Basic_Female_qx":0.027579,"SOA_2012_IAM_Period_Male_qx":0.033234,"SOA_2012_IAM_Period_Female_qx":0.024821,"SOA_ScaleG2_Male":0.015,"SOA_ScaleG2_Female":0.013,"IRS_RMD_Divisor_Pre2022":18.7,"IRS_RMD_Divisor_2022Plus":20.2},{"Age":81,"SSA_Period_Male_qx":0.070947,"SSA_Period_Female_qx":0.051334,"SOA_2012_IAM_Basic_Male_qx":0.041703,"SOA_2012_IAM_Basic_Female_qx":0.031501,"SOA_2012_IAM_Period_Male_qx":0.037533,"SOA_2012_IAM_Period_Female_qx":0.028351,"SOA_ScaleG2_Male":0.014,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":17.9,"IRS_RMD_Divisor_2022Plus":19.4},{"Age":82,"SSA_Period_Male_qx":0.077834,"SSA_Period_Female_qx":0.056911,"SOA_2012_IAM_Basic_Male_qx":0.046957,"SOA_2012_IAM_Basic_Female_qx":0.036122,"SOA_2012_IAM_Period_Male_qx":0.042261,"SOA_2012_IAM_Period_Female_qx":0.032509,"SOA_ScaleG2_Male":0.013,"SOA_ScaleG2_Female":0.012,"IRS_RMD_Divisor_Pre2022":17.1,"IRS_RMD_Divisor_2022Plus":18.5},{"Age":83,"SSA_Period_Male_qx":0.085686,"SSA_Period_Female_qx":0.063279,"SOA_2012_IAM_Basic_Male_qx":0.052713,"SOA_2012_IAM_Basic_Female_qx":0.041477,"SOA_2012_IAM_Period_Male_qx":0.047441,"SOA_2012_IAM_Period_Female_qx":0.037329,"SOA_ScaleG2_Male":0.013,"SOA_ScaleG2_Female":0.011,"IRS_RMD_Divisor_Pre2022":16.3,"IRS_RMD_Divisor_2022Plus":17.7},{"Age":84,"SSA_Period_Male_qx":0.094809,"SSA_Period_Female_qx":0.070704,"SOA_2012_IAM_Basic_Male_qx":0.059148,"SOA_2012_IAM_Basic_Female_qx":0.047589,"SOA_2012_IAM_Period_Male_qx":0.053233,"SOA_2012_IAM_Period_Female_qx":0.04283,"SOA_ScaleG2_Male":0.012,"SOA_ScaleG2_Female":0.01,"IRS_RMD_Divisor_Pre2022":15.5,"IRS_RMD_Divisor_2022Plus":16.8},{"Age":85,"SSA_Period_Male_qx":0.10509,"SSA_Period_Female_qx":0.079184,"SOA_2012_IAM_Basic_Male_qx":0.066505,"SOA_2012_IAM_Basic_Female_qx":0.054441,"SOA_2012_IAM_Period_Male_qx":0.059855,"SOA_2012_IAM_Period_Female_qx":0.048997,"SOA_ScaleG2_Male":0.011,"SOA_ScaleG2_Female":0.01,"IRS_RMD_Divisor_Pre2022":14.8,"IRS_RMD_Divisor_2022Plus":16.0},{"Age":86,"SSA_Period_Male_qx":0.116592,"SSA_Period_Female_qx":0.088697,"SOA_2012_IAM_Basic_Male_qx":0.075015,"SOA_2012_IAM_Basic_Female_qx":0.061972,"SOA_2012_IAM_Period_Male_qx":0.067514,"SOA_2012_IAM_Period_Female_qx":0.055774,"SOA_ScaleG2_Male":0.01,"SOA_ScaleG2_Female":0.009,"IRS_RMD_Divisor_Pre2022":14.1,"IRS_RMD_Divisor_2022Plus":15.2},{"Age":87,"SSA_Period_Male_qx":0.129306,"SSA_Period_Female_qx":0.09924,"SOA_2012_IAM_Basic_Male_qx":0.084823,"SOA_2012_IAM_Basic_Female_qx":0.070155,"SOA_2012_IAM_Period_Male_qx":0.07634,"SOA_2012_IAM_Period_Female_qx":0.06314,"SOA_ScaleG2_Male":0.009,"SOA_ScaleG2_Female":0.008,"IRS_RMD_Divisor_Pre2022":13.4,"IRS_RMD_Divisor_2022Plus":14.4},{"Age":88,"SSA_Period_Male_qx":0.142732,"SSA_Period_Female_qx":0.11048,"SOA_2012_IAM_Basic_Male_qx":0.095987,"SOA_2012_IAM_Basic_Female_qx":0.078963,"SOA_2012_IAM_Period_Male_qx":0.086388,"SOA_2012_IAM_Period_Female_qx":0.071066,"SOA_ScaleG2_Male":0.009,"SOA_ScaleG2_Female":0.007,"IRS_RMD_Divisor_Pre2022":12.7,"IRS_RMD_Divisor_2022Plus":13.7},{"Age":89,"SSA_Period_Male_qx":0.157638,"SSA_Period_Female_qx":0.123078,"SOA_2012_IAM_Basic_Male_qx":0.108482,"SOA_2012_IAM_Basic_Female_qx":0.088336,"SOA_2012_IAM_Period_Male_qx":0.097634,"SOA_2012_IAM_Period_Female_qx":0.079502,"SOA_ScaleG2_Male":0.008,"SOA_ScaleG2_Female":0.007,"IRS_RMD_Divisor_Pre2022":12.0,"IRS_RMD_Divisor_2022Plus":12.9},{"Age":90,"SSA_Period_Male_qx":0.174458,"SSA_Period_Female_qx":0.137152,"SOA_2012_IAM_Basic_Male_qx":0.122214,"SOA_2012_IAM_Basic_Female_qx":0.098197,"SOA_2012_IAM_Period_Male_qx":0.109993,"SOA_2012_IAM_Period_Female_qx":0.088377,"SOA_ScaleG2_Male":0.007,"SOA_ScaleG2_Female":0.006,"IRS_RMD_Divisor_Pre2022":11.4,"IRS_RMD_Divisor_2022Plus":12.2},{"Age":91,"SSA_Period_Male_qx":0.193027,"SSA_Period_Female_qx":0.152605,"SOA_2012_IAM_Basic_Male_qx":0.136799,"SOA_2012_IAM_Basic_Female_qx":0.108323,"SOA_2012_IAM_Period_Male_qx":0.123119,"SOA_2012_IAM_Period_Female_qx":0.097491,"SOA_ScaleG2_Male":0.007,"SOA_ScaleG2_Female":0.006,"IRS_RMD_Divisor_Pre2022":10.8,"IRS_RMD_Divisor_2022Plus":11.5},{"Age":92,"SSA_Period_Male_qx":0.21293,"SSA_Period_Female_qx":0.169494,"SOA_2012_IAM_Basic_Male_qx":0.152409,"SOA_2012_IAM_Basic_Female_qx":0.119188,"SOA_2012_IAM_Period_Male_qx":0.137168,"SOA_2012_IAM_Period_Female_qx":0.107269,"SOA_ScaleG2_Male":0.006,"SOA_ScaleG2_Female":0.005,"IRS_RMD_Divisor_Pre2022":10.2,"IRS_RMD_Divisor_2022Plus":10.8},{"Age":93,"SSA_Period_Male_qx":0.232657,"SSA_Period_Female_qx":0.187623,"SOA_2012_IAM_Basic_Male_qx":0.169078,"SOA_2012_IAM_Basic_Female_qx":0.131334,"SOA_2012_IAM_Period_Male_qx":0.152171,"SOA_2012_IAM_Period_Female_qx":0.118201,"SOA_ScaleG2_Male":0.005,"SOA_ScaleG2_Female":0.005,"IRS_RMD_Divisor_Pre2022":9.6,"IRS_RMD_Divisor_2022Plus":10.1},{"Age":94,"SSA_Period_Male_qx":0.251826,"SSA_Period_Female_qx":0.206647,"SOA_2012_IAM_Basic_Male_qx":0.186882,"SOA_2012_IAM_Basic_Female_qx":0.145521,"SOA_2012_IAM_Period_Male_qx":0.168194,"SOA_2012_IAM_Period_Female_qx":0.130969,"SOA_ScaleG2_Male":0.005,"SOA_ScaleG2_Female":0.004,"IRS_RMD_Divisor_Pre2022":9.1,"IRS_RMD_Divisor_2022Plus":9.5},{"Age":95,"SSA_Period_Male_qx":0.270943,"SSA_Period_Female_qx":0.22589,"SOA_2012_IAM_Basic_Male_qx":0.205844,"SOA_2012_IAM_Basic_Female_qx":0.162722,"SOA_2012_IAM_Period_Male_qx":0.18526,"SOA_2012_IAM_Period_Female_qx":0.146449,"SOA_ScaleG2_Male":0.004,"SOA_ScaleG2_Female":0.004,"IRS_RMD_Divisor_Pre2022":8.6,"IRS_RMD_Divisor_2022Plus":8.9},{"Age":96,"SSA_Period_Male_qx":0.289756,"SSA_Period_Female_qx":0.245054,"SOA_2012_IAM_Basic_Male_qx":0.219247,"SOA_2012_IAM_Basic_Female_qx":0.18212,"SOA_2012_IAM_Period_Male_qx":0.197322,"SOA_2012_IAM_Period_Female_qx":0.163908,"SOA_ScaleG2_Male":0.004,"SOA_ScaleG2_Female":0.004,"IRS_RMD_Divisor_Pre2022":8.1,"IRS_RMD_Divisor_2022Plus":8.4},{"Age":97,"SSA_Period_Male_qx":0.307998,"SSA_Period_Female_qx":0.263815,"SOA_2012_IAM_Basic_Male_qx":0.238612,"SOA_2012_IAM_Basic_Female_qx":0.199661,"SOA_2012_IAM_Period_Male_qx":0.214751,"SOA_2012_IAM_Period_Female_qx":0.179695,"SOA_ScaleG2_Male":0.003,"SOA_ScaleG2_Female":0.003,"IRS_RMD_Divisor_Pre2022":7.6,"IRS_RMD_Divisor_2022Plus":7.8},{"Age":98,"SSA_Period_Male_qx":0.325393,"SSA_Period_Female_qx":0.281828,"SOA_2012_IAM_Basic_Male_qx":0.258341,"SOA_2012_IAM_Basic_Female_qx":0.217946,"SOA_2012_IAM_Period_Male_qx":0.232507,"SOA_2012_IAM_Period_Female_qx":0.196151,"SOA_ScaleG2_Male":0.003,"SOA_ScaleG2_Female":0.003,"IRS_RMD_Divisor_Pre2022":7.1,"IRS_RMD_Divisor_2022Plus":7.3},{"Age":99,"SSA_Period_Male_qx":0.341662,"SSA_Period_Female_qx":0.298738,"SOA_2012_IAM_Basic_Male_qx":0.278219,"SOA_2012_IAM_Basic_Female_qx":0.236834,"SOA_2012_IAM_Period_Male_qx":0.250397,"SOA_2012_IAM_Period_Female_qx":0.21315,"SOA_ScaleG2_Male":0.002,"SOA_ScaleG2_Female":0.002,"IRS_RMD_Divisor_Pre2022":6.7,"IRS_RMD_Divisor_2022Plus":6.8},{"Age":100,"SSA_Period_Male_qx":0.358746,"SSA_Period_Female_qx":0.316662,"SOA_2012_IAM_Basic_Male_qx":0.298452,"SOA_2012_IAM_Basic_Female_qx":0.256357,"SOA_2012_IAM_Period_Male_qx":0.268607,"SOA_2012_IAM_Period_Female_qx":0.230722,"SOA_ScaleG2_Male":0.002,"SOA_ScaleG2_Female":0.002,"IRS_RMD_Divisor_Pre2022":6.3,"IRS_RMD_Divisor_2022Plus":6.4},{"Age":101,"SSA_Period_Male_qx":0.376683,"SSA_Period_Female_qx":0.335662,"SOA_2012_IAM_Basic_Male_qx":0.32361,"SOA_2012_IAM_Basic_Female_qx":0.283802,"SOA_2012_IAM_Period_Male_qx":0.290016,"SOA_2012_IAM_Period_Female_qx":0.251505,"SOA_ScaleG2_Male":0.002,"SOA_ScaleG2_Female":0.002,"IRS_RMD_Divisor_Pre2022":5.9,"IRS_RMD_Divisor_2022Plus":6.0},{"Age":102,"SSA_Period_Male_qx":0.395517,"SSA_Period_Female_qx":0.355802,"SOA_2012_IAM_Basic_Male_qx":0.344191,"SOA_2012_IAM_Basic_Female_qx":0.304716,"SOA_2012_IAM_Period_Male_qx":0.311849,"SOA_2012_IAM_Period_Female_qx":0.273007,"SOA_ScaleG2_Male":0.001,"SOA_ScaleG2_Female":0.001,"IRS_RMD_Divisor_Pre2022":5.5,"IRS_RMD_Divisor_2022Plus":5.6},{"Age":103,"SSA_Period_Male_qx":0.415293,"SSA_Period_Female_qx":0.37715,"SOA_2012_IAM_Basic_Male_qx":0.364633,"SOA_2012_IAM_Basic_Female_qx":0.325819,"SOA_2012_IAM_Period_Male_qx":0.333962,"SOA_2012_IAM_Period_Female_qx":0.295086,"SOA_ScaleG2_Male":0.001,"SOA_ScaleG2_Female":0.001,"IRS_RMD_Divisor_Pre2022":5.2,"IRS_RMD_Divisor_2022Plus":5.2},{"Age":104,"SSA_Period_Male_qx":0.436058,"SSA_Period_Female_qx":0.399779,"SOA_2012_IAM_Basic_Male_qx":0.384783,"SOA_2012_IAM_Basic_Female_qx":0.346936,"SOA_2012_IAM_Period_Male_qx":0.356207,"SOA_2012_IAM_Period_Female_qx":0.317591,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":4.9,"IRS_RMD_Divisor_2022Plus":4.9},{"Age":105,"SSA_Period_Male_qx":0.45786,"SSA_Period_Female_qx":0.423766,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.367898,"SOA_2012_IAM_Period_Male_qx":0.38,"SOA_2012_IAM_Period_Female_qx":0.340362,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":4.5,"IRS_RMD_Divisor_2022Plus":4.6},{"Age":106,"SSA_Period_Male_qx":0.480753,"SSA_Period_Female_qx":0.449192,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.387607,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.362371,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":4.2,"IRS_RMD_Divisor_2022Plus":4.3},{"Age":107,"SSA_Period_Male_qx":0.504791,"SSA_Period_Female_qx":0.476143,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.384113,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":3.9,"IRS_RMD_Divisor_2022Plus":4.1},{"Age":108,"SSA_Period_Male_qx":0.530031,"SSA_Period_Female_qx":0.504712,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":3.7,"IRS_RMD_Divisor_2022Plus":3.9},{"Age":109,"SSA_Period_Male_qx":0.556532,"SSA_Period_Female_qx":0.534994,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":3.4,"IRS_RMD_Divisor_2022Plus":3.7},{"Age":110,"SSA_Period_Male_qx":0.584359,"SSA_Period_Female_qx":0.567094,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":3.1,"IRS_RMD_Divisor_2022Plus":3.5},{"Age":111,"SSA_Period_Male_qx":0.613577,"SSA_Period_Female_qx":0.60112,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":2.9,"IRS_RMD_Divisor_2022Plus":3.4},{"Age":112,"SSA_Period_Male_qx":0.644256,"SSA_Period_Female_qx":0.637187,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":2.6,"IRS_RMD_Divisor_2022Plus":3.3},{"Age":113,"SSA_Period_Male_qx":0.676468,"SSA_Period_Female_qx":0.675418,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":2.4,"IRS_RMD_Divisor_2022Plus":3.1},{"Age":114,"SSA_Period_Male_qx":0.710292,"SSA_Period_Female_qx":0.710292,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":2.1,"IRS_RMD_Divisor_2022Plus":3.0},{"Age":115,"SSA_Period_Male_qx":0.745806,"SSA_Period_Female_qx":0.745806,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.9},{"Age":116,"SSA_Period_Male_qx":0.783097,"SSA_Period_Female_qx":0.783097,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.8},{"Age":117,"SSA_Period_Male_qx":0.822251,"SSA_Period_Female_qx":0.822251,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.7},{"Age":118,"SSA_Period_Male_qx":0.863364,"SSA_Period_Female_qx":0.863364,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.5},{"Age":119,"SSA_Period_Male_qx":0.906532,"SSA_Period_Female_qx":0.906532,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":0.4,"SOA_2012_IAM_Period_Female_qx":0.4,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.3},{"Age":120,"SSA_Period_Male_qx":1.0,"SSA_Period_Female_qx":1.0,"SOA_2012_IAM_Basic_Male_qx":0.4,"SOA_2012_IAM_Basic_Female_qx":0.4,"SOA_2012_IAM_Period_Male_qx":1.0,"SOA_2012_IAM_Period_Female_qx":1.0,"SOA_ScaleG2_Male":0.0,"SOA_ScaleG2_Female":0.0,"IRS_RMD_Divisor_Pre2022":1.9,"IRS_RMD_Divisor_2022Plus":2.0}];
+
+    // ---- 1. Deterministic Time-Value-of-Money (Excel-compatible PMT / NPER / RATE) ----
+    function calcPMT(rate, nper, pv, fv = 0, type = 1) {
+      if (nper <= 0) return 0;
+      if (Math.abs(rate) < 1e-10) return -(pv + fv) / nper;
+      const pvif = Math.pow(1 + rate, nper);
+      let pmt = (rate / (pvif - 1)) * -(pv * pvif + fv);
+      if (type === 1) pmt /= (1 + rate);
+      return pmt;
+    }
+
+    function calcNPER(rate, pmt, pv, fv = 0, type = 1) {
+      if (Math.abs(rate) < 1e-10) {
+        if (Math.abs(pmt) < 1e-12) return Infinity;
+        return -(pv + fv) / pmt;
+      }
+      const pmtAdj = pmt * (1 + rate * type);
+      const num = pmtAdj - fv * rate;
+      const den = pv * rate + pmtAdj;
+      if (Math.abs(den) < 1e-12 || !isFinite(num / den) || num / den <= 0) return Infinity;
+      return Math.log(num / den) / Math.log(1 + rate);
+    }
+
+    function calcRATE(nper, pmt, pv, fv = 0, type = 1) {
+      if (nper <= 0) return NaN;
+      let lo = -0.5, hi = 1.0;
+      const f = r => {
+        if (Math.abs(r) < 1e-9) return pv + pmt * nper + fv;
+        const g = Math.pow(1 + r, nper);
+        return pv * g + pmt * (1 + r * type) * ((g - 1) / r) + fv;
+      };
+      let flo = f(lo), fhi = f(hi);
+      if (flo * fhi > 0) return NaN;
+      for (let it = 0; it < 90; it++) {
+        const mid = 0.5 * (lo + hi);
+        const fmid = f(mid);
+        if (Math.abs(fmid) < 1e-9) return mid;
+        if (flo * fmid <= 0) { hi = mid; fhi = fmid; } else { lo = mid; flo = fmid; }
+      }
+      return 0.5 * (lo + hi);
+    }
+
+    // ---- 2. Closed-Form & Sequential MWR (Maximum Sustainable Withdrawal Rate) ----
+    // eqRets, bdRets, infs are decimal arrays (e.g. 0.08, 0.03) of length >= horizon
+    function computeCohortMWR(eqRets, bdRets, infs, startIdx, horizon, eqWeight, {
+      timing = "start", feeDec = 0, taxEff = 0, targetPreserveMode = "deplete", targetFrac = 0,
+      realSpendMultipliers = null, eqGlideWeights = null
+    } = {}) {
+      let denom = 0.0, cumInf = 1.0, cumPort = 1.0;
+      for (let t = 0; t < horizon; t++) {
+        const idx = startIdx + t;
+        const wEq = eqGlideWeights ? eqGlideWeights[t] : eqWeight;
+        const grossR = wEq * eqRets[idx] + (1 - wEq) * bdRets[idx];
+        const netR = grossR * (1 - taxEff) - feeDec;
+        const pi = infs[idx];
+        const spendMult = realSpendMultipliers ? realSpendMultipliers[t] : 1.0;
+        if (timing === "start") {
+          denom += (cumInf * spendMult) / cumPort;
+        }
+        cumPort *= (1 + netR);
+        cumInf *= (1 + pi);
+        if (timing === "end") {
+          denom += (cumInf * spendMult) / cumPort;
+        }
+      }
+      if (denom <= 0 || cumPort <= 0) return 0;
+      let numer = 1.0;
+      if (targetPreserveMode === "nominal") numer = Math.max(0, 1.0 - targetFrac / cumPort);
+      else if (targetPreserveMode === "real") numer = Math.max(0, 1.0 - (targetFrac * cumInf) / cumPort);
+      return Math.max(0, (numer / denom) * 100.0);
+    }
+
+    // ---- 3. Multi-Variable OLS Regression (Gaussian Elimination) ----
+    function solveLinearSystem(A_in, b_in) {
+      const n = b_in.length;
+      const A = A_in.map(row => row.slice());
+      const b = b_in.slice();
+      for (let k = 0; k < n; k++) {
+        let maxR = k;
+        for (let r = k + 1; r < n; r++) {
+          if (Math.abs(A[r][k]) > Math.abs(A[maxR][k])) maxR = r;
+        }
+        if (maxR !== k) {
+          [A[k], A[maxR]] = [A[maxR], A[k]];
+          [b[k], b[maxR]] = [b[maxR], b[k]];
+        }
+        const piv = A[k][k];
+        if (Math.abs(piv) < 1e-12) return null;
+        for (let j = k; j < n; j++) A[k][j] /= piv;
+        b[k] /= piv;
+        for (let i = 0; i < n; i++) {
+          if (i === k) continue;
+          const f = A[i][k];
+          for (let j = k; j < n; j++) A[i][j] -= f * A[k][j];
+          b[i] -= f * b[k];
+        }
+      }
+      return b;
+    }
+
+    function fitOLS(yArr, XMat) {
+      const n = yArr.length, p = XMat[0].length;
+      const XtX = Array.from({ length: p }, () => new Array(p).fill(0));
+      const Xty = new Array(p).fill(0);
+      for (let i = 0; i < n; i++) {
+        const xi = XMat[i], yi = yArr[i];
+        for (let j = 0; j < p; j++) {
+          Xty[j] += xi[j] * yi;
+          for (let k = 0; k < p; k++) XtX[j][k] += xi[j] * xi[k];
+        }
+      }
+      const beta = solveLinearSystem(XtX, Xty);
+      if (!beta) return null;
+      const yMean = meanArr(yArr);
+      let sst = 0, sse = 0;
+      const preds = new Array(n);
+      for (let i = 0; i < n; i++) {
+        let yh = 0;
+        for (let j = 0; j < p; j++) yh += beta[j] * XMat[i][j];
+        preds[i] = yh;
+        sst += (yArr[i] - yMean) ** 2;
+        sse += (yArr[i] - yh) ** 2;
+      }
+      const r2 = sst > 1e-12 ? 1 - sse / sst : 0;
+      const rmse = Math.sqrt(sse / Math.max(1, n - p));
+      return { beta, r2, rmse, preds };
+    }
+
+    // ---- 4. Long-Only Markowitz Efficient Frontier (Projected Gradient Descent on Simplex) ----
+    function projectSimplex(v) {
+      const n = v.length;
+      const u = v.slice().sort((a, b) => b - a);
+      let cssv = 0, rho = -1;
+      for (let i = 0; i < n; i++) {
+        cssv += u[i];
+        if (u[i] + (1 - cssv) / (i + 1) > 0) rho = i;
+      }
+      const theta = (1 - u.slice(0, rho + 1).reduce((a, b) => a + b, 0)) / (rho + 1);
+      return v.map(x => Math.max(0, x + theta));
+    }
+
+    function solveEfficientFrontier(means, stds, corr, numPoints = 41) {
+      const n = means.length;
+      const cov = Array.from({ length: n }, (_, i) =>
+        Array.from({ length: n }, (__, j) => stds[i] * stds[j] * corr[i][j])
+      );
+      const minMu = Math.min(...means), maxMu = Math.max(...means);
+      const frontier = [];
+      for (let p = 0; p < numPoints; p++) {
+        const targetMu = minMu + (p / (numPoints - 1)) * (maxMu - minMu);
+        // Minimize 0.5 * w' Cov w + lambda * (w' mu - targetMu)^2 via projected gradient
+        let w = new Array(n).fill(1 / n);
+        const lam = 60.0;
+        const lr = 0.25;
+        for (let it = 0; it < 700; it++) {
+          let curMu = 0;
+          for (let i = 0; i < n; i++) curMu += w[i] * means[i];
+          const grad = new Array(n).fill(0);
+          for (let i = 0; i < n; i++) {
+            let cw = 0;
+            for (let j = 0; j < n; j++) cw += cov[i][j] * w[j];
+            grad[i] = cw + 2 * lam * (curMu - targetMu) * means[i];
+          }
+          const step = lr / (1 + it * 0.008);
+          const next = w.map((wi, i) => wi - step * grad[i]);
+          w = projectSimplex(next);
+        }
+        let mu = 0, v = 0;
+        for (let i = 0; i < n; i++) {
+          mu += w[i] * means[i];
+          for (let j = 0; j < n; j++) v += w[i] * w[j] * cov[i][j];
+        }
+        frontier.push({ weights: w, mean: mu, std: Math.sqrt(Math.max(0, v)) });
+      }
+      // Keep upper (non-dominated) portion of frontier above min-variance portfolio
+      let minStdIdx = 0;
+      for (let i = 1; i < frontier.length; i++) {
+        if (frontier[i].std < frontier[minStdIdx].std) minStdIdx = i;
+      }
+      return frontier.slice(minStdIdx);
+    }
+
+    // ---- 5. Ch. 3A Correlated AR(1) Low-Yield Stochastic Return Engine ----
+    // Calibrates directly to historical Shiller data (or Ch. 3A defaults) with initial seed y0, pi0
+    function calibrateCh3AEngine(shillerRows) {
+      const valid = shillerRows.filter(r => r.Year >= 1890 && r.Year <= 2023 && r.Jan_10Y_Yield_pct !== null);
+      const n = valid.length;
+      const infs = [], ylds = [], erps = [];
+      for (let i = 0; i < n; i++) {
+        const pi = valid[i].Shiller_US_CPI_pct / 100.0;
+        const y = valid[i].Jan_10Y_Yield_pct / 100.0;
+        const rs = valid[i].Shiller_SP500_TR_pct / 100.0;
+        infs.push(pi);
+        ylds.push(y);
+        erps.push(rs - y);
+      }
+      const stats = arr => {
+        const m = meanArr(arr);
+        let s2 = 0;
+        for (const x of arr) s2 += (x - m) ** 2;
+        const sd = Math.sqrt(s2 / Math.max(1, arr.length - 1));
+        return { m, sd };
+      };
+      const stInf = stats(infs), stY = stats(ylds), stErp = stats(erps);
+      // AR(1) phi for inflation and yields
+      const fitAR1 = (arr, m) => {
+        let num = 0, den = 0;
+        for (let t = 1; t < arr.length; t++) {
+          num += (arr[t] - m) * (arr[t - 1] - m);
+          den += (arr[t - 1] - m) ** 2;
+        }
+        const phi = Math.max(0.1, Math.min(0.96, den > 0 ? num / den : 0.5));
+        const res = [];
+        for (let t = 1; t < arr.length; t++) res.push((arr[t] - m) - phi * (arr[t - 1] - m));
+        return { phi, sig: stats(res).sd };
+      };
+      const arInf = fitAR1(infs, stInf.m);
+      const arY = fitAR1(ylds, stY.m);
+      // Residuals for ERP (i.i.d.) and AR(1) innovations for Yield & Inflation
+      const rErp = [], rY = [], rInf = [];
+      for (let t = 1; t < n; t++) {
+        rErp.push((erps[t] - stErp.m) / (stErp.sd || 1));
+        rY.push(((ylds[t] - stY.m) - arY.phi * (ylds[t - 1] - stY.m)) / (arY.sig || 1));
+        rInf.push(((infs[t] - stInf.m) - arInf.phi * (infs[t - 1] - stInf.m)) / (arInf.sig || 1));
+      }
+      const corr2 = (a, b) => {
+        let s = 0;
+        for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+        return Math.max(-0.85, Math.min(0.85, s / Math.max(1, a.length - 1)));
+      };
+      const c12 = corr2(rErp, rY), c13 = corr2(rErp, rInf), c23 = corr2(rY, rInf);
+      // 3x3 Cholesky lower triangular L
+      const l11 = 1.0, l21 = c12, l31 = c13;
+      const l22 = Math.sqrt(Math.max(1e-6, 1 - l21 * l21));
+      const l32 = (c23 - l31 * l21) / l22;
+      const l33 = Math.sqrt(Math.max(1e-6, 1 - l31 * l31 - l32 * l32));
+      return {
+        muErp: stErp.m, sdErp: stErp.sd,
+        muY: stY.m, phiY: arY.phi, sigY: arY.sig,
+        muInf: stInf.m, phiInf: arInf.phi, sigInf: arInf.sig,
+        L: [l11, l21, l22, l31, l32, l33]
+      };
+    }
+
+    function simulateCh3APath(cal, horizon, rng, y0 = 0.0245, pi0 = 0.017) {
+      const [l11, l21, l22, l31, l32, l33] = cal.L;
+      const eq = new Float64Array(horizon);
+      const bd = new Float64Array(horizon);
+      const inf = new Float64Array(horizon);
+      const yld = new Float64Array(horizon);
+      let yPrev = y0, piPrev = pi0;
+      for (let t = 0; t < horizon; t++) {
+        const z1 = randNormal(rng), z2 = randNormal(rng), z3 = randNormal(rng);
+        const eErp = l11 * z1;
+        const eY = l21 * z1 + l22 * z2;
+        const eInf = l31 * z1 + l32 * z2 + l33 * z3;
+        const yCur = Math.max(0.001, Math.min(0.20, cal.muY + cal.phiY * (yPrev - cal.muY) + cal.sigY * eY));
+        const piCur = Math.max(-0.12, Math.min(0.25, cal.muInf + cal.phiInf * (piPrev - cal.muInf) + cal.sigInf * eInf));
+        const erpCur = cal.muErp + cal.sdErp * eErp;
+        const rStock = Math.max(-0.80, Math.min(1.20, yPrev + erpCur));
+        // Constant-maturity 10Y bond fund approximation (average coupon yield ~yPrev, duration ~7.5 yrs)
+        const dur = yCur > 0.005 ? (1 - Math.pow(1 + yCur, -9)) / yCur : 8.5;
+        const rBond = Math.max(-0.50, Math.min(0.60, yPrev - dur * (yCur - yPrev) * 0.85));
+        eq[t] = rStock;
+        bd[t] = rBond;
+        inf[t] = piCur;
+        yld[t] = yCur;
+        yPrev = yCur;
+        piPrev = piCur;
+      }
+      return { eq, bd, inf, yld };
+    }
+
+    // ---- 6. Mortality Survival Curve Helper ----
+    function buildSurvivalCurve(mortRows, { table = "soa_2017", startAge = 65, household = "male", healthMult = 1.0 } = {}) {
+      const byAge = {};
+      for (const r of mortRows) byAge[r.Age] = r;
+      const getQx = (age, sex, yrIdx) => {
+        const r = byAge[Math.min(120, Math.max(50, age))];
+        if (!r || age >= 120) return 1.0;
+        let q = 0;
+        if (table === "ssa") {
+          q = sex === "F" ? r.SSA_Period_Female_qx : r.SSA_Period_Male_qx;
+        } else if (table === "soa_period") {
+          q = sex === "F" ? r.SOA_2012_IAM_Period_Female_qx : r.SOA_2012_IAM_Period_Male_qx;
+        } else {
+          const baseYear = table === "soa_2026" ? 2026 : 2017;
+          const qBase = sex === "F" ? r.SOA_2012_IAM_Basic_Female_qx : r.SOA_2012_IAM_Basic_Male_qx;
+          const g2 = sex === "F" ? r.SOA_ScaleG2_Female : r.SOA_ScaleG2_Male;
+          q = qBase * Math.pow(1 - g2, baseYear + yrIdx - 2012);
+        }
+        return Math.max(0, Math.min(1.0, (q || 0) * healthMult));
+      };
+
+      const maxK = 120 - startAge;
+      const pM = [1.0], pF = [1.0];
+      for (let k = 0; k < maxK; k++) {
+        pM.push(pM[k] * (1 - getQx(startAge + k, "M", k)));
+        pF.push(pF[k] * (1 - getQx(startAge + k, "F", k)));
+      }
+      const surv = [];
+      for (let k = 0; k <= maxK; k++) {
+        let p = 1;
+        if (household === "male") p = pM[k];
+        else if (household === "female") p = pF[k];
+        else if (household === "couple") p = 1 - (1 - pM[k]) * (1 - pF[k]);
+        else if (household === "two_males") p = 1 - (1 - pM[k]) * (1 - pM[k]);
+        else if (household === "two_females") p = 1 - (1 - pF[k]) * (1 - pF[k]);
+        surv.push({ age: startAge + k, k, p });
+      }
+      // Death probabilities q_death[k] = surv[k].p - surv[k+1].p
+      const pdf = [];
+      let meanAge = startAge;
+      for (let k = 0; k < maxK; k++) {
+        const d = surv[k].p - surv[k + 1].p;
+        pdf.push({ age: startAge + k, k, prob: d });
+        meanAge += surv[k + 1].p;
+      }
+      const ageAtSurv = targetP => {
+        for (let k = 0; k < maxK; k++) {
+          if (surv[k].p >= targetP && surv[k + 1].p <= targetP) {
+            const span = surv[k].p - surv[k + 1].p;
+            return startAge + k + (span > 1e-9 ? (surv[k].p - targetP) / span : 0);
+          }
+        }
+        return 120;
+      };
+      return { surv, pdf, meanAge, p50Age: ageAtSurv(0.5), p10Age: ageAtSurv(0.1), p90Age: ageAtSurv(0.9), p25Age: ageAtSurv(0.25) };
+    }
+
+    // ---- 7. Chapter 6: Exact 10 Variable Spending Strategies + PAY Rule Calibrator ----
+    function computeZoltGlidePath(V0, w0, horizonGP = 45, piGP = 0.03) {
+      // Solve sum_{k=0}^{H-1} q^k = 1 / w0 where q = (1 + piGP)/(1 + rReq)
+      const invW = 1.0 / Math.max(1e-6, w0);
+      let lo = 0.5, hi = 1.3;
+      const sumQ = q => Math.abs(q - 1) < 1e-8 ? horizonGP : (1 - Math.pow(q, horizonGP)) / (1 - q);
+      for (let it = 0; it < 70; it++) {
+        const mid = 0.5 * (lo + hi);
+        if (sumQ(mid) < invW) lo = mid; else hi = mid;
+      }
+      const q = 0.5 * (lo + hi);
+      const rReq = (1 + piGP) / q - 1;
+      const path = new Float64Array(horizonGP + 1);
+      path[0] = V0;
+      let wNom = w0 * V0;
+      for (let t = 0; t < horizonGP; t++) {
+        path[t + 1] = Math.max(0, (path[t] - wNom) * (1 + rReq));
+        wNom *= (1 + piGP);
+      }
+      return { path, rReq };
+    }
+
+    function simulateCh6Strategy(stratId, w0, eqRets, bdRets, infs, {
+      V0 = 100000, eqWeight = 0.50, horizon = 30, startAge = 65, rmdByAge = null,
+      hybridAlpha = 0.50, maN = 3, bengenFloor = 0.85, bengenCeil = 1.20,
+      vgFloor = 0.975, vgCeil = 1.05, vgNominal = true,
+      kitcesThresh = 1.50, kitcesRaise = 1.10, kitcesCooldown = 3,
+      gkGuardrail = 0.20, gkCut = 0.90, gkRaise = 1.10, gkCutoffRem = 15,
+      zoltH = 45, zoltPi = 0.03
+    } = {}) {
+      let kMult = 1.0;
+      if (stratId === 10 && rmdByAge) {
+        const base65 = 1.0 / (rmdByAge[startAge] || 31.0);
+        kMult = w0 / base65;
+      }
+      const zoltGP = stratId === 9 ? computeZoltGlidePath(V0, w0, Math.max(zoltH, horizon + 5), zoltPi).path : null;
+
+      let vNom = V0, cumInf = 1.0;
+      let wPrevNom = w0 * V0;
+      let wInitReal = w0 * V0;
+      let lastRatchetT = 1;
+      const vHistNom = [V0];
+
+      const spendReal = new Float64Array(horizon);
+      const wealthReal = new Float64Array(horizon + 1);
+      wealthReal[0] = V0;
+
+      let dsvSum = 0;
+      let depleted = false;
+
+      for (let t = 1; t <= horizon; t++) {
+        const piPrev = t >= 2 ? infs[t - 2] : 0;
+        const rPrevPort = t >= 2 ? (eqWeight * eqRets[t - 2] + (1 - eqWeight) * bdRets[t - 2]) : 0;
+        const prevCumInf = cumInf;
+        let wTargetNom = 0;
+
+        if (t === 1) {
+          wTargetNom = w0 * V0;
+        } else if (vNom <= 0) {
+          wTargetNom = 0;
+        } else {
+          switch (stratId) {
+            case 1: // Constant Real
+              wTargetNom = wInitReal * prevCumInf;
+              break;
+            case 2: // Fixed %
+              wTargetNom = w0 * vNom;
+              break;
+            case 3: // Endowment Hybrid (static convex combination of Strat 1 & Strat 2)
+              wTargetNom = hybridAlpha * (wInitReal * prevCumInf) + (1 - hybridAlpha) * (w0 * vNom);
+              break;
+            case 4: { // Endowment N-Yr Moving Average (nominal balances)
+              const startK = Math.max(0, vHistNom.length - maN);
+              let sumV = 0;
+              for (let k = startK; k < vHistNom.length; k++) sumV += vHistNom[k];
+              wTargetNom = w0 * (sumV / (vHistNom.length - startK));
+              break;
+            }
+            case 5: { // Bengen Hard-Dollar Real Floor/Ceiling
+              const rawReal = w0 * (vNom / prevCumInf);
+              const clamped = Math.max(bengenFloor * wInitReal, Math.min(bengenCeil * wInitReal, rawReal));
+              wTargetNom = clamped * prevCumInf;
+              break;
+            }
+            case 6: { // Vanguard % Floor/Ceiling (Pfau nominal or inflation-adjusted)
+              const basePrev = vgNominal ? wPrevNom : wPrevNom * (1 + piPrev);
+              wTargetNom = Math.max(vgFloor * basePrev, Math.min(vgCeil * basePrev, w0 * vNom));
+              break;
+            }
+            case 7: { // Kitces Ratcheting
+              let wBase = wPrevNom * (1 + piPrev);
+              if (vNom > kitcesThresh * V0 && (t - lastRatchetT) >= kitcesCooldown) {
+                wBase *= kitcesRaise;
+                lastRatchetT = t;
+              }
+              wTargetNom = wBase;
+              break;
+            }
+            case 8: { // Guyton-Klinger (2006)
+              const infFreez = (rPrevPort < 0 && piPrev > 0 && (wPrevNom * (1 + piPrev) / vNom) > w0);
+              const wStep1 = infFreez ? wPrevNom : wPrevNom * (1 + piPrev);
+              const curWr = wStep1 / vNom;
+              const remYrs = horizon - t + 1;
+              if (remYrs > gkCutoffRem && curWr > w0 * (1 + gkGuardrail)) wTargetNom = wStep1 * gkCut;
+              else if (curWr < w0 * (1 - gkGuardrail)) wTargetNom = wStep1 * gkRaise;
+              else wTargetNom = wStep1;
+              break;
+            }
+            case 9: { // Zolt Glide Path (TPA)
+              const gpTarget = zoltGP[Math.min(t - 1, zoltGP.length - 1)];
+              wTargetNom = (vNom < gpTarget && piPrev > 0) ? wPrevNom : wPrevNom * (1 + piPrev);
+              break;
+            }
+            case 10: { // Modified RMD
+              const div = (rmdByAge && rmdByAge[Math.min(120, startAge + t - 1)]) || Math.max(1.9, 31 - (startAge + t - 1 - 65) * 0.72);
+              const rPct = Math.min(1.0, kMult / div);
+              wTargetNom = rPct * vNom;
+              break;
+            }
+            default:
+              wTargetNom = wInitReal * prevCumInf;
+          }
+        }
+
+        const wActualNom = Math.max(0, Math.min(vNom, wTargetNom));
+        const wActualReal = wActualNom / prevCumInf;
+        spendReal[t - 1] = wActualReal;
+
+        if (t >= 2) {
+          if (wActualReal <= 1e-9 || spendReal[t - 2] <= 1e-9) {
+            dsvSum += -1.0;
+          } else {
+            const chg = (wActualReal - spendReal[t - 2]) / spendReal[t - 2];
+            if (chg < 0) dsvSum += chg;
+          }
+        }
+
+        wPrevNom = wActualNom;
+        const remNom = Math.max(0, vNom - wActualNom);
+        if (remNom <= 1e-9) depleted = true;
+
+        const rPort = eqWeight * eqRets[t - 1] + (1 - eqWeight) * bdRets[t - 1];
+        const piCur = infs[t - 1];
+        vNom = remNom * (1 + rPort);
+        cumInf *= (1 + piCur);
+        vHistNom.push(vNom);
+        wealthReal[t] = vNom / cumInf;
+      }
+
+      return {
+        spendReal,
+        wealthReal,
+        endWealthReal: wealthReal[horizon],
+        dsvPct: (dsvSum / horizon) * 100.0,
+        depleted
+      };
+    }
+
+    function calibratePayRuleW0(stratId, paths, targetXpct, targetYamt, horizon, simOpts) {
+      // Find max w0 (to 1 bp = 0.0001) such that Q_{X%}(endWealthReal) >= targetYamt
+      const N = paths.length;
+      const qFrac = targetXpct / 100.0;
+      const buf = new Float64Array(N);
+      const evalQ = w0 => {
+        for (let i = 0; i < N; i++) {
+          const res = simulateCh6Strategy(stratId, w0, paths[i].eq, paths[i].bd, paths[i].inf, { ...simOpts, horizon });
+          buf[i] = res.endWealthReal;
+        }
+        buf.sort();
+        return quantileSorted(buf, qFrac);
+      };
+      let lo = 0.005, hi = 0.16;
+      for (let it = 0; it < 22; it++) {
+        const mid = 0.5 * (lo + hi);
+        if (evalQ(mid) >= targetYamt) lo = mid; else hi = mid;
+      }
+      return Math.round(lo * 10000) / 10000;
+    }
+
+
+    const CARE_FACTORS = [
+      { id: "c_long", g: "C", val: 3, en: "Short-Horizon Willingness (vs Max Longevity Fear)", zh: "C1. 接受较短精算期限意愿 (非极度害怕长寿)" },
+      { id: "c_floor", g: "C", val: 3, en: "Reliable Income Floor Adequacy", zh: "C2. 养老金/社保底线充足度" },
+      { id: "c_flex", g: "C", val: 3, en: "Spending Flexibility (Ability to Trim Discretionary)", zh: "C3. 非必需消费削减弹性" },
+      { id: "c_res", g: "C", val: 3, en: "Dedicated Contingency Reserves Buffer", zh: "C4. 医疗/突发备用金缓冲充足度" },
+      { id: "a_leg", g: "A", val: 3, en: "Legacy Aspiration vs Lifetime Consumption", zh: "A1. 遗产目标优先级" },
+      { id: "a_up", g: "A", val: 3, en: "Lifestyle Upside Priority (over Floor Certainty)", zh: "A2. 追求生活质量上行弹性" },
+      { id: "r_val", g: "R", val: 3, en: "Confidence in Equity Risk Premium Realization", zh: "R1. 对股票长期风险溢价兑现信心" },
+      { id: "e_vol", g: "E", val: 3, en: "Portfolio Volatility & Drawdown Comfort", zh: "E1. 市场剧烈回撤心理承受力" },
+      { id: "e_comp", g: "E", val: 3, en: "Technical Strategy Complexity Comfort", zh: "E2. 对动态规则/资产配置复杂度接受度" },
+      { id: "e_ann", g: "E", val: 3, en: "Discomfort with Irrevocable Annuities (vs Safety)", zh: "E3. 偏好保留资金流动性（不购买年金）" },
+      { id: "e_disc", g: "E", val: 3, en: "Behavioral Discipline Against Panic Selling", zh: "E4. 熊市坚持再平衡纪律" },
+      { id: "e_cog", g: "E", val: 3, en: "Desire for Self-Directed Oversight", zh: "E5. 自主管理而非完全外包意愿" },
+      { id: "e_adv", g: "E", val: 3, en: "Comfort Relying on Market Returns over Guarantees", zh: "E6. 信任总回报组合而非保本承诺" }
+    ];
+
+    const GAMMA_LEVERS = [
+      { id: "g_tw", on: true, bps: 44, ce: 5.8, en: "Total-Wealth Asset Allocation (Human + SS)", zh: "1. 全家庭经济总财富配置" },
+      { id: "g_dyn", on: true, bps: 52, ce: 7.4, en: "Dynamic Withdrawal Rule (vs 4% Constant)", zh: "2. 动态护栏提取策略" },
+      { id: "g_ann", on: true, bps: 31, ce: 4.5, en: "Partial Annuity / Longevity Risk Pooling", zh: "3. 年金与长寿风险共担工具" },
+      { id: "g_tax", on: true, bps: 42, ce: 5.5, en: "Tax-Efficient Asset Location & Sequencing", zh: "4. 税务账户配置与取款顺序" },
+      { id: "g_liab", on: true, bps: 28, ce: 4.1, en: "Liability-Relative TIPS Duration Matching", zh: "5. 负债匹配 TIPS 组合优化" },
+      { id: "g_ss", on: true, bps: 37, ce: 4.5, en: "Optimal Social Security Delaying (Age 70)", zh: "6. 社保延迟至70岁申领优化" }
+    ];
+
+    const state = { tab: "funded", bsData: null, lastExport: [] };
+
+    (function initSelects() {
+      const sel = document.getElementById("tipsCurveSel");
+      for (let i = CURVES.length - 1; i >= 0; i--) {
+        const c = CURVES[i];
+        const opt = document.createElement("option");
+        opt.value = c.Date;
+        opt.textContent = `${c.Label} (DFII 10Y: ${c.DFII10 ?? 0.5}% / 30Y: ${c.DFII30 ?? 1.0}%)`;
+        sel.appendChild(opt);
+      }
+      sel.value = CURVES[CURVES.length - 1].Date;
+    })();
+
+    function ssFactor(age) {
+      // Exact statutory FRA-67 PIA claiming factor (62..70)
+      if (age <= 67) {
+        const monthsEarly = (67 - age) * 12;
+        return 1 - Math.min(36, monthsEarly) * (5 / 900) - Math.max(0, monthsEarly - 36) * (5 / 1200);
+      }
+      return 1 + (age - 67) * 0.08;
+    }
+
+    function computeFunded() {
+      const cRow = CURVES.find(x => x.Date === document.getElementById("tipsCurveSel").value) || CURVES[CURVES.length - 1];
+      const r10 = ((cRow.DFII10 ?? 1.5) / 100);
+      const r20 = ((cRow.DFII20 ?? cRow.DFII10 ?? 1.8) / 100);
+      const hh = document.getElementById("hhType").value;
+      const surv = buildSurvivalCurve(MORT, { table: "soa_2017", startAge: 65, household: hh });
+
+      const port = Math.max(0, parseMoney(document.getElementById("finPort")));
+      const res = Math.max(0, parseMoney(document.getElementById("cashRes")));
+      const pia = Math.max(0, parseMoney(document.getElementById("ssPia")));
+      const ssAge = Math.min(70, Math.max(62, parseInt(document.getElementById("ssAge").value, 10) || 67));
+      const spiaBuy = Math.min(port, Math.max(0, parseMoney(document.getElementById("spiaAlloc"))));
+      const remPort = port - spiaBuy;
+
+      const ess = Math.max(0, parseMoney(document.getElementById("essSpend")));
+      const disc = Math.max(0, parseMoney(document.getElementById("discSpend")));
+      const ltc = Math.max(0, parseMoney(document.getElementById("ltcRes")));
+      const leg = Math.max(0, parseMoney(document.getElementById("legGoal")));
+
+      // Mortality-weighted PV of $1 real annuity (using curve blend r10 -> r20)
+      let axReal = 0;
+      for (const pt of surv.surv) {
+        const yRate = pt.k <= 10 ? r10 : r20;
+        axReal += pt.p / Math.pow(1 + yRate, pt.k);
+      }
+      // SPIA actuarial payout rate (nominal-ish/real w/ 3% load)
+      const spiaNomYield = ((cRow.DGS20 ?? cRow.DGS10 ?? 3.5) / 100);
+      let axSpia = 0;
+      for (const pt of surv.surv) axSpia += pt.p / Math.pow(1 + spiaNomYield, pt.k);
+      const spiaPayoutRate = 1.0 / (axSpia * 1.03);
+      const spiaAnnual = spiaBuy * spiaPayoutRate;
+
+      // SS starts at ssAge (if ssAge > 65, starts at k = ssAge - 65)
+      const ssAnnual = pia * ssFactor(ssAge);
+      let ssPv = 0;
+      for (const pt of surv.surv) {
+        if (pt.age >= ssAge) {
+          const yRate = pt.k <= 10 ? r10 : r20;
+          ssPv += (ssAnnual * pt.p) / Math.pow(1 + yRate, pt.k);
+        }
+      }
+      const spiaPv = spiaBuy / 1.03; // Fair economic PV net of load
+      const pvEss = ess * axReal;
+      const pvDisc = disc * axReal;
+      const totalAssets = remPort + res + ssPv + spiaPv;
+      const totalLiab = pvEss + pvDisc + ltc + leg;
+      const fundedRatio = totalLiab > 0 ? (totalAssets / totalLiab) * 100 : 100;
+      const reliablePv = ssPv + spiaPv;
+      const floorCov = pvEss > 0 ? (reliablePv / pvEss) * 100 : 100;
+      const trueLiq = remPort + res - Math.max(0, pvEss - reliablePv) - ltc;
+
+      return {
+        remPort, res, ssPv, spiaPv, spiaAnnual, spiaPayoutRate, ssAnnual,
+        pvEss, pvDisc, ltc, leg, totalAssets, totalLiab, fundedRatio, floorCov, trueLiq, axReal, surv
+      };
+    }
+
+    function renderCareUI() {
+      const box = document.getElementById("careSliders");
+      const isZh = currentLang === "zh-CN";
+      box.innerHTML = CARE_FACTORS.map((f, idx) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--border);padding-bottom:5px;">
+          <span style="font-size:12px;color:var(--text-soft);">${isZh ? f.zh : f.en}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <input type="range" min="1" max="5" step="1" value="${f.val}" data-cidx="${idx}" style="width:82px;" class="care-rng" />
+            <span style="font-family:var(--mono);font-size:12px;font-weight:600;width:16px;text-align:right;">${f.val}</span>
+          </div>
+        </div>`).join("");
+      box.querySelectorAll(".care-rng").forEach(el => {
+        el.addEventListener("input", () => {
+          CARE_FACTORS[parseInt(el.dataset.cidx, 10)].val = parseInt(el.value, 10);
+          updateCareScores();
+        });
+      });
+    }
+
+    function updateCareScores() {
+      const isZh = currentLang === "zh-CN";
+      const capItems = CARE_FACTORS.slice(0, 7);
+      const comItems = CARE_FACTORS.slice(7);
+      const avgCap = capItems.reduce((a, b) => a + b.val, 0) / capItems.length;
+      const avgCom = comItems.reduce((a, b) => a + b.val, 0) / comItems.length;
+      const capScore = Math.round(((avgCap - 1) / 4) * 100);
+      const comScore = Math.round(((avgCom - 1) / 4) * 100);
+
+      let schoolEn = "", schoolZh = "", planAge = "", eqBand = "", targetLab = "";
+      if (capScore >= 55 && comScore >= 55) {
+        schoolEn = "Probability-Based Total Return"; schoolZh = "概率驱动 · 总回报型";
+        planAge = "Age 90–92"; eqBand = "60%–75% Equity · Guyton-Klinger / PAY Rule";
+        targetLab = "../variable-spending/";
+      } else if (capScore < 50 && comScore < 50) {
+        schoolEn = "Safety-First Income Floor"; schoolZh = "安全优先 · 收入底线型";
+        planAge = "Age 95–100 (Lifetime Pool)"; eqBand = "25%–40% Equity · TIPS Ladder + SPIA";
+        targetLab = "../bonds-and-buckets/";
+      } else if (comScore < 50 && capScore >= 50) {
+        schoolEn = "Time-Segmentation Buckets"; schoolZh = "时间分段 · 蓄水池型";
+        planAge = "Age 95"; eqBand = "40%–55% Equity + 10Y Bond Ladder";
+        targetLab = "../bonds-and-buckets/";
+      } else {
+        schoolEn = "Balanced Dynamic Guardrails"; schoolZh = "平衡混合 · 动态护栏型";
+        planAge = "Age 95"; eqBand = "45%–60% Equity · Zolt / Bengen Rules";
+        targetLab = "../variable-spending/";
+      }
+
+      document.getElementById("kcCap").textContent = `${capScore} / 100`;
+      document.getElementById("kcCapSub").textContent = isZh ? "基于寿命、底线、弹性与储备" : "Longevity, floor & reserve capacity";
+      document.getElementById("kcCom").textContent = `${comScore} / 100`;
+      document.getElementById("kcComSub").textContent = isZh ? "波动耐受度与管理复杂度" : "Volatility & complexity tolerance";
+      document.getElementById("kcStyle").textContent = isZh ? schoolZh : schoolEn;
+      document.getElementById("kcStyleSub").textContent = isZh ? "Ex. 8.3–8.6 象限匹配" : "Ex. 8.3–8.6 Profile Match";
+      document.getElementById("kcBand").textContent = planAge;
+      document.getElementById("kcBandSub").textContent = eqBand;
+
+      document.getElementById("careRecBox").innerHTML = isZh
+        ? `<strong>执行方案建议：</strong>匹配流派为「${schoolZh}」，建议采用 <strong>${eqBand}</strong>，规划至 ${planAge}。<a href="${targetLab}" style="color:var(--accent);font-weight:600;margin-left:6px;">前往对应章节实验室验证 →</a>`
+        : `<strong>Action Plan:</strong> Matched school is <strong>${schoolEn}</strong> with <strong>${eqBand}</strong> (${planAge}). <a href="${targetLab}" style="color:var(--accent);font-weight:600;margin-left:6px;">Open matching lab →</a>`;
+
+      const sc = setupCanvas(document.getElementById("careCanvas"));
+      if (sc) {
+        const { ctx, w, h } = sc, C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const pad = { l: 42, r: 18, t: 18, b: 30 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const mapX = v => pad.l + (v / 100) * cw;
+        const mapY = v => pad.t + ch - (v / 100) * ch;
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.strokeRect(pad.l, pad.t, cw, ch);
+        ctx.beginPath(); ctx.setLineDash([4, 4]);
+        ctx.moveTo(mapX(50), pad.t); ctx.lineTo(mapX(50), pad.t + ch);
+        ctx.moveTo(pad.l, mapY(50)); ctx.lineTo(pad.l + cw, mapY(50));
+        ctx.stroke(); ctx.setLineDash([]);
+
+        ctx.fillStyle = C.muted; ctx.font = CANVAS_FONT; ctx.textAlign = "center";
+        ctx.fillText(isZh ? "安全优先底线" : "Safety-First", mapX(25), mapY(25));
+        ctx.fillText(isZh ? "时间分段池" : "Time-Segmentation", mapX(75), mapY(25));
+        ctx.fillText(isZh ? "动态护栏" : "Guardrails", mapX(25), mapY(75));
+        ctx.fillText(isZh ? "总回报概率" : "Total Return", mapX(75), mapY(75));
+        ctx.fillText(isZh ? "客观风险能力 (0–100) →" : "Risk Capacity (0–100) →", pad.l + cw * 0.5, h - 8);
+
+        ctx.beginPath(); ctx.arc(mapX(capScore), mapY(comScore), 8, 0, Math.PI * 2);
+        ctx.fillStyle = C.port; ctx.fill(); ctx.strokeStyle = C.panel; ctx.lineWidth = 2; ctx.stroke();
+      }
+    }
+
+    function renderGammaUI() {
+      const box = document.getElementById("gammaChecks");
+      const isZh = currentLang === "zh-CN";
+      box.innerHTML = GAMMA_LEVERS.map((g, i) => `
+        <div class="switch-row" style="border-bottom:1px solid var(--border);padding-bottom:6px;">
+          <label for="${g.id}" style="font-size:12.5px;">${isZh ? g.zh : g.en} <span style="font-family:var(--mono);color:var(--accent);">(+${g.bps} bps)</span></label>
+          <input type="checkbox" id="${g.id}" class="switch gamma-sw" data-gidx="${i}" ${g.on ? "checked" : ""} />
+        </div>`).join("");
+      box.querySelectorAll(".gamma-sw").forEach(el => {
+        el.addEventListener("change", () => {
+          GAMMA_LEVERS[parseInt(el.dataset.gidx, 10)].on = el.checked;
+          updateGamma();
+        });
+      });
+    }
+
+    function updateGamma() {
+      const isZh = currentLang === "zh-CN";
+      const feeBps = Math.max(0, parseFloat(document.getElementById("advFeeBps").value) || 0);
+      const active = GAMMA_LEVERS.filter(g => g.on);
+      const grossBps = active.reduce((a, b) => a + b.bps, 0);
+      const ceLift = active.reduce((a, b) => a + b.ce, 0);
+      const netBps = grossBps - feeBps;
+      const vanNet = 7.0 - (feeBps / 100);
+
+      document.getElementById("kgGross").textContent = `+${(grossBps / 100).toFixed(2)}%`;
+      document.getElementById("kgGrossSub").textContent = `${grossBps} bps (${active.length} ${isZh ? "项启用" : "levers active"})`;
+      document.getElementById("kgNet").textContent = fmtPct(netBps / 100, 2, true);
+      document.getElementById("kgNet").className = "kpi-val " + (netBps >= 0 ? "pos" : "neg");
+      document.getElementById("kgNetSub").textContent = isZh ? `扣除年费 ${feeBps} bps 后` : `Net of ${feeBps} bps annual fee`;
+      document.getElementById("kgCe").textContent = `+${ceLift.toFixed(1)}%`;
+      document.getElementById("kgCeSub").textContent = isZh ? "晨星 2013 基准满项约 +31.8%" : "Blanchett-Kaplan max ~+31.8%";
+      document.getElementById("kgVan").textContent = `${vanNet.toFixed(2)}% vs 4.00%`;
+      document.getElementById("kgVanSub").textContent = isZh ? "Ex. 9.1 顾问赋能净复合回报" : "Ex. 9.1 advisor-assisted vs DIY 4%";
+
+      const sc = setupCanvas(document.getElementById("gammaCanvas"));
+      if (sc) {
+        const { ctx, w, h } = sc, C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const bars = GAMMA_LEVERS.map(g => ({ lbl: "#" + (GAMMA_LEVERS.indexOf(g) + 1), v: g.on ? g.bps : 0, col: C.accent }));
+        bars.push({ lbl: isZh ? "年费" : "Fee", v: -feeBps, col: C.danger });
+        bars.push({ lbl: isZh ? "净Gain" : "Net", v: netBps, col: netBps >= 0 ? C.success : C.danger });
+        const minY = Math.min(-50, -feeBps - 20), maxY = Math.max(80, grossBps * 0.45, netBps + 30);
+        const pad = { l: 48, r: 16, t: 18, b: 32 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const mapY = v => pad.t + ch - ((v - minY) / Math.max(1, maxY - minY)) * ch;
+        ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right";
+        computeNiceLinearTicks(minY, maxY, 4).forEach(v => {
+          const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+          ctx.fillStyle = C.muted; ctx.fillText(v + "bps", pad.l - 4, y + 4);
+        });
+        const y0 = mapY(0), bw = cw / bars.length;
+        bars.forEach((b, i) => {
+          const x = pad.l + i * bw + bw * 0.18, ww = bw * 0.64, y = mapY(b.v);
+          ctx.fillStyle = b.col;
+          ctx.fillRect(x, Math.min(y, y0), ww, Math.abs(y - y0));
+          ctx.fillStyle = C.text; ctx.textAlign = "center";
+          ctx.fillText((b.v > 0 ? "+" : "") + b.v, x + ww * 0.5, b.v >= 0 ? y - 5 : y + 12);
+          ctx.fillStyle = C.muted; ctx.fillText(b.lbl, x + ww * 0.5, h - 8);
+        });
+      }
+    }
+
+    function updateAll() {
+      const isZh = currentLang === "zh-CN";
+      const bs = computeFunded();
+      state.bsData = bs;
+      document.getElementById("kfFr").textContent = bs.fundedRatio.toFixed(1) + "%";
+      document.getElementById("kfFr").className = "kpi-val " + (bs.fundedRatio >= 100 ? "pos" : "neg");
+      document.getElementById("kfFrSub").textContent = `${fmtCompactMoney(bs.totalAssets)} vs ${fmtCompactMoney(bs.totalLiab)}`;
+      document.getElementById("kfFloor").textContent = bs.floorCov.toFixed(1) + "%";
+      document.getElementById("kfFloorSub").textContent = isZh ? `社保+年金 ${fmtCompactMoney(bs.ssPv + bs.spiaPv)}` : `Reliable PV ${fmtCompactMoney(bs.ssPv + bs.spiaPv)}`;
+      document.getElementById("kfLiq").textContent = fmtCompactMoney(bs.trueLiq);
+      document.getElementById("kfLiq").className = "kpi-val " + (bs.trueLiq >= 0 ? "pos" : "neg");
+      document.getElementById("kfLiqSub").textContent = isZh ? `贴现年金因子 a_x = ${bs.axReal.toFixed(1)}` : `Real annuity factor = ${bs.axReal.toFixed(1)}`;
+      document.getElementById("kfSpia").textContent = (bs.spiaPayoutRate * 100).toFixed(2) + "%";
+      document.getElementById("kfSpiaSub").textContent = `${isZh ? "年派息" : "Annual"}: ${fmtExactMoney(bs.spiaAnnual)}`;
+
+      document.getElementById("bsHead").innerHTML = isZh
+        ? `<tr><th>资产负债表项目</th><th>分类</th><th>年现金流 / 基准</th><th>TIPS 折现现值 ($)</th><th>占总负债/资产比</th></tr>`
+        : `<tr><th>Balance Sheet Item</th><th>Side</th><th>Annual Cash Flow</th><th>TIPS Present Value ($)</th><th>Share (%)</th></tr>`;
+
+      const rows = [
+        [isZh ? "可投资金融组合 (扣除SPIA)" : "Financial Portfolio (net of SPIA)", isZh ? "资产" : "Asset", "—", bs.remPort, (bs.remPort / bs.totalAssets) * 100],
+        [isZh ? "专用应急现金储备" : "Dedicated Contingency Reserves", isZh ? "资产" : "Asset", "—", bs.res, (bs.res / bs.totalAssets) * 100],
+        [isZh ? "社会保障养老金 (PV)" : "Social Security Present Value", isZh ? "资产" : "Asset", fmtExactMoney(bs.ssAnnual) + "/yr", bs.ssPv, (bs.ssPv / bs.totalAssets) * 100],
+        [isZh ? "即期终身年金 (SPIA PV)" : "SPIA Lifetime Annuity PV", isZh ? "资产" : "Asset", fmtExactMoney(bs.spiaAnnual) + "/yr", bs.spiaPv, (bs.spiaPv / bs.totalAssets) * 100],
+        [isZh ? "刚性基本生活底线 (PV)" : "Essential Spending Floor PV", isZh ? "负债" : "Liability", fmtExactMoney(parseMoney(document.getElementById("essSpend"))) + "/yr", bs.pvEss, (bs.pvEss / bs.totalLiab) * 100],
+        [isZh ? "弹性享受型支出 (PV)" : "Discretionary Lifestyle PV", isZh ? "负债" : "Liability", fmtExactMoney(parseMoney(document.getElementById("discSpend"))) + "/yr", bs.pvDisc, (bs.pvDisc / bs.totalLiab) * 100],
+        [isZh ? "医疗长护应急储备需求" : "Longevity / LTC Reserve Target", isZh ? "负债" : "Liability", "—", bs.ltc, (bs.ltc / bs.totalLiab) * 100],
+        [isZh ? "遗产传承目标 (PV)" : "Legacy Aspiration Target PV", isZh ? "负债" : "Liability", "—", bs.leg, (bs.leg / bs.totalLiab) * 100]
+      ];
+      state.lastExport = rows.map(r => [r[0], r[1], r[2], Math.round(r[3]), r[4].toFixed(1)]);
+      document.getElementById("bsBody").innerHTML = rows.map(r =>
+        `<tr><td>${r[0]}</td><td><span class="year-pill">${r[1]}</span></td><td>${r[2]}</td><td><strong>${fmtExactMoney(r[3])}</strong></td><td>${r[4].toFixed(1)}%</td></tr>`
+      ).join("");
+
+      if (state.tab === "funded") {
+        const sc = setupCanvas(document.getElementById("bsCanvas"));
+        if (sc) {
+          const { ctx, w, h } = sc, C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+          const maxV = Math.max(bs.totalAssets, bs.totalLiab) * 1.15;
+          const pad = { l: 120, r: 30, t: 24, b: 28 }, cw = w - pad.l - pad.r;
+          const mapX = v => pad.l + (v / Math.max(1, maxV)) * cw;
+          ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "center";
+          computeNiceLinearTicks(0, maxV, 4).forEach(v => {
+            const x = mapX(v); ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+            ctx.fillStyle = C.muted; ctx.fillText(fmtCompactMoney(v), x, h - 8);
+          });
+          const drawStack = (y, lbl, segs) => {
+            let curX = pad.l;
+            segs.forEach(([val, col]) => {
+              const segW = (val / maxV) * cw;
+              ctx.fillStyle = col; ctx.fillRect(curX, y, segW, 44);
+              curX += segW;
+            });
+            ctx.fillStyle = C.text; ctx.textAlign = "right"; ctx.font = CANVAS_LABEL_FONT;
+            ctx.fillText(lbl, pad.l - 10, y + 26);
+          };
+          drawStack(44, isZh ? "经济总资产" : "Total Assets", [[bs.remPort, C.equity], [bs.res, C.accent], [bs.ssPv, C.success], [bs.spiaPv, C.port]]);
+          drawStack(120, isZh ? "经济总负债" : "Total Liab.", [[bs.pvEss, C.danger], [bs.pvDisc, C.inflation], [bs.ltc, C.bond], [bs.leg, C.muted]]);
+        }
+      } else if (state.tab === "care") {
+        renderCareUI(); updateCareScores();
+      } else if (state.tab === "gamma") {
+        renderGammaUI(); updateGamma();
+      }
+    }
+
+    function applyPreset(name) {
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active", b.dataset.preset === name));
+      document.getElementById("finPort").value = "1,200,000";
+      document.getElementById("cashRes").value = "100,000";
+      document.getElementById("ssPia").value = "36,000";
+      document.getElementById("ssAge").value = "67";
+      document.getElementById("spiaAlloc").value = "0";
+      document.getElementById("essSpend").value = "55,000";
+      document.getElementById("discSpend").value = "30,000";
+      document.getElementById("ltcRes").value = "200,000";
+      document.getElementById("legGoal").value = "150,000";
+      if (name === "safety") {
+        document.getElementById("ssAge").value = "70";
+        document.getElementById("spiaAlloc").value = "350,000";
+        CARE_FACTORS.forEach(f => { f.val = f.id === "c_floor" ? 4 : 2; });
+        document.querySelector('[data-tab="care"]').click();
+      } else if (name === "under") {
+        document.getElementById("finPort").value = "750,000";
+        document.getElementById("essSpend").value = "68,000";
+        document.querySelector('[data-tab="funded"]').click();
+      } else if (name === "gamma") {
+        GAMMA_LEVERS.forEach(g => { g.on = true; });
+        document.querySelector('[data-tab="gamma"]').click();
+      } else {
+        CARE_FACTORS.forEach(f => { f.val = 3; });
+        document.querySelector('[data-tab="funded"]').click();
+      }
+      updateAll();
+    }
+
+    function onThemeOrLangChange() { updateAll(); }
+
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      b.addEventListener("click", () => {
+        state.tab = b.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(x => { x.classList.toggle("active", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+        const map = { funded: "paneFunded", care: "paneCare", gamma: "paneGamma" };
+        Object.entries(map).forEach(([k, id]) => document.getElementById(id).style.display = k === state.tab ? "block" : "none");
+        updateAll();
+      });
+    });
+    document.querySelectorAll(".preset-btn").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
+    document.getElementById("btnReset").addEventListener("click", () => applyPreset("balanced"));
+    document.getElementById("btnExportCsv").addEventListener("click", () => {
+      downloadCsv("pfau_ch8_9_funded_ratio.csv", ["Item", "Side", "Annual_Flow", "TIPS_PV", "Share_pct"], state.lastExport);
+    });
+    ["tipsCurveSel", "hhType", "ssAge", "finPort", "cashRes", "ssPia", "spiaAlloc", "essSpend", "discSpend", "ltcRes", "legGoal", "advFeeBps"].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("input", updateAll);
+      el.addEventListener("change", updateAll);
+    });
+    window.addEventListener("resize", () => requestAnimationFrame(updateAll));
+
+    initSharedControls();
+    applyStaticI18n();
+    updateAll();
+
+  </script>
+</body>
+</html>

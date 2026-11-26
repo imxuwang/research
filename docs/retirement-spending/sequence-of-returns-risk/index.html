@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sequence-of-Returns Risk</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("site_theme_v1");
+        if (t !== "dark" && t !== "light") {
+          t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = t;
+      } catch (_) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --bg-subtle: #fafaf8;
+      --panel: #ffffff;
+      --panel-alt: #f3f3ef;
+      --seg-bg: #efefeb;
+      --seg-active: #ffffff;
+      --seg-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
+      --thumb-shadow: 0 1px 3px rgba(24, 24, 27, 0.22);
+      --switch-knob: #ffffff;
+      --switch-knob-shadow: 0 1px 2px rgba(24, 24, 27, 0.22);
+      --input-bg: #ffffff;
+      --canvas-bg: transparent;
+      --thead-bg: #fafaf8;
+      --tooltip-bg: rgba(255, 255, 255, 0.98);
+      --border: rgba(24, 24, 27, 0.09);
+      --border-strong: rgba(24, 24, 27, 0.18);
+      --border-hover: rgba(24, 24, 27, 0.32);
+      --tip-shadow: 0 8px 24px rgba(24, 24, 27, 0.10), 0 1px 3px rgba(24, 24, 27, 0.06);
+      --text: #18181b;
+      --text-soft: #3f3f46;
+      --muted: #52525b;
+      --grid: rgba(24, 24, 27, 0.07);
+      --zero-line: rgba(24, 24, 27, 0.24);
+      --crosshair: rgba(24, 24, 27, 0.30);
+      --accent: #1d4ed8;
+      --accent-soft: rgba(29, 78, 216, 0.10);
+      --accent-border: rgba(29, 78, 216, 0.24);
+      --equity: #4338ca;
+      --bond: #047857;
+      --port: #b45309;
+      --port-fill-top: rgba(180, 83, 9, 0.12);
+      --port-fill-bot: rgba(180, 83, 9, 0.00);
+      --expense: #9a3412;
+      --inflation: #7e22ce;
+      --danger: #be123c;
+      --success: #047857;
+      --warn-bg: rgba(180, 83, 9, 0.08);
+      --warn-border: rgba(180, 83, 9, 0.24);
+      --mc-outer-band: rgba(29, 78, 216, 0.08);
+      --mc-inner-band: rgba(29, 78, 216, 0.18);
+      --exp-outer-band: rgba(180, 83, 9, 0.10);
+      --exp-inner-band: rgba(180, 83, 9, 0.22);
+      --dd-band: rgba(190, 18, 60, 0.12);
+      --pill-bg: #f3f3ef;
+      --pill-text: #3f3f46;
+      --row-alt: rgba(24, 24, 27, 0.018);
+      --row-hover: rgba(29, 78, 216, 0.045);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color-scheme: light;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0c0d0f;
+      --bg-subtle: #111316;
+      --panel: #15171b;
+      --panel-alt: #1d2026;
+      --seg-bg: #111316;
+      --seg-active: #262a32;
+      --seg-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+      --switch-knob: #f4f4f5;
+      --switch-knob-shadow: 0 1px 2px rgba(0, 0, 0, 0.40);
+      --input-bg: #101215;
+      --canvas-bg: transparent;
+      --thead-bg: #191c21;
+      --tooltip-bg: rgba(21, 23, 27, 0.97);
+      --border: rgba(244, 244, 245, 0.09);
+      --border-strong: rgba(244, 244, 245, 0.19);
+      --border-hover: rgba(244, 244, 245, 0.30);
+      --tip-shadow: 0 12px 28px rgba(0, 0, 0, 0.50);
+      --text: #f4f4f5;
+      --text-soft: #d4d4d8;
+      --muted: #a1a1aa;
+      --grid: rgba(244, 244, 245, 0.08);
+      --zero-line: rgba(244, 244, 245, 0.24);
+      --crosshair: rgba(244, 244, 245, 0.32);
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.16);
+      --accent-border: rgba(96, 165, 250, 0.30);
+      --equity: #818cf8;
+      --bond: #34d399;
+      --port: #f59e0b;
+      --port-fill-top: rgba(245, 158, 11, 0.18);
+      --port-fill-bot: rgba(245, 158, 11, 0.00);
+      --expense: #fbbf24;
+      --inflation: #c084fc;
+      --danger: #fb7185;
+      --success: #34d399;
+      --warn-bg: rgba(245, 158, 11, 0.12);
+      --warn-border: rgba(245, 158, 11, 0.30);
+      --mc-outer-band: rgba(96, 165, 250, 0.10);
+      --mc-inner-band: rgba(96, 165, 250, 0.22);
+      --exp-outer-band: rgba(251, 191, 36, 0.11);
+      --exp-inner-band: rgba(251, 191, 36, 0.24);
+      --dd-band: rgba(251, 113, 133, 0.15);
+      --pill-bg: #22262d;
+      --pill-text: #d4d4d8;
+      --row-alt: rgba(255, 255, 255, 0.02);
+      --row-hover: rgba(96, 165, 250, 0.07);
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+    *::-webkit-scrollbar { width: 6px; height: 6px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+    ::selection { background: var(--accent-soft); color: var(--text); }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      caret-color: var(--accent);
+      line-height: 1.48;
+      font-size: 13.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a:focus-visible, button:focus-visible, summary:focus-visible,
+    input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .tabular { font-variant-numeric: tabular-nums; }
+    .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .pos { color: var(--success); }
+    .neg { color: var(--danger); }
+    .muted { color: var(--muted); }
+    .exp-col { color: var(--expense); }
+    .inf-col { color: var(--inflation); font-weight: 600; }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      padding: 8px 22px;
+      min-height: 52px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 14px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+    .hdr-left { display: flex; align-items: center; min-width: 0; }
+    .hdr-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .hdr-home-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 2px;
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.12s;
+      white-space: nowrap;
+    }
+    .hdr-home-link:hover { color: var(--text); }
+    .hdr-sep { color: var(--border-strong); font-size: 13px; user-select: none; }
+    header h1 {
+      margin: 0;
+      font-size: 16.5px;
+      font-weight: 620;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+    .hdr-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .chapter-jump {
+      width: auto;
+      max-width: 255px;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 4px 8px;
+      min-height: 32px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+    }
+
+    /* APP-SHELL SPLIT LAYOUT */
+    .layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 356px minmax(0, 1fr);
+    }
+    .sidebar {
+      padding: 0 0 28px;
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+    }
+    .workspace {
+      padding: 18px 24px 36px;
+      min-width: 0;
+    }
+    @media (min-width: 1100px) {
+      body.app-shell {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      body.app-shell .layout { flex: 1; overflow: hidden; }
+      body.app-shell .sidebar, body.app-shell .workspace { height: 100%; overflow-y: auto; }
+    }
+    @media (max-width: 1099px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .workspace { padding: 14px 14px 28px; }
+    }
+    @media (max-width: 720px) {
+      header { padding: 8px 12px; gap: 6px 10px; }
+    }
+
+    /* SIDEBAR SECTIONS */
+    .side-section {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+    }
+    .side-section:last-of-type { border-bottom: none; }
+    .sec-head-static {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .sec-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 620;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-wrap: balance;
+    }
+    details.side-section > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 28px;
+      user-select: none;
+    }
+    details.side-section > summary::-webkit-details-marker { display: none; }
+    details.side-section[open] > summary { margin-bottom: 12px; }
+    .sec-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .sec-summary {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    details[open] > summary .sec-summary { display: none; }
+    .chev { color: var(--muted); font-size: 12px; transition: transform 0.15s; flex-shrink: 0; }
+    details[open] > summary .chev { transform: rotate(90deg); }
+    details.side-section > summary:hover .sec-title { color: var(--accent); }
+
+    .control-group { margin-bottom: 13px; }
+    .control-group:last-child { margin-bottom: 0; }
+    label, .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+      gap: 6px;
+    }
+    .label-row label { margin-bottom: 0; justify-content: flex-start; }
+    .label-lead { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+    .label-hint {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 6px 9px;
+      min-height: 32px;
+      font-size: 13px;
+      font-family: var(--font);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+      outline: 2px solid transparent;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+    /* CURRENCY FIELD */
+    .currency-field {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 0 9px;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .currency-field:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+    .currency-prefix {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 13px;
+      margin-right: 6px;
+      user-select: none;
+    }
+    .currency-field input {
+      border: none;
+      background: transparent;
+      padding: 6px 0;
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: none !important;
+      outline: none;
+    }
+
+    /* CHIPS, SEGMENTED CONTROLS & SLIDERS */
+    .chips { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .chips .chip {
+      flex: 1 1 0;
+      text-align: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      padding: 4px 6px;
+      min-height: 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .chip:hover:not(:disabled) { border-color: var(--border-strong); color: var(--text); }
+    .chip.active {
+      background: var(--panel-alt);
+      border-color: var(--border-strong);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--seg-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      gap: 2px;
+      flex-wrap: wrap;
+    }
+    .scale-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 4px 8px;
+      min-height: 26px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.12s, background 0.12s;
+    }
+    .scale-btn:hover { color: var(--text); }
+    .scale-btn.active {
+      background: var(--seg-active);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: var(--seg-shadow);
+    }
+
+    .seg-ctl {
+      display: flex;
+      background: var(--seg-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .seg-ctl button {
+      flex: 1 1 0;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 5px 8px;
+      min-height: 28px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--font);
+      transition: color 0.12s, background 0.12s;
+    }
+    .seg-ctl button:hover { color: var(--text); }
+    .seg-ctl button.active {
+      background: var(--seg-active);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: var(--seg-shadow);
+    }
+
+    .ratio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 26px;
+      margin: 2px 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .ratio-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--equity) 0 var(--pct, 50%), var(--bond) var(--pct, 50%) 100%);
+    }
+    .ratio-slider::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--equity) 0 var(--pct, 50%), var(--bond) var(--pct, 50%) 100%);
+    }
+    .ratio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px; margin-top: -6px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--text);
+      box-shadow: var(--thumb-shadow);
+    }
+    .ratio-slider::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--panel); border: 2px solid var(--text);
+    }
+    .ratio-labels {
+      display: flex; justify-content: space-between;
+      font-size: 12px; font-family: var(--mono);
+      margin-top: 2px; color: var(--text-soft); font-weight: 500;
+    }
+
+    .range-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 24px;
+      margin: 2px 0;
+      background: transparent;
+      cursor: pointer;
+    }
+    .range-slider::-webkit-slider-runnable-track {
+      height: 5px; border-radius: 999px; background: var(--border-strong);
+    }
+    .range-slider::-moz-range-track {
+      height: 5px; border-radius: 999px; background: var(--border-strong);
+    }
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px; margin-top: -5.5px;
+      border-radius: 50%; background: var(--accent);
+      border: 2px solid var(--panel); box-shadow: var(--thumb-shadow);
+    }
+    .range-slider::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%;
+      background: var(--accent); border: 2px solid var(--panel);
+    }
+
+    .switch-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .switch-row label { margin-bottom: 0; cursor: pointer; }
+    .switch {
+      -webkit-appearance: none; appearance: none;
+      width: 38px; height: 24px; padding: 2px;
+      border-radius: 999px; background: var(--border-strong);
+      position: relative; cursor: pointer; flex-shrink: 0;
+      transition: background 0.15s; margin: 0;
+    }
+    .switch::after {
+      content: ""; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--switch-knob); box-shadow: var(--switch-knob-shadow);
+      transition: transform 0.15s;
+    }
+    .switch:checked { background: var(--accent); }
+    .switch:checked::after { transform: translateX(14px); }
+
+    /* BUTTONS & POPOVERS */
+    .btn {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-soft);
+      padding: 5px 10px;
+      min-height: 32px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .btn:hover:not(:disabled) { background: var(--panel-alt); color: var(--text); }
+    .btn:disabled { opacity: 0.52; cursor: not-allowed; }
+    .btn-accent { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); font-weight: 600; }
+    .link-btn {
+      background: none; border: none; color: var(--accent);
+      font-size: 12px; font-weight: 500; font-family: var(--font);
+      cursor: pointer; padding: 3px 4px; min-height: 24px;
+      display: inline-flex; align-items: center; border-radius: 4px;
+    }
+    .link-btn:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+    .info-btn {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1px solid var(--border-strong); background: transparent;
+      color: var(--muted); font-size: 11px; font-weight: 600;
+      font-family: var(--font); cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; flex-shrink: 0;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .info-btn:hover, .info-btn[aria-expanded="true"] {
+      border-color: var(--text-soft); color: var(--text); background: var(--panel-alt);
+    }
+    .info-popover {
+      margin: 0;
+      width: min(330px, calc(100vw - 24px));
+      background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 11px 13px;
+      box-shadow: var(--tip-shadow);
+      font-size: 12px;
+      line-height: 1.48;
+      color: var(--text-soft);
+      text-wrap: pretty;
+    }
+    .info-popover:not([popover]) { display: none; position: fixed; z-index: 60; }
+    .info-popover.open { display: block; }
+
+    /* NOTICES & BOOK PRESETS */
+    .notice {
+      font-size: 12px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-top: 8px;
+      text-wrap: pretty;
+    }
+    .notice.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--port); }
+    .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+    .preset-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font);
+      color: var(--text-soft);
+      transition: border-color 0.12s, background 0.12s, color 0.12s;
+    }
+    .preset-btn:hover { border-color: var(--border-strong); background: var(--panel-alt); color: var(--text); }
+    .preset-btn.active { background: var(--accent-soft); border-color: var(--accent-border); color: var(--text); }
+    .preset-btn .p-title { display: block; font-size: 12px; font-weight: 600; line-height: 1.25; }
+    .preset-btn .p-meta { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.2; }
+
+    /* RESULTS SHELL, TABS & KPIs */
+    .results-shell {
+      --body-px: 20px;
+      --body-py: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: visible;
+    }
+    @media (max-width: 680px) {
+      .results-shell { --body-px: 14px; --body-py: 14px; }
+    }
+    .tabs-bar {
+      display: flex; gap: 8px; padding: 10px var(--body-px);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; align-items: center; justify-content: space-between;
+    }
+    .tab-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tab-btn {
+      background: transparent; border: 1px solid transparent; border-radius: 6px;
+      color: var(--muted); padding: 7px 11px;
+      font-size: 12.5px; font-weight: 500; font-family: var(--font);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--panel-alt); }
+    .tab-btn.active { background: var(--accent-soft); border-color: var(--accent-border); color: var(--text); font-weight: 620; }
+    .tabs-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 6px 0; margin-left: auto; }
+    .results-body { padding: var(--body-py) var(--body-px) 20px; }
+    .tab-pane > .panel-block {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-pane > .panel-block:first-child { padding-top: 0; }
+    .tab-pane > .panel-block:last-child { padding-bottom: 0; border-bottom: none; }
+    .card-title {
+      font-size: 13.5px; font-weight: 620; letter-spacing: -0.01em; color: var(--text);
+      margin: 0 0 10px 0; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap; text-wrap: balance;
+    }
+    .subhead { color: var(--muted); font-size: 12px; text-wrap: pretty; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      margin: 0 calc(var(--body-px, 20px) * -1);
+    }
+    .kpis.kpis-flush-top { margin-top: calc(var(--body-py, 18px) * -1); border-top: none; }
+    .kpis.kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpis.kpis-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .kpis.kpis-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    @media (max-width: 1280px) {
+      .kpis.kpis-6, .kpis.kpis-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .kpis, .kpis.kpis-3, .kpis.kpis-4, .kpis.kpis-5, .kpis.kpis-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .kpi { background: var(--bg-subtle); padding: 12px 14px; min-width: 0; }
+    .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.3; }
+    .kpi-val {
+      font-size: clamp(14.5px, 1.25vw, 18.5px); font-weight: 650;
+      font-family: var(--mono); font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em; margin-top: 4px; line-height: 1.25; white-space: nowrap;
+    }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.35; font-variant-numeric: tabular-nums; }
+
+    /* CHARTS & TOOLTIPS */
+    .chart-wrap { position: relative; width: 100%; }
+    canvas { width: 100%; display: block; background: var(--canvas-bg); touch-action: pan-y; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 12px;
+      color: var(--text-soft); margin-bottom: 10px; align-items: center; justify-content: space-between;
+    }
+    .legend-items { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .swatch { width: 11px; height: 3px; border-radius: 1px; display: inline-block; }
+    .tooltip {
+      position: absolute; pointer-events: none; background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong); border-radius: 6px; padding: 8px 10px;
+      font-size: 12px; font-family: var(--mono); font-variant-numeric: tabular-nums;
+      color: var(--text); box-shadow: var(--tip-shadow); display: none; z-index: 15;
+      min-width: min(220px, calc(100% - 16px)); max-width: calc(100% - 16px);
+    }
+    .tip-row { display: flex; justify-content: space-between; gap: 14px; line-height: 1.5; }
+
+    /* 2-COL GRID INSIDE RESULTS */
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 0 calc(var(--body-px, 20px) * -1);
+    }
+    .split-grid > .grid-cell { background: var(--panel); padding: 16px var(--body-px, 20px); min-width: 0; }
+    @media (max-width: 960px) { .split-grid { grid-template-columns: 1fr; } }
+
+    /* TABLES */
+    .table-container {
+      max-height: 460px; overflow: auto;
+    }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+      font-family: var(--mono); font-variant-numeric: tabular-nums;
+    }
+    th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th:first-child, td:first-child { text-align: left; }
+    th {
+      position: sticky; top: 0; background: var(--thead-bg); color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-family: var(--font); font-size: 12px; font-weight: 600; z-index: 2;
+    }
+    tbody tr:nth-child(even) td { background: var(--row-alt); }
+    tbody tr:hover td { background: var(--row-hover); }
+    tr.highlight-row td { background: var(--accent-soft) !important; font-weight: 600; }
+    .year-pill {
+      display: inline-block; padding: 1px 6px; border-radius: 4px;
+      background: var(--pill-bg); color: var(--pill-text); font-size: 11px; font-weight: 500;
+    }
+    .hm-cell { text-align: center !important; font-weight: 500; }
+
+    /* PROSE NOTES BLOCK */
+    .method-note {
+      font-size: 12.5px; color: var(--text-soft); line-height: 1.55; max-width: 74ch; text-wrap: pretty;
+    }
+    .method-note strong { color: var(--text); }
+
+    @media (pointer: coarse) {
+      .hdr-home-link { min-height: 40px; }
+      .btn { min-height: 40px; padding: 8px 12px; font-size: 13px; }
+      .tab-btn { min-height: 44px; padding: 12px 2px 10px; font-size: 13px; }
+      .scale-btn, .seg-ctl button, .chips .chip { min-height: 38px; padding: 7px 10px; font-size: 12.5px; }
+      input[type="number"], input[type="text"], select { font-size: 16px; min-height: 40px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+
+  </style>
+</head>
+<body class="app-shell">
+  <header>
+    <div class="hdr-left">
+      <div class="hdr-title-row"><a href="../../" class="hdr-home-link"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg><span data-i18n="nav_home">Home</span></a><span class="hdr-sep" aria-hidden="true">/</span><a href="../" class="hdr-home-link" data-i18n="nav_suite">Retirement Spending</a><span class="hdr-sep" aria-hidden="true">/</span><h1 data-i18n="app_title">Sequence-of-Returns Risk</h1></div>
+    </div>
+    <div class="hdr-right">
+      <select id="chapterJump" class="chapter-jump" data-is-hub="0" aria-label="Jump to chapter lab" data-i18n-aria-label="aria_jump">
+        <option value="" data-en="Suite Overview & Ch. 1" data-zh="全书总览与第1章">Suite Overview & Ch. 1</option><option value="fixed-returns-longevity" data-en="Ch. 2 · Fixed Returns & Longevity" data-zh="第2章 · 固定收益与长寿风险">Ch. 2 · Fixed Returns & Longevity</option><option value="sequence-of-returns-risk" data-en="Ch. 3 · Sequence-of-Returns Risk" data-zh="第3章 · 收益率顺序风险" selected>Ch. 3 · Sequence-of-Returns Risk</option><option value="safe-withdrawal-rates" data-en="Ch. 4 · Safe Withdrawal Rates" data-zh="第4章 · 安全提取率">Ch. 4 · Safe Withdrawal Rates</option><option value="valuations-and-savings" data-en="Ch. 5A · Valuations & Safe Savings" data-zh="第5章上 · 估值与安全储蓄率">Ch. 5A · Valuations & Safe Savings</option><option value="spending-smiles-glidepaths" data-en="Ch. 5B · Smiles & Bond Tents" data-zh="第5章下 · 支出微笑与滑道">Ch. 5B · Smiles & Bond Tents</option><option value="variable-spending" data-en="Ch. 6 · Variable Spending & PAY" data-zh="第6章 · 可变支出与 PAY 准则">Ch. 6 · Variable Spending & PAY</option><option value="bonds-and-buckets" data-en="Ch. 7 · Bond Ladders & Buckets" data-zh="第7章 · 债券阶梯与时间分段">Ch. 7 · Bond Ladders & Buckets</option><option value="funded-ratio-and-gamma" data-en="Ch. 8–9 · Funded Ratio & Gamma" data-zh="第8–9章 · 充足率与 Gamma">Ch. 8–9 · Funded Ratio & Gamma</option>
+      </select>
+      <div class="seg-group" id="langSwitch" role="group" aria-label="Language" data-i18n-aria-label="aria_lang">
+        <button type="button" class="scale-btn active" data-lang="en-UK" aria-pressed="true">EN</button>
+        <button type="button" class="scale-btn" data-lang="zh-CN" aria-pressed="false">中文</button>
+      </div>
+      <button type="button" class="btn" id="btnThemeToggle" aria-pressed="false" data-i18n-title="theme_title" title="Toggle Dark / Light Theme">
+        <svg class="icon-moon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M13.5 9.8A5.8 5.8 0 016.2 2.5a5.8 5.8 0 107.3 7.3z"/></svg>
+        <svg class="icon-sun" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none;" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1"/></svg>
+        <span class="theme-lbl" data-i18n="theme_dark">Dark</span>
+      </button>
+      <button type="button" class="btn" id="btnExportCsv" data-i18n="btn_export_csv">Export CSV</button>
+    </div>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Simulation parameters" data-i18n-aria-label="aria_sidebar">
+      <div class="side-section">
+        <div class="sec-head-static">
+          <h2 class="sec-title" data-i18n="sec_presets">Book Exhibit Presets</h2>
+          <button type="button" class="link-btn" id="btnReset" data-i18n="btn_reset">Reset</button>
+        </div>
+        <div class="preset-grid">
+          <button type="button" class="preset-btn active" data-preset="ex32">
+            <span class="p-title" data-i18n="pre_32_t">Ex. 3.2 · 6.3% Sequence</span>
+            <span class="p-meta" data-i18n="pre_32_m">50/50 · 6.3% WR vs 5.1% avg</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="ex34">
+            <span class="p-title" data-i18n="pre_34_t">Ex. 3.4–3.6 · Adam 60Y</span>
+            <span class="p-meta" data-i18n="pre_34_m">30y save 15% + 30y ret</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="ex38">
+            <span class="p-title" data-i18n="pre_38_t">Ex. 3.8 · MWR vs CAGR</span>
+            <span class="p-meta" data-i18n="pre_38_m">1966 vs 1982 cohorts</span>
+          </button>
+          <button type="button" class="preset-btn" data-preset="ex39">
+            <span class="p-title" data-i18n="pre_39_t">Ex. 3.9 · Reverse IRR</span>
+            <span class="p-meta" data-i18n="pre_39_m">Lump / Accum / Retiree MC</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="sec-head-static"><h2 class="sec-title" data-i18n="sec_params">Simulation Parameters</h2></div>
+        <div class="control-group">
+          <label for="datasetSelect"><span data-i18n="lbl_dataset">Historical dataset</span></label>
+          <select id="datasetSelect">
+            <option value="nyu" selected data-i18n="ds_nyu">NYU Stern US SBBI Proxy (1928–2025)</option>
+            <option value="shiller" data-i18n="ds_shiller">Robert Shiller Long-Run US (1871–2025)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <div class="label-row">
+            <label for="eqPctSlider"><span data-i18n="lbl_eq">Stock / Bond mix</span></label>
+            <span class="label-hint" id="eqPctHint">50 / 50</span>
+          </div>
+          <input type="range" id="eqPctSlider" class="ratio-slider" min="0" max="100" step="10" value="50" />
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="initWrPct"><span data-i18n="lbl_init_wr">Initial WR (%)</span></label>
+            <input type="number" id="initWrPct" value="6.3" min="2" max="12" step="0.1" />
+          </div>
+          <div>
+            <label for="retYrs"><span data-i18n="lbl_ret_yrs">Retirement (yrs)</span></label>
+            <input type="number" id="retYrs" value="30" min="15" max="45" step="5" />
+          </div>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="workYrs"><span data-i18n="lbl_work_yrs">Career yrs (Adam)</span></label>
+            <input type="number" id="workYrs" value="30" min="10" max="40" step="5" />
+          </div>
+          <div>
+            <label for="saveRatePct"><span data-i18n="lbl_save_rate">Savings rate (%)</span></label>
+            <input type="number" id="saveRatePct" value="15" min="5" max="40" step="1" />
+          </div>
+        </div>
+        <div class="control-group row-2">
+          <div>
+            <label for="focusCohort"><span data-i18n="lbl_focus_yr">Highlight cohort</span></label>
+            <select id="focusCohort"></select>
+          </div>
+          <div>
+            <label for="timingSel"><span data-i18n="lbl_timing">Withdraw timing</span></label>
+            <select id="timingSel">
+              <option value="start" selected data-i18n="opt_start">Start of year</option>
+              <option value="end" data-i18n="opt_end">End of year</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-group">
+          <label><span data-i18n="lbl_mc_mode">Monte Carlo engine (10,000 runs)</span></label>
+          <div class="seg-ctl" id="mcModeCtl" role="group">
+            <button type="button" data-v="bootstrap" class="active" aria-pressed="true" data-i18n="mc_boot">Historical Bootstrap</button>
+            <button type="button" data-v="ch3a" aria-pressed="false" data-i18n="mc_ch3a">Ch. 3A Low-Yield AR(1)</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="workspace" aria-label="Simulation outputs" data-i18n-aria-label="aria_workspace">
+      <div class="results-shell">
+        <div class="tabs-bar">
+          <div class="tab-strip" role="tablist">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="glide" data-i18n="tab_glide">Glide Paths &amp; WR Spirals (Ex. 3.1–3.3)</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="lifetime" data-i18n="tab_life">Lifetime Sequence Risk (Ex. 3.4–3.6)</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="reverse" data-i18n="tab_rev">Inv. vs. Sequence &amp; Reverse IRR (Ex. 3.7–3.9)</button>
+          </div>
+          <div class="tabs-controls">
+            <button type="button" class="btn btn-accent" id="btnRerun" data-i18n="btn_rerun">&#8635; Re-run MC</button>
+          </div>
+        </div>
+
+        <div class="results-body">
+          <div id="paneGlide" class="tab-pane">
+            <div class="kpis kpis-4 kpis-flush-top">
+              <div class="kpi"><div class="kpi-label" data-i18n="k3_surv">Historical Survival</div><div class="kpi-val" id="k3Surv">—</div><div class="kpi-sub" id="k3SurvSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k3_best_end">Best Terminal Real Wealth</div><div class="kpi-val pos" id="k3Best">—</div><div class="kpi-sub" id="k3BestSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k3_worst_end">Earliest Depletion Cohort</div><div class="kpi-val neg" id="k3Worst">—</div><div class="kpi-sub" id="k3WorstSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k3_focus">Highlighted Cohort</div><div class="kpi-val" id="k3Focus">—</div><div class="kpi-sub" id="k3FocusSub">—</div></div>
+            </div>
+            <div class="split-grid">
+              <div class="grid-cell">
+                <div class="legend">
+                  <strong data-i18n="ttl_ex32">Ex. 3.1–3.2: Rolling Real Wealth ($100 start)</strong>
+                  <div class="legend-items">
+                    <div class="legend-item"><span class="swatch" style="background:var(--port);"></span><span data-i18n="leg_focus">Highlighted</span></div>
+                    <div class="legend-item"><span class="swatch" style="background:var(--accent);"></span><span data-i18n="leg_fixed_avg">Fixed Mean CAGR</span></div>
+                  </div>
+                </div>
+                <div class="chart-wrap"><canvas id="glideCanvas" height="270"></canvas><div class="tooltip" id="glideTip"></div></div>
+              </div>
+              <div class="grid-cell">
+                <div class="legend">
+                  <strong data-i18n="ttl_ex33">Ex. 3.3: Current Withdrawal Rate ($W_t / V_t$, capped 30%)</strong>
+                  <div class="legend-items">
+                    <div class="legend-item"><span class="swatch" style="background:var(--danger);"></span><span data-i18n="leg_10pct">10% Tipping Point</span></div>
+                  </div>
+                </div>
+                <div class="chart-wrap"><canvas id="wrCanvas" height="270"></canvas><div class="tooltip" id="wrTip"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="paneLifetime" class="tab-pane" style="display:none;">
+            <div class="kpis kpis-4 kpis-flush-top">
+              <div class="kpi"><div class="kpi-label" data-i18n="k_acc_med">Median Career Multiple</div><div class="kpi-val" id="kAccMed">—</div><div class="kpi-sub" id="kAccSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k_acc_rng">Min / Max Accumulation</div><div class="kpi-val" id="kAccRng">—</div><div class="kpi-sub" id="kAccRngSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k_mwr_rng">Retiree MWR Range</div><div class="kpi-val" id="kMwrRng">—</div><div class="kpi-sub" id="kMwrRngSub">—</div></div>
+              <div class="kpi"><div class="kpi-label" data-i18n="k_yr1_r2">Yr 1 Retirement Return R²</div><div class="kpi-val" id="kYr1R2">—</div><div class="kpi-sub" data-i18n="k_yr1_sub">Share of MWR explained by Yr 1</div></div>
+            </div>
+            <div class="split-grid">
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_ex34">Ex. 3.4 &amp; 3.5: Career Wealth Multiple vs. Sustainable WR</strong></div>
+                <div class="chart-wrap"><canvas id="adamCanvas" height="250"></canvas><div class="tooltip" id="adamTip"></div></div>
+              </div>
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_ex36">Ex. 3.6: Lifetime Sequence-Risk R² Attribution (Years 1–60)</strong></div>
+                <div class="chart-wrap"><canvas id="r2Canvas" height="250"></canvas><div class="tooltip" id="r2Tip"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="paneReverse" class="tab-pane" style="display:none;">
+            <div class="split-grid">
+              <div class="grid-cell">
+                <div class="legend">
+                  <strong data-i18n="ttl_ex38">Ex. 3.7–3.8: Actual MWR vs. Fixed-30Y-CAGR Implied MWR</strong>
+                  <div class="legend-items">
+                    <div class="legend-item"><span class="swatch" style="background:var(--port);"></span><span data-i18n="leg_act_mwr">Actual Sequence MWR</span></div>
+                    <div class="legend-item"><span class="swatch" style="background:var(--accent);"></span><span data-i18n="leg_cagr_mwr">Fixed-CAGR Implied MWR</span></div>
+                  </div>
+                </div>
+                <div class="chart-wrap"><canvas id="seqGapCanvas" height="255"></canvas><div class="tooltip" id="seqGapTip"></div></div>
+              </div>
+              <div class="grid-cell">
+                <div class="legend"><strong data-i18n="ttl_ex39_c">Ex. 3.9: 10,000-Run Compounded Real IRR Distributions</strong></div>
+                <div class="chart-wrap"><canvas id="irrCanvas" height="255"></canvas><div class="tooltip" id="irrTip"></div></div>
+              </div>
+            </div>
+            <div class="panel-block">
+              <div class="card-title"><h3 class="sec-title" data-i18n="ttl_ex39_t">Ex. 3.9: Reverse-Engineered Fixed Real Return Assumptions (%/yr)</h3></div>
+              <div class="table-container" style="max-height:none;">
+                <table><thead id="irrHead"></thead><tbody id="irrBody"></tbody></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="infoPopover" class="info-popover" popover="auto" role="note"></div>
+  <script>
+
+    const LANG_STORAGE_KEY = "site_lang_v1";
+    const THEME_STORAGE_KEY = "site_theme_v1";
+    const CANVAS_FONT = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+    const CANVAS_LABEL_FONT = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
+
+    const SHARED_I18N = {
+      nav_home: { "en-UK": "Home", "zh-CN": "首页" },
+      nav_suite: { "en-UK": "Retirement Spending", "zh-CN": "退休支出策略" },
+      theme_dark: { "en-UK": "Dark", "zh-CN": "深色" },
+      theme_light: { "en-UK": "Light", "zh-CN": "浅色" },
+      theme_title: { "en-UK": "Toggle Dark / Light Theme", "zh-CN": "切换深色 / 浅色主题" },
+      btn_export_csv: { "en-UK": "Export CSV", "zh-CN": "导出 CSV" },
+      btn_reset: { "en-UK": "Reset", "zh-CN": "重置" },
+      aria_lang: { "en-UK": "Language", "zh-CN": "语言切换" },
+      aria_jump: { "en-UK": "Jump to chapter lab", "zh-CN": "跳转至章节实验室" },
+      aria_sidebar: { "en-UK": "Simulation parameters", "zh-CN": "模拟参数设置" },
+      aria_workspace: { "en-UK": "Simulation outputs", "zh-CN": "模拟结果输出" },
+      lbl_presets: { "en-UK": "Book exhibit presets", "zh-CN": "全书图表预设" },
+      yr_prefix: { "en-UK": "Yr ", "zh-CN": "第" },
+      yr_suffix: { "en-UK": "", "zh-CN": "年" },
+      age_lbl: { "en-UK": "Age {a}", "zh-CN": "{a} 岁" }
+    };
+
+    const PAGE_I18N = {"page_title":{"en-UK":"Sequence-of-Returns Risk","zh-CN":"收益率顺序风险"},"app_title":{"en-UK":"Sequence-of-Returns Risk","zh-CN":"收益率顺序风险"},"sec_presets":{"en-UK":"Book Exhibit Presets","zh-CN":"全书图表预设"},"pre_32_t":{"en-UK":"Ex. 3.2 · 6.3% Sequence","zh-CN":"图3.2 · 6.3% 顺序演示"},"pre_32_m":{"en-UK":"50/50 · 6.3% WR vs 5.1% avg","zh-CN":"50/50 组合 6.3% 提取"},"pre_34_t":{"en-UK":"Ex. 3.4–3.6 · Adam 60Y","zh-CN":"图3.4–3.6 · 60年全周期"},"pre_34_m":{"en-UK":"30y save 15% + 30y ret","zh-CN":"工作30年+退休30年"},"pre_38_t":{"en-UK":"Ex. 3.8 · MWR vs CAGR","zh-CN":"图3.8 · 实际 vs 均率"},"pre_38_m":{"en-UK":"1966 vs 1982 cohorts","zh-CN":"1966 对比 1982 年起点"},"pre_39_t":{"en-UK":"Ex. 3.9 · Reverse IRR","zh-CN":"图3.9 · 反推固定收益"},"pre_39_m":{"en-UK":"Lump / Accum / Retiree MC","zh-CN":"整存/定投/退休分布"},"sec_params":{"en-UK":"Simulation Parameters","zh-CN":"模拟参数"},"lbl_dataset":{"en-UK":"Historical dataset","zh-CN":"历史数据集"},"ds_nyu":{"en-UK":"NYU Stern US SBBI Proxy (1928–2025)","zh-CN":"NYU Stern 美国数据 (1928–2025)"},"ds_shiller":{"en-UK":"Robert Shiller Long-Run US (1871–2025)","zh-CN":"Robert Shiller 长周期数据 (1871–2025)"},"lbl_eq":{"en-UK":"Stock / Bond mix","zh-CN":"股票 / 债券比例"},"lbl_init_wr":{"en-UK":"Initial WR (%)","zh-CN":"初始提取率 (%)"},"lbl_ret_yrs":{"en-UK":"Retirement (yrs)","zh-CN":"退休年数"},"lbl_work_yrs":{"en-UK":"Career yrs (Adam)","zh-CN":"工作储蓄年数"},"lbl_save_rate":{"en-UK":"Savings rate (%)","zh-CN":"年储蓄率 (%)"},"lbl_focus_yr":{"en-UK":"Highlight cohort","zh-CN":"高亮退休起点年份"},"lbl_timing":{"en-UK":"Withdraw timing","zh-CN":"提取时点"},"opt_start":{"en-UK":"Start of year","zh-CN":"年初提取"},"opt_end":{"en-UK":"End of year","zh-CN":"年末提取"},"lbl_mc_mode":{"en-UK":"Monte Carlo engine (10,000 runs)","zh-CN":"蒙特卡洛引擎 (10,000次)"},"mc_boot":{"en-UK":"Historical Bootstrap","zh-CN":"历史有放回抽样"},"mc_ch3a":{"en-UK":"Ch. 3A Low-Yield AR(1)","zh-CN":"第3章附录低利率 AR(1)"},"btn_rerun":{"en-UK":"↻ Re-run MC","zh-CN":"↻ 重新抽样"},"tab_glide":{"en-UK":"Glide Paths & WR Spirals (Ex. 3.1–3.3)","zh-CN":"资产路径与提取率螺旋 (3.1–3.3)"},"tab_life":{"en-UK":"Lifetime Sequence Risk (Ex. 3.4–3.6)","zh-CN":"全生命周期顺序风险 (3.4–3.6)"},"tab_rev":{"en-UK":"Inv. vs. Sequence & Reverse IRR (Ex. 3.7–3.9)","zh-CN":"投资 vs 顺序风险与反推收益 (3.7–3.9)"},"k3_surv":{"en-UK":"Historical Survival","zh-CN":"历史窗口存活率"},"k3_best_end":{"en-UK":"Best Terminal Real Wealth","zh-CN":"最佳期末实际资产"},"k3_worst_end":{"en-UK":"Earliest Depletion Cohort","zh-CN":"最早耗尽年份"},"k3_focus":{"en-UK":"Highlighted Cohort","zh-CN":"高亮起点结局"},"ttl_ex32":{"en-UK":"Ex. 3.1–3.2: Rolling Real Wealth ($100 start)","zh-CN":"图 3.1–3.2：滚动实际资产轨迹（$100 起点）"},"leg_focus":{"en-UK":"Highlighted","zh-CN":"高亮年份"},"leg_fixed_avg":{"en-UK":"Fixed Mean CAGR","zh-CN":"固定平均复利基准"},"ttl_ex33":{"en-UK":"Ex. 3.3: Current Withdrawal Rate (Wt / Vt, capped 30%)","zh-CN":"图 3.3：动态当前提取率 (Wt / Vt，上限30%)"},"leg_10pct":{"en-UK":"10% Danger Threshold","zh-CN":"10% 危险阈值"},"k_acc_med":{"en-UK":"Median Career Multiple","zh-CN":"工作期中位积累倍数"},"k_acc_rng":{"en-UK":"Min / Max Accumulation","zh-CN":"最小 / 最大积累倍数"},"k_mwr_rng":{"en-UK":"Retiree MWR Range","zh-CN":"退休期 MWR 极值范围"},"k_yr1_r2":{"en-UK":"Yr 1 Retirement Return R²","zh-CN":"退休首年收益 R² 贡献"},"k_yr1_sub":{"en-UK":"Share of MWR explained by Yr 1","zh-CN":"首年收益对总MWR方差的解释力"},"ttl_ex34":{"en-UK":"Ex. 3.4 & 3.5: Career Wealth Multiple vs. Sustainable WR","zh-CN":"图 3.4 & 3.5：工作期积累倍数 vs 退休期可持续提取率"},"ttl_ex36":{"en-UK":"Ex. 3.6: Lifetime Sequence-Risk R² Attribution (Years 1–60)","zh-CN":"图 3.6：全生命周期各年收益对结果的方差解释度 (R²)"},"ttl_ex38":{"en-UK":"Ex. 3.7–3.8: Actual MWR vs. Fixed-30Y-CAGR Implied MWR","zh-CN":"图 3.7–3.8：实际顺序 MWR vs 固定平均复利 MWR"},"leg_act_mwr":{"en-UK":"Actual Sequence MWR","zh-CN":"实际市场顺序 MWR"},"leg_cagr_mwr":{"en-UK":"Fixed-CAGR Implied MWR","zh-CN":"同期固定年化收益 MWR"},"ttl_ex39_c":{"en-UK":"Ex. 3.9: 10,000-Run Compounded Real IRR Distributions","zh-CN":"图 3.9：10,000 次蒙特卡洛实际内部收益率分布"},"ttl_ex39_t":{"en-UK":"Ex. 3.9: Reverse-Engineered Fixed Real Return Assumptions (%/yr)","zh-CN":"图 3.9：反推确定性表格应使用的保守实际收益率假设 (%/年)"}};
+
+    function detectInitialLang() {
+      try {
+        const saved = localStorage.getItem(LANG_STORAGE_KEY);
+        if (saved === "en-UK" || saved === "zh-CN") return saved;
+      } catch (_) {}
+      const nav = (navigator.language || "").toLowerCase();
+      return nav.startsWith("zh") ? "zh-CN" : "en-UK";
+    }
+
+    function detectInitialTheme() {
+      try {
+        const t = localStorage.getItem(THEME_STORAGE_KEY);
+        if (t === "dark" || t === "light") return t;
+      } catch (_) {}
+      if (document.documentElement.dataset.theme === "dark" || document.documentElement.dataset.theme === "light") {
+        return document.documentElement.dataset.theme;
+      }
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    let currentLang = detectInitialLang();
+    const I18N = Object.assign({}, SHARED_I18N, typeof PAGE_I18N !== "undefined" ? PAGE_I18N : {});
+
+    function t(key, vars) {
+      const entry = I18N[key];
+      let str = entry ? (entry[currentLang] !== undefined ? entry[currentLang] : entry["en-UK"]) : key;
+      if (vars && typeof vars === "object") {
+        for (const k of Object.keys(vars)) {
+          str = str.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+        }
+      }
+      return str;
+    }
+
+    function setBtnActive(btn, active) {
+      btn.classList.toggle("active", !!active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    }
+
+    function syncThemeBtn() {
+      const btn = document.getElementById("btnThemeToggle");
+      if (!btn) return;
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const lbl = btn.querySelector(".theme-lbl");
+      const sun = btn.querySelector(".icon-sun");
+      const moon = btn.querySelector(".icon-moon");
+      if (lbl) lbl.textContent = isDark ? t("theme_light") : t("theme_dark");
+      if (sun) sun.style.display = isDark ? "inline" : "none";
+      if (moon) moon.style.display = isDark ? "none" : "inline";
+      btn.setAttribute("title", t("theme_title"));
+      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    }
+
+    function applyTheme(next) {
+      const th = next === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = th;
+      syncThemeBtn();
+      try { localStorage.setItem(THEME_STORAGE_KEY, th); } catch (_) {}
+      if (typeof onThemeOrLangChange === "function") onThemeOrLangChange();
+    }
+
+    function applyStaticI18n() {
+      document.documentElement.lang = currentLang === "zh-CN" ? "zh-CN" : "en-GB";
+      document.title = t("page_title");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach(el => {
+        el.setAttribute("title", t(el.dataset.i18nTitle));
+      });
+      document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+        el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel));
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+      });
+      document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+        setBtnActive(btn, btn.dataset.lang === currentLang);
+      });
+      const sel = document.getElementById("chapterJump");
+      if (sel) {
+        Array.from(sel.options).forEach(opt => {
+          const txt = currentLang === "zh-CN" ? opt.dataset.zh : opt.dataset.en;
+          if (txt) opt.textContent = txt;
+        });
+      }
+      syncThemeBtn();
+    }
+
+    function parseMoney(el) {
+      const n = parseFloat(String(el.value).replace(/[^0-9.-]/g, ""));
+      return isFinite(n) ? n : 0;
+    }
+    function formatMoneyEl(el, val) {
+      el.value = Math.max(0, Math.round(val)).toLocaleString("en-US");
+    }
+    function fmtCompactMoney(v) {
+      if (!isFinite(v)) return "—";
+      const abs = Math.abs(v), s = v < 0 ? "-" : "";
+      if (abs >= 1e9) return s + "$" + (abs / 1e9).toFixed(2) + "B";
+      if (abs >= 1e6) {
+        const m = abs / 1e6;
+        return s + "$" + (Math.abs(m - Math.round(m)) < 0.005 ? Math.round(m) : m.toFixed(2)) + "M";
+      }
+      if (abs >= 1e3) {
+        const k = abs / 1e3;
+        return s + "$" + (Math.abs(k - Math.round(k)) < 0.05 ? Math.round(k) : k.toFixed(1)) + "k";
+      }
+      return s + "$" + Math.round(abs).toLocaleString("en-US");
+    }
+    function fmtExactMoney(v) {
+      if (!isFinite(v)) return "—";
+      const abs = Math.abs(v), s = v < 0 ? "-" : "";
+      return s + "$" + Math.round(abs).toLocaleString("en-US");
+    }
+    function fmtPct(v, d = 2, plus = true) {
+      if (v === null || v === undefined || !isFinite(v)) return "—";
+      const s = v > 0 && plus ? "+" : "";
+      return s + v.toFixed(d) + "%";
+    }
+
+    function getThemeColors() {
+      const cs = getComputedStyle(document.documentElement);
+      const g = k => cs.getPropertyValue(k).trim();
+      return {
+        panel: g("--panel"), bgSubtle: g("--bg-subtle"), text: g("--text"), textSoft: g("--text-soft"),
+        muted: g("--muted"), grid: g("--grid"), zeroLine: g("--zero-line"), crosshair: g("--crosshair"),
+        accent: g("--accent"), accentSoft: g("--accent-soft"), equity: g("--equity"), bond: g("--bond"),
+        port: g("--port"), portFillTop: g("--port-fill-top"), portFillBot: g("--port-fill-bot"),
+        expense: g("--expense"), inflation: g("--inflation"), danger: g("--danger"), success: g("--success"),
+        mcOuterBand: g("--mc-outer-band"), mcInnerBand: g("--mc-inner-band"),
+        expOuterBand: g("--exp-outer-band"), expInnerBand: g("--exp-inner-band"), ddBand: g("--dd-band")
+      };
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      if (!canvas.dataset.baseHeight) {
+        canvas.dataset.baseHeight = canvas.getAttribute("height") || "290";
+      }
+      const h = parseInt(canvas.dataset.baseHeight, 10);
+      canvas.style.height = h + "px";
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 20) return null;
+      const w = rect.width;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w, h };
+    }
+
+    function computeNiceLinearTicks(minVal, maxVal, targetCount = 5) {
+      if (!isFinite(minVal) || !isFinite(maxVal)) return [0, 1];
+      if (maxVal <= minVal) maxVal = minVal + 1;
+      const rawStep = (maxVal - minVal) / Math.max(1, targetCount);
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const frac = rawStep / mag;
+      const nice = frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10;
+      const step = nice * mag;
+      const tickMin = Math.floor(minVal / step) * step;
+      const tickMax = Math.ceil(maxVal / step) * step;
+      const ticks = [];
+      const cnt = Math.round((tickMax - tickMin) / step);
+      for (let i = 0; i <= cnt; i++) {
+        const v = tickMin + i * step;
+        ticks.push(Math.abs(v) < step * 1e-9 ? 0 : Number(v.toPrecision(10)));
+      }
+      return ticks;
+    }
+
+    function mulberry32(a) {
+      let s = a >>> 0;
+      return function () {
+        s = (s + 0x6D2B79F5) >>> 0;
+        let r = Math.imul(s ^ (s >>> 15), 1 | s);
+        r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function randNormal(rng) {
+      let u = 0, v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function quantileSorted(sorted, q) {
+      if (!sorted || !sorted.length) return 0;
+      if (sorted.length === 1) return sorted[0];
+      const pos = (sorted.length - 1) * q;
+      const b = Math.floor(pos), r = pos - b;
+      return b + 1 < sorted.length ? sorted[b] + r * (sorted[b + 1] - sorted[b]) : sorted[b];
+    }
+
+    function meanArr(arr) {
+      if (!arr || !arr.length) return 0;
+      let s = 0;
+      for (let i = 0; i < arr.length; i++) s += arr[i];
+      return s / arr.length;
+    }
+
+    function placeTooltip(tipEl, canvas, clientX, clientY) {
+      const wrap = canvas.parentElement.getBoundingClientRect();
+      const x = clientX - wrap.left, y = clientY - wrap.top;
+      tipEl.style.display = "block";
+      const tw = tipEl.offsetWidth || 210, th = tipEl.offsetHeight || 90;
+      let left = x + 14;
+      if (left + tw > wrap.width - 8) left = Math.max(8, x - tw - 14);
+      let top = Math.max(8, Math.min(wrap.height - th - 8, y - th * 0.4));
+      tipEl.style.left = Math.round(left) + "px";
+      tipEl.style.top = Math.round(top) + "px";
+    }
+
+    function attachCanvasHover(canvas, tipEl, onHover) {
+      if (!canvas) return;
+      canvas.addEventListener("mousemove", e => onHover(e, canvas, tipEl));
+      canvas.addEventListener("mouseleave", () => {
+        tipEl.style.display = "none";
+        onHover(null, canvas, tipEl);
+      });
+    }
+
+    function downloadCsv(filename, headers, rows) {
+      const esc = v => {
+        const s = v === null || v === undefined ? "" : String(v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const lines = [headers.map(esc).join(",")];
+      for (const r of rows) lines.push(r.map(esc).join(","));
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function initSharedControls() {
+      const langSwitch = document.getElementById("langSwitch");
+      if (langSwitch) {
+        langSwitch.querySelectorAll("button[data-lang]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const next = btn.dataset.lang === "zh-CN" ? "zh-CN" : "en-UK";
+            if (currentLang === next) return;
+            currentLang = next;
+            try { localStorage.setItem(LANG_STORAGE_KEY, currentLang); } catch (_) {}
+            applyStaticI18n();
+            if (typeof onThemeOrLangChange === "function") onThemeOrLangChange();
+          });
+        });
+      }
+      const themeBtn = document.getElementById("btnThemeToggle");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+        });
+      }
+      const jump = document.getElementById("chapterJump");
+      if (jump) {
+        jump.addEventListener("change", () => {
+          const slug = jump.value;
+          const isHub = jump.dataset.isHub === "1";
+          const prefix = isHub ? "./" : "../";
+          window.location.href = slug ? (prefix + slug + "/") : (isHub ? "./" : "../");
+        });
+      }
+      // Top-layer accessible popovers
+      const pop = document.getElementById("infoPopover");
+      const supportsPop = typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.showPopover === "function";
+      let activeBtn = null;
+      if (pop) {
+        document.querySelectorAll(".info-btn[data-info-key]").forEach(btn => {
+          btn.addEventListener("click", e => {
+            e.preventDefault(); e.stopPropagation();
+            const isOpen = supportsPop ? pop.matches(":popover-open") : pop.classList.contains("open");
+            if (isOpen && activeBtn === btn) {
+              if (supportsPop) pop.hidePopover(); else pop.classList.remove("open");
+              btn.setAttribute("aria-expanded", "false"); activeBtn = null; return;
+            }
+            document.querySelectorAll(".info-btn").forEach(b => b.setAttribute("aria-expanded", "false"));
+            pop.innerHTML = t(btn.dataset.infoKey);
+            activeBtn = btn;
+            if (supportsPop) { if (!pop.matches(":popover-open")) pop.showPopover(); }
+            else pop.classList.add("open");
+            const a = btn.getBoundingClientRect();
+            const pw = Math.min(330, window.innerWidth - 24);
+            const left = Math.max(12, Math.min(window.innerWidth - pw - 12, a.left - pw * 0.4));
+            const top = (a.bottom + 140 > window.innerHeight) ? Math.max(12, a.top - 120) : a.bottom + 8;
+            pop.style.left = Math.round(left) + "px"; pop.style.top = Math.round(top) + "px";
+            btn.setAttribute("aria-expanded", "true");
+          });
+        });
+        if (!supportsPop) {
+          document.addEventListener("click", e => {
+            if (pop.classList.contains("open") && !pop.contains(e.target) && !e.target.closest(".info-btn")) {
+              pop.classList.remove("open");
+              document.querySelectorAll(".info-btn").forEach(b => b.setAttribute("aria-expanded", "false"));
+            }
+          });
+        }
+      }
+    }
+
+    const SHILLER_DATA = [{"Year":1871,"Jan_SP500_Price":4.44,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":5.32,"Shiller_SP500_TR_pct":15.64,"Shiller_10Y_TBond_pct":5.15,"US_Short_Bill_pct":4.82,"Shiller_US_CPI_pct":1.53,"Shiller_SP500_Real_pct":13.91,"Shiller_10Y_TBond_Real_pct":3.57,"US_Short_Bill_Real_pct":3.24},{"Year":1872,"Jan_SP500_Price":4.86,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":5.36,"Shiller_SP500_TR_pct":11.23,"Shiller_10Y_TBond_pct":3.85,"US_Short_Bill_pct":4.86,"Shiller_US_CPI_pct":2.26,"Shiller_SP500_Real_pct":8.78,"Shiller_10Y_TBond_Real_pct":1.56,"US_Short_Bill_Real_pct":2.55},{"Year":1873,"Jan_SP500_Price":5.11,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":5.58,"Shiller_SP500_TR_pct":-2.47,"Shiller_10Y_TBond_pct":6.56,"US_Short_Bill_pct":5.08,"Shiller_US_CPI_pct":-4.41,"Shiller_SP500_Real_pct":2.03,"Shiller_10Y_TBond_Real_pct":11.48,"US_Short_Bill_Real_pct":9.93},{"Year":1874,"Jan_SP500_Price":4.66,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":5.47,"Shiller_SP500_TR_pct":4.71,"Shiller_10Y_TBond_pct":8.7,"US_Short_Bill_pct":4.97,"Shiller_US_CPI_pct":-6.92,"Shiller_SP500_Real_pct":12.5,"Shiller_10Y_TBond_Real_pct":16.79,"US_Short_Bill_Real_pct":12.78},{"Year":1875,"Jan_SP500_Price":4.54,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":5.07,"Shiller_SP500_TR_pct":5.35,"Shiller_10Y_TBond_pct":8.98,"US_Short_Bill_pct":4.57,"Shiller_US_CPI_pct":-5.79,"Shiller_SP500_Real_pct":11.82,"Shiller_10Y_TBond_Real_pct":15.67,"US_Short_Bill_Real_pct":10.99},{"Year":1876,"Jan_SP500_Price":4.46,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":4.59,"Shiller_SP500_TR_pct":-14.17,"Shiller_10Y_TBond_pct":5.79,"US_Short_Bill_pct":4.09,"Shiller_US_CPI_pct":0.88,"Shiller_SP500_Real_pct":-14.92,"Shiller_10Y_TBond_Real_pct":4.87,"US_Short_Bill_Real_pct":3.18},{"Year":1877,"Jan_SP500_Price":3.55,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":4.45,"Shiller_SP500_TR_pct":-1.34,"Shiller_10Y_TBond_pct":5.41,"US_Short_Bill_pct":3.95,"Shiller_US_CPI_pct":-15.65,"Shiller_SP500_Real_pct":16.97,"Shiller_10Y_TBond_Real_pct":24.97,"US_Short_Bill_Real_pct":23.24},{"Year":1878,"Jan_SP500_Price":3.25,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":4.34,"Shiller_SP500_TR_pct":16.25,"Shiller_10Y_TBond_pct":5.38,"US_Short_Bill_pct":3.84,"Shiller_US_CPI_pct":-10.31,"Shiller_SP500_Real_pct":29.62,"Shiller_10Y_TBond_Real_pct":17.49,"US_Short_Bill_Real_pct":15.78},{"Year":1879,"Jan_SP500_Price":3.58,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":4.22,"Shiller_SP500_TR_pct":49.41,"Shiller_10Y_TBond_pct":5.91,"US_Short_Bill_pct":3.72,"Shiller_US_CPI_pct":20.69,"Shiller_SP500_Real_pct":23.8,"Shiller_10Y_TBond_Real_pct":-12.25,"US_Short_Bill_Real_pct":-14.06},{"Year":1880,"Jan_SP500_Price":5.11,"Jan_PE10_CAPE":null,"Jan_10Y_Yield_pct":4.02,"Shiller_SP500_TR_pct":26.69,"Shiller_10Y_TBond_pct":6.71,"US_Short_Bill_pct":3.52,"Shiller_US_CPI_pct":-5.71,"Shiller_SP500_Real_pct":34.37,"Shiller_10Y_TBond_Real_pct":13.17,"US_Short_Bill_Real_pct":9.79},{"Year":1881,"Jan_SP500_Price":6.19,"Jan_PE10_CAPE":18.47,"Jan_10Y_Yield_pct":3.7,"Shiller_SP500_TR_pct":0.31,"Shiller_10Y_TBond_pct":4.41,"US_Short_Bill_pct":3.2,"Shiller_US_CPI_pct":8.08,"Shiller_SP500_Real_pct":-7.19,"Shiller_10Y_TBond_Real_pct":-3.39,"US_Short_Bill_Real_pct":-4.52},{"Year":1882,"Jan_SP500_Price":5.92,"Jan_PE10_CAPE":15.68,"Jan_10Y_Yield_pct":3.62,"Shiller_SP500_TR_pct":3.61,"Shiller_10Y_TBond_pct":3.6,"US_Short_Bill_pct":3.12,"Shiller_US_CPI_pct":-1.87,"Shiller_SP500_Real_pct":5.59,"Shiller_10Y_TBond_Real_pct":5.57,"US_Short_Bill_Real_pct":5.08},{"Year":1883,"Jan_SP500_Price":5.81,"Jan_PE10_CAPE":15.27,"Jan_10Y_Yield_pct":3.63,"Shiller_SP500_TR_pct":-5.48,"Shiller_10Y_TBond_pct":3.77,"US_Short_Bill_pct":3.13,"Shiller_US_CPI_pct":-7.62,"Shiller_SP500_Real_pct":2.31,"Shiller_10Y_TBond_Real_pct":12.33,"US_Short_Bill_Real_pct":11.64},{"Year":1884,"Jan_SP500_Price":5.18,"Jan_PE10_CAPE":14.43,"Jan_10Y_Yield_pct":3.62,"Shiller_SP500_TR_pct":-12.38,"Shiller_10Y_TBond_pct":4.5,"US_Short_Bill_pct":3.12,"Shiller_US_CPI_pct":-10.31,"Shiller_SP500_Real_pct":-2.31,"Shiller_10Y_TBond_Real_pct":16.51,"US_Short_Bill_Real_pct":14.97},{"Year":1885,"Jan_SP500_Price":4.24,"Jan_PE10_CAPE":13.13,"Jan_10Y_Yield_pct":3.52,"Shiller_SP500_TR_pct":29.9,"Shiller_10Y_TBond_pct":4.81,"US_Short_Bill_pct":3.02,"Shiller_US_CPI_pct":-3.45,"Shiller_SP500_Real_pct":34.54,"Shiller_10Y_TBond_Real_pct":8.56,"US_Short_Bill_Real_pct":6.7},{"Year":1886,"Jan_SP500_Price":5.2,"Jan_PE10_CAPE":16.69,"Jan_10Y_Yield_pct":3.37,"Shiller_SP500_TR_pct":11.94,"Shiller_10Y_TBond_pct":2.2,"US_Short_Bill_pct":2.87,"Shiller_US_CPI_pct":0.0,"Shiller_SP500_Real_pct":11.94,"Shiller_10Y_TBond_Real_pct":2.2,"US_Short_Bill_Real_pct":2.87},{"Year":1887,"Jan_SP500_Price":5.58,"Jan_PE10_CAPE":17.51,"Jan_10Y_Yield_pct":3.52,"Shiller_SP500_TR_pct":-0.63,"Shiller_10Y_TBond_pct":2.36,"US_Short_Bill_pct":3.02,"Shiller_US_CPI_pct":4.76,"Shiller_SP500_Real_pct":-5.15,"Shiller_10Y_TBond_Real_pct":-2.29,"US_Short_Bill_Real_pct":-1.66},{"Year":1888,"Jan_SP500_Price":5.31,"Jan_PE10_CAPE":15.36,"Jan_10Y_Yield_pct":3.67,"Shiller_SP500_TR_pct":3.29,"Shiller_10Y_TBond_pct":5.54,"US_Short_Bill_pct":3.17,"Shiller_US_CPI_pct":-4.55,"Shiller_SP500_Real_pct":8.21,"Shiller_10Y_TBond_Real_pct":10.57,"US_Short_Bill_Real_pct":8.08},{"Year":1889,"Jan_SP500_Price":5.24,"Jan_PE10_CAPE":15.8,"Jan_10Y_Yield_pct":3.45,"Shiller_SP500_TR_pct":7.06,"Shiller_10Y_TBond_pct":3.75,"US_Short_Bill_pct":2.95,"Shiller_US_CPI_pct":-4.76,"Shiller_SP500_Real_pct":12.42,"Shiller_10Y_TBond_Real_pct":8.94,"US_Short_Bill_Real_pct":8.1},{"Year":1890,"Jan_SP500_Price":5.38,"Jan_PE10_CAPE":17.22,"Jan_10Y_Yield_pct":3.42,"Shiller_SP500_TR_pct":-6.16,"Shiller_10Y_TBond_pct":1.86,"US_Short_Bill_pct":2.92,"Shiller_US_CPI_pct":2.5,"Shiller_SP500_Real_pct":-8.45,"Shiller_10Y_TBond_Real_pct":-0.63,"US_Short_Bill_Real_pct":0.41},{"Year":1891,"Jan_SP500_Price":4.84,"Jan_PE10_CAPE":15.43,"Jan_10Y_Yield_pct":3.62,"Shiller_SP500_TR_pct":18.88,"Shiller_10Y_TBond_pct":3.84,"US_Short_Bill_pct":3.12,"Shiller_US_CPI_pct":-6.1,"Shiller_SP500_Real_pct":26.6,"Shiller_10Y_TBond_Real_pct":10.59,"US_Short_Bill_Real_pct":9.82},{"Year":1892,"Jan_SP500_Price":5.51,"Jan_PE10_CAPE":19.02,"Jan_10Y_Yield_pct":3.6,"Shiller_SP500_TR_pct":6.16,"Shiller_10Y_TBond_pct":2.45,"US_Short_Bill_pct":3.1,"Shiller_US_CPI_pct":7.79,"Shiller_SP500_Real_pct":-1.52,"Shiller_10Y_TBond_Real_pct":-4.95,"US_Short_Bill_Real_pct":-4.35},{"Year":1893,"Jan_SP500_Price":5.61,"Jan_PE10_CAPE":17.66,"Jan_10Y_Yield_pct":3.75,"Shiller_SP500_TR_pct":-18.8,"Shiller_10Y_TBond_pct":4.22,"US_Short_Bill_pct":3.25,"Shiller_US_CPI_pct":-13.25,"Shiller_SP500_Real_pct":-6.39,"Shiller_10Y_TBond_Real_pct":20.14,"US_Short_Bill_Real_pct":19.02},{"Year":1894,"Jan_SP500_Price":4.32,"Jan_PE10_CAPE":15.74,"Jan_10Y_Yield_pct":3.7,"Shiller_SP500_TR_pct":3.56,"Shiller_10Y_TBond_pct":5.74,"US_Short_Bill_pct":3.2,"Shiller_US_CPI_pct":-4.17,"Shiller_SP500_Real_pct":8.06,"Shiller_10Y_TBond_Real_pct":10.33,"US_Short_Bill_Real_pct":7.69},{"Year":1895,"Jan_SP500_Price":4.25,"Jan_PE10_CAPE":16.52,"Jan_10Y_Yield_pct":3.46,"Shiller_SP500_TR_pct":4.96,"Shiller_10Y_TBond_pct":2.38,"US_Short_Bill_pct":2.96,"Shiller_US_CPI_pct":1.45,"Shiller_SP500_Real_pct":3.46,"Shiller_10Y_TBond_Real_pct":0.92,"US_Short_Bill_Real_pct":1.49},{"Year":1896,"Jan_SP500_Price":4.27,"Jan_PE10_CAPE":16.58,"Jan_10Y_Yield_pct":3.6,"Shiller_SP500_TR_pct":3.22,"Shiller_10Y_TBond_pct":5.31,"US_Short_Bill_pct":3.1,"Shiller_US_CPI_pct":-2.86,"Shiller_SP500_Real_pct":6.26,"Shiller_10Y_TBond_Real_pct":8.4,"US_Short_Bill_Real_pct":6.13},{"Year":1897,"Jan_SP500_Price":4.22,"Jan_PE10_CAPE":17.03,"Jan_10Y_Yield_pct":3.4,"Shiller_SP500_TR_pct":20.37,"Shiller_10Y_TBond_pct":3.86,"US_Short_Bill_pct":2.9,"Shiller_US_CPI_pct":2.94,"Shiller_SP500_Real_pct":16.93,"Shiller_10Y_TBond_Real_pct":0.9,"US_Short_Bill_Real_pct":-0.04},{"Year":1898,"Jan_SP500_Price":4.88,"Jan_PE10_CAPE":19.25,"Jan_10Y_Yield_pct":3.35,"Shiller_SP500_TR_pct":29.34,"Shiller_10Y_TBond_pct":5.49,"US_Short_Bill_pct":2.85,"Shiller_US_CPI_pct":1.43,"Shiller_SP500_Real_pct":27.52,"Shiller_10Y_TBond_Real_pct":4.0,"US_Short_Bill_Real_pct":1.4},{"Year":1899,"Jan_SP500_Price":6.08,"Jan_PE10_CAPE":22.93,"Jan_10Y_Yield_pct":3.1,"Shiller_SP500_TR_pct":3.68,"Shiller_10Y_TBond_pct":2.73,"US_Short_Bill_pct":2.6,"Shiller_US_CPI_pct":16.9,"Shiller_SP500_Real_pct":-11.31,"Shiller_10Y_TBond_Real_pct":-12.12,"US_Short_Bill_Real_pct":-12.23},{"Year":1900,"Jan_SP500_Price":6.1,"Jan_PE10_CAPE":18.67,"Jan_10Y_Yield_pct":3.15,"Shiller_SP500_TR_pct":20.95,"Shiller_10Y_TBond_pct":3.61,"US_Short_Bill_pct":2.65,"Shiller_US_CPI_pct":-2.41,"Shiller_SP500_Real_pct":23.94,"Shiller_10Y_TBond_Real_pct":6.17,"US_Short_Bill_Real_pct":5.18},{"Year":1901,"Jan_SP500_Price":7.07,"Jan_PE10_CAPE":20.98,"Jan_10Y_Yield_pct":3.1,"Shiller_SP500_TR_pct":19.46,"Shiller_10Y_TBond_pct":2.48,"US_Short_Bill_pct":2.6,"Shiller_US_CPI_pct":2.47,"Shiller_SP500_Real_pct":16.59,"Shiller_10Y_TBond_Real_pct":0.01,"US_Short_Bill_Real_pct":0.13},{"Year":1902,"Jan_SP500_Price":8.12,"Jan_PE10_CAPE":22.34,"Jan_10Y_Yield_pct":3.18,"Shiller_SP500_TR_pct":8.29,"Shiller_10Y_TBond_pct":2.24,"US_Short_Bill_pct":2.68,"Shiller_US_CPI_pct":9.64,"Shiller_SP500_Real_pct":-1.23,"Shiller_10Y_TBond_Real_pct":-6.75,"US_Short_Bill_Real_pct":-6.35},{"Year":1903,"Jan_SP500_Price":8.46,"Jan_PE10_CAPE":20.32,"Jan_10Y_Yield_pct":3.3,"Shiller_SP500_TR_pct":-17.09,"Shiller_10Y_TBond_pct":2.53,"US_Short_Bill_pct":2.8,"Shiller_US_CPI_pct":-4.4,"Shiller_SP500_Real_pct":-13.28,"Shiller_10Y_TBond_Real_pct":7.25,"US_Short_Bill_Real_pct":7.53},{"Year":1904,"Jan_SP500_Price":6.68,"Jan_PE10_CAPE":15.86,"Jan_10Y_Yield_pct":3.4,"Shiller_SP500_TR_pct":32.1,"Shiller_10Y_TBond_pct":2.8,"US_Short_Bill_pct":2.9,"Shiller_US_CPI_pct":2.3,"Shiller_SP500_Real_pct":29.13,"Shiller_10Y_TBond_Real_pct":0.49,"US_Short_Bill_Real_pct":0.59},{"Year":1905,"Jan_SP500_Price":8.43,"Jan_PE10_CAPE":18.46,"Jan_10Y_Yield_pct":3.48,"Shiller_SP500_TR_pct":21.31,"Shiller_10Y_TBond_pct":3.95,"US_Short_Bill_pct":2.98,"Shiller_US_CPI_pct":0.0,"Shiller_SP500_Real_pct":21.31,"Shiller_10Y_TBond_Real_pct":3.95,"US_Short_Bill_Real_pct":2.98},{"Year":1906,"Jan_SP500_Price":9.87,"Jan_PE10_CAPE":20.13,"Jan_10Y_Yield_pct":3.43,"Shiller_SP500_TR_pct":0.7,"Shiller_10Y_TBond_pct":1.55,"US_Short_Bill_pct":2.93,"Shiller_US_CPI_pct":4.49,"Shiller_SP500_Real_pct":-3.63,"Shiller_10Y_TBond_Real_pct":-2.82,"US_Short_Bill_Real_pct":-1.5},{"Year":1907,"Jan_SP500_Price":9.56,"Jan_PE10_CAPE":17.22,"Jan_10Y_Yield_pct":3.67,"Shiller_SP500_TR_pct":-24.18,"Shiller_10Y_TBond_pct":2.13,"US_Short_Bill_pct":3.17,"Shiller_US_CPI_pct":-2.15,"Shiller_SP500_Real_pct":-22.52,"Shiller_10Y_TBond_Real_pct":4.37,"US_Short_Bill_Real_pct":5.44},{"Year":1908,"Jan_SP500_Price":6.85,"Jan_PE10_CAPE":11.9,"Jan_10Y_Yield_pct":3.87,"Shiller_SP500_TR_pct":39.42,"Shiller_10Y_TBond_pct":4.83,"US_Short_Bill_pct":3.37,"Shiller_US_CPI_pct":3.3,"Shiller_SP500_Real_pct":34.97,"Shiller_10Y_TBond_Real_pct":1.49,"US_Short_Bill_Real_pct":0.07},{"Year":1909,"Jan_SP500_Price":9.06,"Jan_PE10_CAPE":14.76,"Jan_10Y_Yield_pct":3.76,"Shiller_SP500_TR_pct":16.19,"Shiller_10Y_TBond_pct":2.62,"US_Short_Bill_pct":3.26,"Shiller_US_CPI_pct":10.64,"Shiller_SP500_Real_pct":5.02,"Shiller_10Y_TBond_Real_pct":-7.24,"US_Short_Bill_Real_pct":-6.67},{"Year":1910,"Jan_SP500_Price":10.08,"Jan_PE10_CAPE":14.55,"Jan_10Y_Yield_pct":3.91,"Shiller_SP500_TR_pct":-3.38,"Shiller_10Y_TBond_pct":3.42,"US_Short_Bill_pct":3.41,"Shiller_US_CPI_pct":-6.73,"Shiller_SP500_Real_pct":3.59,"Shiller_10Y_TBond_Real_pct":10.88,"US_Short_Bill_Real_pct":10.87},{"Year":1911,"Jan_SP500_Price":9.27,"Jan_PE10_CAPE":14.05,"Jan_10Y_Yield_pct":3.98,"Shiller_SP500_TR_pct":3.52,"Shiller_10Y_TBond_pct":3.81,"US_Short_Bill_pct":3.48,"Shiller_US_CPI_pct":-1.03,"Shiller_SP500_Real_pct":4.6,"Shiller_10Y_TBond_Real_pct":4.89,"US_Short_Bill_Real_pct":4.56},{"Year":1912,"Jan_SP500_Price":9.12,"Jan_PE10_CAPE":13.79,"Jan_10Y_Yield_pct":4.01,"Shiller_SP500_TR_pct":7.18,"Shiller_10Y_TBond_pct":0.66,"US_Short_Bill_pct":3.51,"Shiller_US_CPI_pct":7.29,"Shiller_SP500_Real_pct":-0.1,"Shiller_10Y_TBond_Real_pct":-6.18,"US_Short_Bill_Real_pct":-3.52},{"Year":1913,"Jan_SP500_Price":9.3,"Jan_PE10_CAPE":13.15,"Jan_10Y_Yield_pct":4.45,"Shiller_SP500_TR_pct":-4.74,"Shiller_10Y_TBond_pct":6.86,"US_Short_Bill_pct":3.95,"Shiller_US_CPI_pct":2.04,"Shiller_SP500_Real_pct":-6.64,"Shiller_10Y_TBond_Real_pct":4.73,"US_Short_Bill_Real_pct":1.87},{"Year":1914,"Jan_SP500_Price":8.37,"Jan_PE10_CAPE":11.64,"Jan_10Y_Yield_pct":4.16,"Shiller_SP500_TR_pct":-5.47,"Shiller_10Y_TBond_pct":3.61,"US_Short_Bill_pct":3.66,"Shiller_US_CPI_pct":1.0,"Shiller_SP500_Real_pct":-6.41,"Shiller_10Y_TBond_Real_pct":2.58,"US_Short_Bill_Real_pct":2.63},{"Year":1915,"Jan_SP500_Price":7.48,"Jan_PE10_CAPE":10.36,"Jan_10Y_Yield_pct":4.24,"Shiller_SP500_TR_pct":31.22,"Shiller_10Y_TBond_pct":5.85,"US_Short_Bill_pct":3.74,"Shiller_US_CPI_pct":2.97,"Shiller_SP500_Real_pct":27.43,"Shiller_10Y_TBond_Real_pct":2.79,"US_Short_Bill_Real_pct":0.75},{"Year":1916,"Jan_SP500_Price":9.33,"Jan_PE10_CAPE":12.54,"Jan_10Y_Yield_pct":4.05,"Shiller_SP500_TR_pct":8.23,"Shiller_10Y_TBond_pct":2.7,"US_Short_Bill_pct":3.55,"Shiller_US_CPI_pct":12.5,"Shiller_SP500_Real_pct":-3.79,"Shiller_10Y_TBond_Real_pct":-8.71,"US_Short_Bill_Real_pct":-7.96},{"Year":1917,"Jan_SP500_Price":9.57,"Jan_PE10_CAPE":10.99,"Jan_10Y_Yield_pct":4.23,"Shiller_SP500_TR_pct":-18.54,"Shiller_10Y_TBond_pct":1.67,"US_Short_Bill_pct":3.73,"Shiller_US_CPI_pct":19.66,"Shiller_SP500_Real_pct":-31.92,"Shiller_10Y_TBond_Real_pct":-15.03,"US_Short_Bill_Real_pct":-13.31},{"Year":1918,"Jan_SP500_Price":7.21,"Jan_PE10_CAPE":6.64,"Jan_10Y_Yield_pct":4.57,"Shiller_SP500_TR_pct":18.06,"Shiller_10Y_TBond_pct":5.22,"US_Short_Bill_pct":4.07,"Shiller_US_CPI_pct":17.86,"Shiller_SP500_Real_pct":0.18,"Shiller_10Y_TBond_Real_pct":-10.73,"US_Short_Bill_Real_pct":-11.7},{"Year":1919,"Jan_SP500_Price":7.85,"Jan_PE10_CAPE":6.1,"Jan_10Y_Yield_pct":4.5,"Shiller_SP500_TR_pct":19.63,"Shiller_10Y_TBond_pct":1.01,"US_Short_Bill_pct":4.0,"Shiller_US_CPI_pct":16.97,"Shiller_SP500_Real_pct":2.27,"Shiller_10Y_TBond_Real_pct":-13.64,"US_Short_Bill_Real_pct":-11.09},{"Year":1920,"Jan_SP500_Price":8.83,"Jan_PE10_CAPE":5.99,"Jan_10Y_Yield_pct":4.97,"Shiller_SP500_TR_pct":-13.98,"Shiller_10Y_TBond_pct":4.17,"US_Short_Bill_pct":4.47,"Shiller_US_CPI_pct":-1.55,"Shiller_SP500_Real_pct":-12.62,"Shiller_10Y_TBond_Real_pct":5.81,"US_Short_Bill_Real_pct":6.12},{"Year":1921,"Jan_SP500_Price":7.11,"Jan_PE10_CAPE":5.12,"Jan_10Y_Yield_pct":5.09,"Shiller_SP500_TR_pct":10.08,"Shiller_10Y_TBond_pct":11.56,"US_Short_Bill_pct":4.59,"Shiller_US_CPI_pct":-11.05,"Shiller_SP500_Real_pct":23.76,"Shiller_10Y_TBond_Real_pct":25.43,"US_Short_Bill_Real_pct":17.59},{"Year":1922,"Jan_SP500_Price":7.3,"Jan_PE10_CAPE":6.29,"Jan_10Y_Yield_pct":4.3,"Shiller_SP500_TR_pct":29.13,"Shiller_10Y_TBond_pct":3.91,"US_Short_Bill_pct":3.8,"Shiller_US_CPI_pct":-0.59,"Shiller_SP500_Real_pct":29.9,"Shiller_10Y_TBond_Real_pct":4.53,"US_Short_Bill_Real_pct":4.42},{"Year":1923,"Jan_SP500_Price":8.9,"Jan_PE10_CAPE":8.15,"Jan_10Y_Yield_pct":4.36,"Shiller_SP500_TR_pct":5.46,"Shiller_10Y_TBond_pct":6.86,"US_Short_Bill_pct":3.86,"Shiller_US_CPI_pct":2.98,"Shiller_SP500_Real_pct":2.41,"Shiller_10Y_TBond_Real_pct":3.77,"US_Short_Bill_Real_pct":0.86},{"Year":1924,"Jan_SP500_Price":8.83,"Jan_PE10_CAPE":8.07,"Jan_10Y_Yield_pct":4.06,"Shiller_SP500_TR_pct":27.12,"Shiller_10Y_TBond_pct":5.75,"US_Short_Bill_pct":3.56,"Shiller_US_CPI_pct":0.0,"Shiller_SP500_Real_pct":27.12,"Shiller_10Y_TBond_Real_pct":5.75,"US_Short_Bill_Real_pct":3.56},{"Year":1925,"Jan_SP500_Price":10.58,"Jan_PE10_CAPE":9.69,"Jan_10Y_Yield_pct":3.86,"Shiller_SP500_TR_pct":25.87,"Shiller_10Y_TBond_pct":5.39,"US_Short_Bill_pct":3.36,"Shiller_US_CPI_pct":3.47,"Shiller_SP500_Real_pct":21.65,"Shiller_10Y_TBond_Real_pct":1.86,"US_Short_Bill_Real_pct":-0.1},{"Year":1926,"Jan_SP500_Price":12.65,"Jan_PE10_CAPE":11.34,"Jan_10Y_Yield_pct":3.68,"Shiller_SP500_TR_pct":11.56,"Shiller_10Y_TBond_pct":6.56,"US_Short_Bill_pct":3.18,"Shiller_US_CPI_pct":-2.23,"Shiller_SP500_Real_pct":14.11,"Shiller_10Y_TBond_Real_pct":8.99,"US_Short_Bill_Real_pct":5.54},{"Year":1927,"Jan_SP500_Price":13.4,"Jan_PE10_CAPE":13.19,"Jan_10Y_Yield_pct":3.34,"Shiller_SP500_TR_pct":37.16,"Shiller_10Y_TBond_pct":3.47,"US_Short_Bill_pct":2.84,"Shiller_US_CPI_pct":-1.14,"Shiller_SP500_Real_pct":38.75,"Shiller_10Y_TBond_Real_pct":4.67,"US_Short_Bill_Real_pct":4.03},{"Year":1928,"Jan_SP500_Price":17.53,"Jan_PE10_CAPE":18.81,"Jan_10Y_Yield_pct":3.33,"Shiller_SP500_TR_pct":47.62,"Shiller_10Y_TBond_pct":1.2,"US_Short_Bill_pct":3.08,"Shiller_US_CPI_pct":-1.16,"Shiller_SP500_Real_pct":49.35,"Shiller_10Y_TBond_Real_pct":2.38,"US_Short_Bill_Real_pct":4.29},{"Year":1929,"Jan_SP500_Price":24.86,"Jan_PE10_CAPE":27.08,"Jan_10Y_Yield_pct":3.6,"Shiller_SP500_TR_pct":-9.43,"Shiller_10Y_TBond_pct":6.23,"US_Short_Bill_pct":3.16,"Shiller_US_CPI_pct":0.0,"Shiller_SP500_Real_pct":-9.43,"Shiller_10Y_TBond_Real_pct":6.23,"US_Short_Bill_Real_pct":3.16},{"Year":1930,"Jan_SP500_Price":21.71,"Jan_PE10_CAPE":22.31,"Jan_10Y_Yield_pct":3.29,"Shiller_SP500_TR_pct":-22.73,"Shiller_10Y_TBond_pct":2.93,"US_Short_Bill_pct":4.55,"Shiller_US_CPI_pct":-7.02,"Shiller_SP500_Real_pct":-16.9,"Shiller_10Y_TBond_Real_pct":10.7,"US_Short_Bill_Real_pct":12.44},{"Year":1931,"Jan_SP500_Price":15.98,"Jan_PE10_CAPE":16.71,"Jan_10Y_Yield_pct":3.34,"Shiller_SP500_TR_pct":-44.26,"Shiller_10Y_TBond_pct":0.66,"US_Short_Bill_pct":2.31,"Shiller_US_CPI_pct":-10.06,"Shiller_SP500_Real_pct":-38.03,"Shiller_10Y_TBond_Real_pct":11.92,"US_Short_Bill_Real_pct":13.76},{"Year":1932,"Jan_SP500_Price":8.3,"Jan_PE10_CAPE":9.31,"Jan_10Y_Yield_pct":3.68,"Shiller_SP500_TR_pct":-6.16,"Shiller_10Y_TBond_pct":6.81,"US_Short_Bill_pct":1.07,"Shiller_US_CPI_pct":-9.79,"Shiller_SP500_Real_pct":4.02,"Shiller_10Y_TBond_Real_pct":18.41,"US_Short_Bill_Real_pct":12.04},{"Year":1933,"Jan_SP500_Price":7.09,"Jan_PE10_CAPE":8.73,"Jan_10Y_Yield_pct":3.31,"Shiller_SP500_TR_pct":56.66,"Shiller_10Y_TBond_pct":4.94,"US_Short_Bill_pct":0.96,"Shiller_US_CPI_pct":2.33,"Shiller_SP500_Real_pct":53.1,"Shiller_10Y_TBond_Real_pct":2.56,"US_Short_Bill_Real_pct":-1.33},{"Year":1934,"Jan_SP500_Price":10.54,"Jan_PE10_CAPE":13.03,"Jan_10Y_Yield_pct":3.12,"Shiller_SP500_TR_pct":-8.0,"Shiller_10Y_TBond_pct":5.96,"US_Short_Bill_pct":0.28,"Shiller_US_CPI_pct":3.03,"Shiller_SP500_Real_pct":-10.71,"Shiller_10Y_TBond_Real_pct":2.84,"US_Short_Bill_Real_pct":-2.67},{"Year":1935,"Jan_SP500_Price":9.26,"Jan_PE10_CAPE":11.5,"Jan_10Y_Yield_pct":2.79,"Shiller_SP500_TR_pct":54.96,"Shiller_10Y_TBond_pct":4.01,"US_Short_Bill_pct":0.17,"Shiller_US_CPI_pct":1.47,"Shiller_SP500_Real_pct":52.71,"Shiller_10Y_TBond_Real_pct":2.51,"US_Short_Bill_Real_pct":-1.28},{"Year":1936,"Jan_SP500_Price":13.76,"Jan_PE10_CAPE":17.09,"Jan_10Y_Yield_pct":2.65,"Shiller_SP500_TR_pct":32.72,"Shiller_10Y_TBond_pct":2.43,"US_Short_Bill_pct":0.17,"Shiller_US_CPI_pct":2.17,"Shiller_SP500_Real_pct":29.89,"Shiller_10Y_TBond_Real_pct":0.25,"US_Short_Bill_Real_pct":-1.96},{"Year":1937,"Jan_SP500_Price":17.59,"Jan_PE10_CAPE":21.62,"Jan_10Y_Yield_pct":2.68,"Shiller_SP500_TR_pct":-32.08,"Shiller_10Y_TBond_pct":3.73,"US_Short_Bill_pct":0.28,"Shiller_US_CPI_pct":0.71,"Shiller_SP500_Real_pct":-32.56,"Shiller_10Y_TBond_Real_pct":3.0,"US_Short_Bill_Real_pct":-0.43},{"Year":1938,"Jan_SP500_Price":11.31,"Jan_PE10_CAPE":13.51,"Jan_10Y_Yield_pct":2.56,"Shiller_SP500_TR_pct":17.27,"Shiller_10Y_TBond_pct":4.31,"US_Short_Bill_pct":0.07,"Shiller_US_CPI_pct":-1.41,"Shiller_SP500_Real_pct":18.95,"Shiller_10Y_TBond_Real_pct":5.8,"US_Short_Bill_Real_pct":1.5},{"Year":1939,"Jan_SP500_Price":12.5,"Jan_PE10_CAPE":15.6,"Jan_10Y_Yield_pct":2.36,"Shiller_SP500_TR_pct":3.06,"Shiller_10Y_TBond_pct":3.68,"US_Short_Bill_pct":0.05,"Shiller_US_CPI_pct":-0.71,"Shiller_SP500_Real_pct":3.8,"Shiller_10Y_TBond_Real_pct":4.43,"US_Short_Bill_Real_pct":0.77},{"Year":1940,"Jan_SP500_Price":12.3,"Jan_PE10_CAPE":16.38,"Jan_10Y_Yield_pct":2.21,"Shiller_SP500_TR_pct":-8.88,"Shiller_10Y_TBond_pct":4.51,"US_Short_Bill_pct":0.04,"Shiller_US_CPI_pct":1.44,"Shiller_SP500_Real_pct":-10.17,"Shiller_10Y_TBond_Real_pct":3.03,"US_Short_Bill_Real_pct":-1.38},{"Year":1941,"Jan_SP500_Price":10.55,"Jan_PE10_CAPE":13.9,"Jan_10Y_Yield_pct":1.95,"Shiller_SP500_TR_pct":-9.07,"Shiller_10Y_TBond_pct":-2.33,"US_Short_Bill_pct":0.13,"Shiller_US_CPI_pct":11.35,"Shiller_SP500_Real_pct":-18.34,"Shiller_10Y_TBond_Real_pct":-12.28,"US_Short_Bill_Real_pct":-10.07},{"Year":1942,"Jan_SP500_Price":8.93,"Jan_PE10_CAPE":10.1,"Jan_10Y_Yield_pct":2.46,"Shiller_SP500_TR_pct":21.61,"Shiller_10Y_TBond_pct":2.4,"US_Short_Bill_pct":0.34,"Shiller_US_CPI_pct":7.64,"Shiller_SP500_Real_pct":12.97,"Shiller_10Y_TBond_Real_pct":-4.87,"US_Short_Bill_Real_pct":-6.78},{"Year":1943,"Jan_SP500_Price":10.09,"Jan_PE10_CAPE":10.15,"Jan_10Y_Yield_pct":2.47,"Shiller_SP500_TR_pct":23.62,"Shiller_10Y_TBond_pct":2.41,"US_Short_Bill_pct":0.38,"Shiller_US_CPI_pct":2.96,"Shiller_SP500_Real_pct":20.07,"Shiller_10Y_TBond_Real_pct":-0.53,"US_Short_Bill_Real_pct":-2.5},{"Year":1944,"Jan_SP500_Price":11.85,"Jan_PE10_CAPE":11.05,"Jan_10Y_Yield_pct":2.48,"Shiller_SP500_TR_pct":19.69,"Shiller_10Y_TBond_pct":3.45,"US_Short_Bill_pct":0.38,"Shiller_US_CPI_pct":2.3,"Shiller_SP500_Real_pct":17.0,"Shiller_10Y_TBond_Real_pct":1.13,"US_Short_Bill_Real_pct":-1.88},{"Year":1945,"Jan_SP500_Price":13.49,"Jan_PE10_CAPE":11.96,"Jan_10Y_Yield_pct":2.37,"Shiller_SP500_TR_pct":39.36,"Shiller_10Y_TBond_pct":3.95,"US_Short_Bill_pct":0.38,"Shiller_US_CPI_pct":2.25,"Shiller_SP500_Real_pct":36.3,"Shiller_10Y_TBond_Real_pct":1.67,"US_Short_Bill_Real_pct":-1.83},{"Year":1946,"Jan_SP500_Price":18.02,"Jan_PE10_CAPE":15.62,"Jan_10Y_Yield_pct":2.19,"Shiller_SP500_TR_pct":-12.03,"Shiller_10Y_TBond_pct":1.7,"US_Short_Bill_pct":0.38,"Shiller_US_CPI_pct":18.13,"Shiller_SP500_Real_pct":-25.53,"Shiller_10Y_TBond_Real_pct":-13.91,"US_Short_Bill_Real_pct":-15.03},{"Year":1947,"Jan_SP500_Price":15.21,"Jan_PE10_CAPE":11.47,"Jan_10Y_Yield_pct":2.25,"Shiller_SP500_TR_pct":2.63,"Shiller_10Y_TBond_pct":0.66,"US_Short_Bill_pct":0.6,"Shiller_US_CPI_pct":10.23,"Shiller_SP500_Real_pct":-6.89,"Shiller_10Y_TBond_Real_pct":-8.68,"US_Short_Bill_Real_pct":-8.74},{"Year":1948,"Jan_SP500_Price":14.83,"Jan_PE10_CAPE":10.42,"Jan_10Y_Yield_pct":2.44,"Shiller_SP500_TR_pct":9.57,"Shiller_10Y_TBond_pct":3.59,"US_Short_Bill_pct":1.04,"Shiller_US_CPI_pct":1.27,"Shiller_SP500_Real_pct":8.2,"Shiller_10Y_TBond_Real_pct":2.29,"US_Short_Bill_Real_pct":-0.22},{"Year":1949,"Jan_SP500_Price":15.36,"Jan_PE10_CAPE":10.25,"Jan_10Y_Yield_pct":2.31,"Shiller_SP500_TR_pct":17.61,"Shiller_10Y_TBond_pct":2.25,"US_Short_Bill_pct":1.11,"Shiller_US_CPI_pct":-2.08,"Shiller_SP500_Real_pct":20.11,"Shiller_10Y_TBond_Real_pct":4.42,"US_Short_Bill_Real_pct":3.26},{"Year":1950,"Jan_SP500_Price":16.88,"Jan_PE10_CAPE":10.75,"Jan_10Y_Yield_pct":2.32,"Shiller_SP500_TR_pct":34.58,"Shiller_10Y_TBond_pct":0.24,"US_Short_Bill_pct":1.2,"Shiller_US_CPI_pct":8.09,"Shiller_SP500_Real_pct":24.51,"Shiller_10Y_TBond_Real_pct":-7.26,"US_Short_Bill_Real_pct":-6.37},{"Year":1951,"Jan_SP500_Price":21.21,"Jan_PE10_CAPE":11.9,"Jan_10Y_Yield_pct":2.57,"Shiller_SP500_TR_pct":21.89,"Shiller_10Y_TBond_pct":1.67,"US_Short_Bill_pct":1.52,"Shiller_US_CPI_pct":4.33,"Shiller_SP500_Real_pct":16.83,"Shiller_10Y_TBond_Real_pct":-2.55,"US_Short_Bill_Real_pct":-2.69},{"Year":1952,"Jan_SP500_Price":24.19,"Jan_PE10_CAPE":12.53,"Jan_10Y_Yield_pct":2.68,"Shiller_SP500_TR_pct":14.69,"Shiller_10Y_TBond_pct":1.46,"US_Short_Bill_pct":1.72,"Shiller_US_CPI_pct":0.38,"Shiller_SP500_Real_pct":14.26,"Shiller_10Y_TBond_Real_pct":1.08,"US_Short_Bill_Real_pct":1.34},{"Year":1953,"Jan_SP500_Price":26.18,"Jan_PE10_CAPE":13.01,"Jan_10Y_Yield_pct":2.83,"Shiller_SP500_TR_pct":3.03,"Shiller_10Y_TBond_pct":6.03,"US_Short_Bill_pct":1.89,"Shiller_US_CPI_pct":1.13,"Shiller_SP500_Real_pct":1.88,"Shiller_10Y_TBond_Real_pct":4.84,"US_Short_Bill_Real_pct":0.75},{"Year":1954,"Jan_SP500_Price":25.46,"Jan_PE10_CAPE":12.0,"Jan_10Y_Yield_pct":2.48,"Shiller_SP500_TR_pct":46.83,"Shiller_10Y_TBond_pct":1.26,"US_Short_Bill_pct":0.94,"Shiller_US_CPI_pct":-0.74,"Shiller_SP500_Real_pct":47.93,"Shiller_10Y_TBond_Real_pct":2.02,"US_Short_Bill_Real_pct":1.7},{"Year":1955,"Jan_SP500_Price":35.6,"Jan_PE10_CAPE":15.99,"Jan_10Y_Yield_pct":2.61,"Shiller_SP500_TR_pct":28.94,"Shiller_10Y_TBond_pct":0.3,"US_Short_Bill_pct":1.72,"Shiller_US_CPI_pct":0.37,"Shiller_SP500_Real_pct":28.46,"Shiller_10Y_TBond_Real_pct":-0.08,"US_Short_Bill_Real_pct":1.34},{"Year":1956,"Jan_SP500_Price":44.15,"Jan_PE10_CAPE":18.29,"Jan_10Y_Yield_pct":2.9,"Shiller_SP500_TR_pct":6.88,"Shiller_10Y_TBond_pct":-1.59,"US_Short_Bill_pct":2.62,"Shiller_US_CPI_pct":2.99,"Shiller_SP500_Real_pct":3.78,"Shiller_10Y_TBond_Real_pct":-4.44,"US_Short_Bill_Real_pct":-0.35},{"Year":1957,"Jan_SP500_Price":45.43,"Jan_PE10_CAPE":16.72,"Jan_10Y_Yield_pct":3.46,"Shiller_SP500_TR_pct":-5.8,"Shiller_10Y_TBond_pct":6.93,"US_Short_Bill_pct":3.22,"Shiller_US_CPI_pct":3.62,"Shiller_SP500_Real_pct":-9.09,"Shiller_10Y_TBond_Real_pct":3.19,"US_Short_Bill_Real_pct":-0.39},{"Year":1958,"Jan_SP500_Price":41.12,"Jan_PE10_CAPE":13.79,"Jan_10Y_Yield_pct":3.09,"Shiller_SP500_TR_pct":40.38,"Shiller_10Y_TBond_pct":-4.38,"US_Short_Bill_pct":1.77,"Shiller_US_CPI_pct":1.4,"Shiller_SP500_Real_pct":38.44,"Shiller_10Y_TBond_Real_pct":-5.69,"US_Short_Bill_Real_pct":0.37},{"Year":1959,"Jan_SP500_Price":55.62,"Jan_PE10_CAPE":17.98,"Jan_10Y_Yield_pct":4.02,"Shiller_SP500_TR_pct":7.65,"Shiller_10Y_TBond_pct":-1.3,"US_Short_Bill_pct":3.39,"Shiller_US_CPI_pct":1.03,"Shiller_SP500_Real_pct":6.55,"Shiller_10Y_TBond_Real_pct":-2.31,"US_Short_Bill_Real_pct":2.33},{"Year":1960,"Jan_SP500_Price":58.03,"Jan_PE10_CAPE":18.34,"Jan_10Y_Yield_pct":4.72,"Shiller_SP500_TR_pct":6.55,"Shiller_10Y_TBond_pct":11.8,"US_Short_Bill_pct":2.87,"Shiller_US_CPI_pct":1.71,"Shiller_SP500_Real_pct":4.76,"Shiller_10Y_TBond_Real_pct":9.92,"US_Short_Bill_Real_pct":1.14},{"Year":1961,"Jan_SP500_Price":59.72,"Jan_PE10_CAPE":18.47,"Jan_10Y_Yield_pct":3.84,"Shiller_SP500_TR_pct":19.1,"Shiller_10Y_TBond_pct":1.92,"US_Short_Bill_pct":2.35,"Shiller_US_CPI_pct":0.67,"Shiller_SP500_Real_pct":18.3,"Shiller_10Y_TBond_Real_pct":1.24,"US_Short_Bill_Real_pct":1.67},{"Year":1962,"Jan_SP500_Price":69.07,"Jan_PE10_CAPE":21.2,"Jan_10Y_Yield_pct":4.08,"Shiller_SP500_TR_pct":-2.58,"Shiller_10Y_TBond_pct":6.16,"US_Short_Bill_pct":2.77,"Shiller_US_CPI_pct":1.33,"Shiller_SP500_Real_pct":-3.86,"Shiller_10Y_TBond_Real_pct":4.76,"US_Short_Bill_Real_pct":1.42},{"Year":1963,"Jan_SP500_Price":65.06,"Jan_PE10_CAPE":19.26,"Jan_10Y_Yield_pct":3.83,"Shiller_SP500_TR_pct":21.23,"Shiller_10Y_TBond_pct":1.23,"US_Short_Bill_pct":3.16,"Shiller_US_CPI_pct":1.64,"Shiller_SP500_Real_pct":19.27,"Shiller_10Y_TBond_Real_pct":-0.41,"US_Short_Bill_Real_pct":1.49},{"Year":1964,"Jan_SP500_Price":76.45,"Jan_PE10_CAPE":21.63,"Jan_10Y_Yield_pct":4.17,"Shiller_SP500_TR_pct":16.0,"Shiller_10Y_TBond_pct":4.1,"US_Short_Bill_pct":3.55,"Shiller_US_CPI_pct":0.97,"Shiller_SP500_Real_pct":14.89,"Shiller_10Y_TBond_Real_pct":3.1,"US_Short_Bill_Real_pct":2.55},{"Year":1965,"Jan_SP500_Price":86.12,"Jan_PE10_CAPE":23.27,"Jan_10Y_Yield_pct":4.19,"Shiller_SP500_TR_pct":11.62,"Shiller_10Y_TBond_pct":0.91,"US_Short_Bill_pct":3.95,"Shiller_US_CPI_pct":1.92,"Shiller_SP500_Real_pct":9.52,"Shiller_10Y_TBond_Real_pct":-0.99,"US_Short_Bill_Real_pct":1.99},{"Year":1966,"Jan_SP500_Price":93.32,"Jan_PE10_CAPE":24.06,"Jan_10Y_Yield_pct":4.61,"Shiller_SP500_TR_pct":-6.4,"Shiller_10Y_TBond_pct":5.24,"US_Short_Bill_pct":4.86,"Shiller_US_CPI_pct":3.46,"Shiller_SP500_Real_pct":-9.53,"Shiller_10Y_TBond_Real_pct":1.72,"US_Short_Bill_Real_pct":1.35},{"Year":1967,"Jan_SP500_Price":84.45,"Jan_PE10_CAPE":20.43,"Jan_10Y_Yield_pct":4.58,"Shiller_SP500_TR_pct":16.12,"Shiller_10Y_TBond_pct":-2.31,"US_Short_Bill_pct":4.29,"Shiller_US_CPI_pct":3.65,"Shiller_SP500_Real_pct":12.04,"Shiller_10Y_TBond_Real_pct":-5.75,"US_Short_Bill_Real_pct":0.62},{"Year":1968,"Jan_SP500_Price":95.04,"Jan_PE10_CAPE":21.51,"Jan_10Y_Yield_pct":5.53,"Shiller_SP500_TR_pct":10.63,"Shiller_10Y_TBond_pct":1.79,"US_Short_Bill_pct":5.34,"Shiller_US_CPI_pct":4.4,"Shiller_SP500_Real_pct":5.97,"Shiller_10Y_TBond_Real_pct":-2.5,"US_Short_Bill_Real_pct":0.9},{"Year":1969,"Jan_SP500_Price":102.0,"Jan_PE10_CAPE":21.19,"Jan_10Y_Yield_pct":6.04,"Shiller_SP500_TR_pct":-8.55,"Shiller_10Y_TBond_pct":-5.71,"US_Short_Bill_pct":6.67,"Shiller_US_CPI_pct":6.18,"Shiller_SP500_Real_pct":-13.87,"Shiller_10Y_TBond_Real_pct":-11.2,"US_Short_Bill_Real_pct":0.46},{"Year":1970,"Jan_SP500_Price":90.31,"Jan_PE10_CAPE":17.09,"Jan_10Y_Yield_pct":7.79,"Shiller_SP500_TR_pct":7.54,"Shiller_10Y_TBond_pct":19.95,"US_Short_Bill_pct":6.39,"Shiller_US_CPI_pct":5.29,"Shiller_SP500_Real_pct":2.14,"Shiller_10Y_TBond_Real_pct":13.92,"US_Short_Bill_Real_pct":1.04},{"Year":1971,"Jan_SP500_Price":93.49,"Jan_PE10_CAPE":16.46,"Jan_10Y_Yield_pct":6.24,"Shiller_SP500_TR_pct":13.99,"Shiller_10Y_TBond_pct":8.54,"US_Short_Bill_pct":4.33,"Shiller_US_CPI_pct":3.27,"Shiller_SP500_Real_pct":10.39,"Shiller_10Y_TBond_Real_pct":5.1,"US_Short_Bill_Real_pct":1.03},{"Year":1972,"Jan_SP500_Price":103.3,"Jan_PE10_CAPE":17.26,"Jan_10Y_Yield_pct":5.95,"Shiller_SP500_TR_pct":17.87,"Shiller_10Y_TBond_pct":2.45,"US_Short_Bill_pct":4.06,"Shiller_US_CPI_pct":3.65,"Shiller_SP500_Real_pct":13.72,"Shiller_10Y_TBond_Real_pct":-1.16,"US_Short_Bill_Real_pct":0.4},{"Year":1973,"Jan_SP500_Price":118.4,"Jan_PE10_CAPE":18.71,"Jan_10Y_Yield_pct":6.46,"Shiller_SP500_TR_pct":-16.27,"Shiller_10Y_TBond_pct":3.02,"US_Short_Bill_pct":7.04,"Shiller_US_CPI_pct":9.39,"Shiller_SP500_Real_pct":-23.46,"Shiller_10Y_TBond_Real_pct":-5.83,"US_Short_Bill_Real_pct":-2.15},{"Year":1974,"Jan_SP500_Price":96.11,"Jan_PE10_CAPE":13.53,"Jan_10Y_Yield_pct":6.99,"Shiller_SP500_TR_pct":-21.06,"Shiller_10Y_TBond_pct":3.99,"US_Short_Bill_pct":7.85,"Shiller_US_CPI_pct":11.8,"Shiller_SP500_Real_pct":-29.39,"Shiller_10Y_TBond_Real_pct":-6.98,"US_Short_Bill_Real_pct":-3.54},{"Year":1975,"Jan_SP500_Price":72.56,"Jan_PE10_CAPE":8.92,"Jan_10Y_Yield_pct":7.5,"Shiller_SP500_TR_pct":39.2,"Shiller_10Y_TBond_pct":6.44,"US_Short_Bill_pct":5.79,"Shiller_US_CPI_pct":6.72,"Shiller_SP500_Real_pct":30.44,"Shiller_10Y_TBond_Real_pct":-0.26,"US_Short_Bill_Real_pct":-0.87},{"Year":1976,"Jan_SP500_Price":96.86,"Jan_PE10_CAPE":11.19,"Jan_10Y_Yield_pct":7.74,"Shiller_SP500_TR_pct":11.25,"Shiller_10Y_TBond_pct":11.87,"US_Short_Bill_pct":4.98,"Shiller_US_CPI_pct":5.22,"Shiller_SP500_Real_pct":5.73,"Shiller_10Y_TBond_Real_pct":6.33,"US_Short_Bill_Real_pct":-0.22},{"Year":1977,"Jan_SP500_Price":103.8,"Jan_PE10_CAPE":11.44,"Jan_10Y_Yield_pct":7.21,"Shiller_SP500_TR_pct":-8.99,"Shiller_10Y_TBond_pct":2.22,"US_Short_Bill_pct":5.26,"Shiller_US_CPI_pct":6.84,"Shiller_SP500_Real_pct":-14.82,"Shiller_10Y_TBond_Real_pct":-4.33,"US_Short_Bill_Real_pct":-1.48},{"Year":1978,"Jan_SP500_Price":90.25,"Jan_PE10_CAPE":9.24,"Jan_10Y_Yield_pct":7.96,"Shiller_SP500_TR_pct":16.28,"Shiller_10Y_TBond_pct":0.8,"US_Short_Bill_pct":7.18,"Shiller_US_CPI_pct":9.28,"Shiller_SP500_Real_pct":6.4,"Shiller_10Y_TBond_Real_pct":-7.76,"US_Short_Bill_Real_pct":-1.92},{"Year":1979,"Jan_SP500_Price":99.71,"Jan_PE10_CAPE":9.26,"Jan_10Y_Yield_pct":9.1,"Shiller_SP500_TR_pct":17.17,"Shiller_10Y_TBond_pct":-1.3,"US_Short_Bill_pct":10.05,"Shiller_US_CPI_pct":13.91,"Shiller_SP500_Real_pct":2.86,"Shiller_10Y_TBond_Real_pct":-13.35,"US_Short_Bill_Real_pct":-3.39},{"Year":1980,"Jan_SP500_Price":110.9,"Jan_PE10_CAPE":8.85,"Jan_10Y_Yield_pct":10.8,"Shiller_SP500_TR_pct":26.06,"Shiller_10Y_TBond_pct":0.68,"US_Short_Bill_pct":11.39,"Shiller_US_CPI_pct":11.83,"Shiller_SP500_Real_pct":12.73,"Shiller_10Y_TBond_Real_pct":-9.97,"US_Short_Bill_Real_pct":-0.39},{"Year":1981,"Jan_SP500_Price":133.0,"Jan_PE10_CAPE":9.26,"Jan_10Y_Yield_pct":12.57,"Shiller_SP500_TR_pct":-7.19,"Shiller_10Y_TBond_pct":2.75,"US_Short_Bill_pct":14.04,"Shiller_US_CPI_pct":8.39,"Shiller_SP500_Real_pct":-14.38,"Shiller_10Y_TBond_Real_pct":-5.2,"US_Short_Bill_Real_pct":5.21},{"Year":1982,"Jan_SP500_Price":117.3,"Jan_PE10_CAPE":7.39,"Jan_10Y_Yield_pct":14.59,"Shiller_SP500_TR_pct":30.13,"Shiller_10Y_TBond_pct":43.2,"US_Short_Bill_pct":11.09,"Shiller_US_CPI_pct":3.71,"Shiller_SP500_Real_pct":25.48,"Shiller_10Y_TBond_Real_pct":38.07,"US_Short_Bill_Real_pct":7.11},{"Year":1983,"Jan_SP500_Price":144.3,"Jan_PE10_CAPE":8.76,"Jan_10Y_Yield_pct":10.46,"Shiller_SP500_TR_pct":20.39,"Shiller_10Y_TBond_pct":3.87,"US_Short_Bill_pct":8.95,"Shiller_US_CPI_pct":4.19,"Shiller_SP500_Real_pct":15.54,"Shiller_10Y_TBond_Real_pct":-0.31,"US_Short_Bill_Real_pct":4.57},{"Year":1984,"Jan_SP500_Price":166.4,"Jan_PE10_CAPE":9.89,"Jan_10Y_Yield_pct":11.67,"Shiller_SP500_TR_pct":7.94,"Shiller_10Y_TBond_pct":15.0,"US_Short_Bill_pct":9.92,"Shiller_US_CPI_pct":3.53,"Shiller_SP500_Real_pct":4.26,"Shiller_10Y_TBond_Real_pct":11.07,"US_Short_Bill_Real_pct":6.17},{"Year":1985,"Jan_SP500_Price":171.6,"Jan_PE10_CAPE":10.0,"Jan_10Y_Yield_pct":11.38,"Shiller_SP500_TR_pct":26.41,"Shiller_10Y_TBond_pct":27.06,"US_Short_Bill_pct":7.72,"Shiller_US_CPI_pct":3.89,"Shiller_SP500_Real_pct":21.68,"Shiller_10Y_TBond_Real_pct":22.3,"US_Short_Bill_Real_pct":3.69},{"Year":1986,"Jan_SP500_Price":208.2,"Jan_PE10_CAPE":11.72,"Jan_10Y_Yield_pct":9.19,"Shiller_SP500_TR_pct":31.41,"Shiller_10Y_TBond_pct":24.28,"US_Short_Bill_pct":6.15,"Shiller_US_CPI_pct":1.46,"Shiller_SP500_Real_pct":29.52,"Shiller_10Y_TBond_Real_pct":22.49,"US_Short_Bill_Real_pct":4.62},{"Year":1987,"Jan_SP500_Price":264.5,"Jan_PE10_CAPE":14.92,"Jan_10Y_Yield_pct":7.08,"Shiller_SP500_TR_pct":-2.38,"Shiller_10Y_TBond_pct":-2.64,"US_Short_Bill_pct":5.96,"Shiller_US_CPI_pct":4.05,"Shiller_SP500_Real_pct":-6.17,"Shiller_10Y_TBond_Real_pct":-6.42,"US_Short_Bill_Real_pct":1.84},{"Year":1988,"Jan_SP500_Price":250.5,"Jan_PE10_CAPE":13.9,"Jan_10Y_Yield_pct":8.67,"Shiller_SP500_TR_pct":17.96,"Shiller_10Y_TBond_pct":6.2,"US_Short_Bill_pct":6.89,"Shiller_US_CPI_pct":4.67,"Shiller_SP500_Real_pct":12.7,"Shiller_10Y_TBond_Real_pct":1.46,"US_Short_Bill_Real_pct":2.12},{"Year":1989,"Jan_SP500_Price":285.4,"Jan_PE10_CAPE":15.09,"Jan_10Y_Yield_pct":9.09,"Shiller_SP500_TR_pct":23.01,"Shiller_10Y_TBond_pct":15.27,"US_Short_Bill_pct":8.39,"Shiller_US_CPI_pct":5.2,"Shiller_SP500_Real_pct":16.93,"Shiller_10Y_TBond_Real_pct":9.57,"US_Short_Bill_Real_pct":3.03},{"Year":1990,"Jan_SP500_Price":339.97,"Jan_PE10_CAPE":17.05,"Jan_10Y_Yield_pct":8.21,"Shiller_SP500_TR_pct":-0.83,"Shiller_10Y_TBond_pct":9.73,"US_Short_Bill_pct":7.75,"Shiller_US_CPI_pct":5.65,"Shiller_SP500_Real_pct":-6.13,"Shiller_10Y_TBond_Real_pct":3.86,"US_Short_Bill_Real_pct":1.99},{"Year":1991,"Jan_SP500_Price":325.49,"Jan_PE10_CAPE":15.61,"Jan_10Y_Yield_pct":8.09,"Shiller_SP500_TR_pct":31.96,"Shiller_10Y_TBond_pct":16.33,"US_Short_Bill_pct":5.54,"Shiller_US_CPI_pct":2.6,"Shiller_SP500_Real_pct":28.61,"Shiller_10Y_TBond_Real_pct":13.38,"US_Short_Bill_Real_pct":2.87},{"Year":1992,"Jan_SP500_Price":416.08,"Jan_PE10_CAPE":19.77,"Jan_10Y_Yield_pct":7.03,"Shiller_SP500_TR_pct":7.74,"Shiller_10Y_TBond_pct":10.53,"US_Short_Bill_pct":3.51,"Shiller_US_CPI_pct":3.26,"Shiller_SP500_Real_pct":4.34,"Shiller_10Y_TBond_Real_pct":7.04,"US_Short_Bill_Real_pct":0.24},{"Year":1993,"Jan_SP500_Price":435.23,"Jan_PE10_CAPE":20.32,"Jan_10Y_Yield_pct":6.6,"Shiller_SP500_TR_pct":11.71,"Shiller_10Y_TBond_pct":12.82,"US_Short_Bill_pct":3.07,"Shiller_US_CPI_pct":2.52,"Shiller_SP500_Real_pct":8.96,"Shiller_10Y_TBond_Real_pct":10.04,"US_Short_Bill_Real_pct":0.53},{"Year":1994,"Jan_SP500_Price":472.99,"Jan_PE10_CAPE":21.41,"Jan_10Y_Yield_pct":5.75,"Shiller_SP500_TR_pct":1.16,"Shiller_10Y_TBond_pct":-7.31,"US_Short_Bill_pct":4.37,"Shiller_US_CPI_pct":2.8,"Shiller_SP500_Real_pct":-1.6,"Shiller_10Y_TBond_Real_pct":-9.84,"US_Short_Bill_Real_pct":1.52},{"Year":1995,"Jan_SP500_Price":465.25,"Jan_PE10_CAPE":20.22,"Jan_10Y_Yield_pct":7.78,"Shiller_SP500_TR_pct":35.33,"Shiller_10Y_TBond_pct":24.35,"US_Short_Bill_pct":5.66,"Shiller_US_CPI_pct":2.73,"Shiller_SP500_Real_pct":31.74,"Shiller_10Y_TBond_Real_pct":21.05,"US_Short_Bill_Real_pct":2.85},{"Year":1996,"Jan_SP500_Price":614.42,"Jan_PE10_CAPE":24.76,"Jan_10Y_Yield_pct":5.65,"Shiller_SP500_TR_pct":27.38,"Shiller_10Y_TBond_pct":-0.53,"US_Short_Bill_pct":5.15,"Shiller_US_CPI_pct":3.04,"Shiller_SP500_Real_pct":23.62,"Shiller_10Y_TBond_Real_pct":-3.46,"US_Short_Bill_Real_pct":2.04},{"Year":1997,"Jan_SP500_Price":766.22,"Jan_PE10_CAPE":28.33,"Jan_10Y_Yield_pct":6.58,"Shiller_SP500_TR_pct":27.92,"Shiller_10Y_TBond_pct":15.01,"US_Short_Bill_pct":5.2,"Shiller_US_CPI_pct":1.57,"Shiller_SP500_Real_pct":25.94,"Shiller_10Y_TBond_Real_pct":13.24,"US_Short_Bill_Real_pct":3.57},{"Year":1998,"Jan_SP500_Price":963.36,"Jan_PE10_CAPE":32.86,"Jan_10Y_Yield_pct":5.54,"Shiller_SP500_TR_pct":31.52,"Shiller_10Y_TBond_pct":12.21,"US_Short_Bill_pct":4.91,"Shiller_US_CPI_pct":1.67,"Shiller_SP500_Real_pct":29.35,"Shiller_10Y_TBond_Real_pct":10.37,"US_Short_Bill_Real_pct":3.19},{"Year":1999,"Jan_SP500_Price":1248.77,"Jan_PE10_CAPE":40.58,"Jan_10Y_Yield_pct":4.72,"Shiller_SP500_TR_pct":15.58,"Shiller_10Y_TBond_pct":-8.67,"US_Short_Bill_pct":4.78,"Shiller_US_CPI_pct":2.74,"Shiller_SP500_Real_pct":12.5,"Shiller_10Y_TBond_Real_pct":-11.11,"US_Short_Bill_Real_pct":1.99},{"Year":2000,"Jan_SP500_Price":1425.59,"Jan_PE10_CAPE":43.77,"Jan_10Y_Yield_pct":6.66,"Shiller_SP500_TR_pct":-5.21,"Shiller_10Y_TBond_pct":18.66,"US_Short_Bill_pct":6.0,"Shiller_US_CPI_pct":3.73,"Shiller_SP500_Real_pct":-8.62,"Shiller_10Y_TBond_Real_pct":14.39,"US_Short_Bill_Real_pct":2.19},{"Year":2001,"Jan_SP500_Price":1335.63,"Jan_PE10_CAPE":36.98,"Jan_10Y_Yield_pct":5.16,"Shiller_SP500_TR_pct":-13.47,"Shiller_10Y_TBond_pct":6.04,"US_Short_Bill_pct":3.48,"Shiller_US_CPI_pct":1.14,"Shiller_SP500_Real_pct":-14.45,"Shiller_10Y_TBond_Real_pct":4.84,"US_Short_Bill_Real_pct":2.31},{"Year":2002,"Jan_SP500_Price":1140.21,"Jan_PE10_CAPE":30.28,"Jan_10Y_Yield_pct":5.04,"Shiller_SP500_TR_pct":-20.13,"Shiller_10Y_TBond_pct":13.18,"US_Short_Bill_pct":1.64,"Shiller_US_CPI_pct":2.6,"Shiller_SP500_Real_pct":-22.15,"Shiller_10Y_TBond_Real_pct":10.32,"US_Short_Bill_Real_pct":-0.93},{"Year":2003,"Jan_SP500_Price":895.84,"Jan_PE10_CAPE":22.9,"Jan_10Y_Yield_pct":4.05,"Shiller_SP500_TR_pct":28.58,"Shiller_10Y_TBond_pct":3.1,"US_Short_Bill_pct":1.03,"Shiller_US_CPI_pct":1.93,"Shiller_SP500_Real_pct":26.15,"Shiller_10Y_TBond_Real_pct":1.15,"US_Short_Bill_Real_pct":-0.88},{"Year":2004,"Jan_SP500_Price":1132.52,"Jan_PE10_CAPE":27.66,"Jan_10Y_Yield_pct":4.15,"Shiller_SP500_TR_pct":6.06,"Shiller_10Y_TBond_pct":3.68,"US_Short_Bill_pct":1.4,"Shiller_US_CPI_pct":2.97,"Shiller_SP500_Real_pct":3.0,"Shiller_10Y_TBond_Real_pct":0.69,"US_Short_Bill_Real_pct":-1.52},{"Year":2005,"Jan_SP500_Price":1181.41,"Jan_PE10_CAPE":26.59,"Jan_10Y_Yield_pct":4.22,"Shiller_SP500_TR_pct":10.14,"Shiller_10Y_TBond_pct":2.67,"US_Short_Bill_pct":3.22,"Shiller_US_CPI_pct":3.99,"Shiller_SP500_Real_pct":5.92,"Shiller_10Y_TBond_Real_pct":-1.27,"US_Short_Bill_Real_pct":-0.74},{"Year":2006,"Jan_SP500_Price":1278.73,"Jan_PE10_CAPE":26.47,"Jan_10Y_Yield_pct":4.42,"Shiller_SP500_TR_pct":13.39,"Shiller_10Y_TBond_pct":2.07,"US_Short_Bill_pct":4.85,"Shiller_US_CPI_pct":2.08,"Shiller_SP500_Real_pct":11.09,"Shiller_10Y_TBond_Real_pct":-0.0,"US_Short_Bill_Real_pct":2.72},{"Year":2007,"Jan_SP500_Price":1424.16,"Jan_PE10_CAPE":27.21,"Jan_10Y_Yield_pct":4.76,"Shiller_SP500_TR_pct":-1.42,"Shiller_10Y_TBond_pct":13.6,"US_Short_Bill_pct":4.48,"Shiller_US_CPI_pct":4.28,"Shiller_SP500_Real_pct":-5.47,"Shiller_10Y_TBond_Real_pct":8.94,"US_Short_Bill_Real_pct":0.19},{"Year":2008,"Jan_SP500_Price":1378.76,"Jan_PE10_CAPE":24.02,"Jan_10Y_Yield_pct":3.74,"Shiller_SP500_TR_pct":-35.63,"Shiller_10Y_TBond_pct":14.77,"US_Short_Bill_pct":1.4,"Shiller_US_CPI_pct":0.03,"Shiller_SP500_Real_pct":-35.65,"Shiller_10Y_TBond_Real_pct":14.74,"US_Short_Bill_Real_pct":1.37},{"Year":2009,"Jan_SP500_Price":865.58,"Jan_PE10_CAPE":15.17,"Jan_10Y_Yield_pct":2.52,"Shiller_SP500_TR_pct":33.26,"Shiller_10Y_TBond_pct":-6.87,"US_Short_Bill_pct":0.15,"Shiller_US_CPI_pct":2.63,"Shiller_SP500_Real_pct":29.85,"Shiller_10Y_TBond_Real_pct":-9.26,"US_Short_Bill_Real_pct":-2.41},{"Year":2010,"Jan_SP500_Price":1123.58,"Jan_PE10_CAPE":20.53,"Jan_10Y_Yield_pct":3.73,"Shiller_SP500_TR_pct":16.39,"Shiller_10Y_TBond_pct":6.1,"US_Short_Bill_pct":0.14,"Shiller_US_CPI_pct":1.63,"Shiller_SP500_Real_pct":14.52,"Shiller_10Y_TBond_Real_pct":4.39,"US_Short_Bill_Real_pct":-1.47},{"Year":2011,"Jan_SP500_Price":1282.62,"Jan_PE10_CAPE":22.98,"Jan_10Y_Yield_pct":3.39,"Shiller_SP500_TR_pct":3.41,"Shiller_10Y_TBond_pct":16.15,"US_Short_Bill_pct":0.05,"Shiller_US_CPI_pct":2.93,"Shiller_SP500_Real_pct":0.47,"Shiller_10Y_TBond_Real_pct":12.85,"US_Short_Bill_Real_pct":-2.79},{"Year":2012,"Jan_SP500_Price":1300.58,"Jan_PE10_CAPE":21.21,"Jan_10Y_Yield_pct":1.97,"Shiller_SP500_TR_pct":16.23,"Shiller_10Y_TBond_pct":2.32,"US_Short_Bill_pct":0.09,"Shiller_US_CPI_pct":1.59,"Shiller_SP500_Real_pct":14.4,"Shiller_10Y_TBond_Real_pct":0.72,"US_Short_Bill_Real_pct":-1.48},{"Year":2013,"Jan_SP500_Price":1480.4,"Jan_PE10_CAPE":21.9,"Jan_10Y_Yield_pct":1.91,"Shiller_SP500_TR_pct":25.61,"Shiller_10Y_TBond_pct":-5.91,"US_Short_Bill_pct":0.06,"Shiller_US_CPI_pct":1.58,"Shiller_SP500_Real_pct":23.66,"Shiller_10Y_TBond_Real_pct":-7.37,"US_Short_Bill_Real_pct":-1.5},{"Year":2014,"Jan_SP500_Price":1822.36,"Jan_PE10_CAPE":24.86,"Jan_10Y_Yield_pct":2.86,"Shiller_SP500_TR_pct":13.48,"Shiller_10Y_TBond_pct":11.77,"US_Short_Bill_pct":0.03,"Shiller_US_CPI_pct":-0.09,"Shiller_SP500_Real_pct":13.58,"Shiller_10Y_TBond_Real_pct":11.87,"US_Short_Bill_Real_pct":0.12},{"Year":2015,"Jan_SP500_Price":2028.18,"Jan_PE10_CAPE":26.49,"Jan_10Y_Yield_pct":1.88,"Shiller_SP500_TR_pct":-3.44,"Shiller_10Y_TBond_pct":0.21,"US_Short_Bill_pct":0.05,"Shiller_US_CPI_pct":1.37,"Shiller_SP500_Real_pct":-4.75,"Shiller_10Y_TBond_Real_pct":-1.15,"US_Short_Bill_Real_pct":-1.31},{"Year":2016,"Jan_SP500_Price":1918.6,"Jan_PE10_CAPE":24.21,"Jan_10Y_Yield_pct":2.09,"Shiller_SP500_TR_pct":21.11,"Shiller_10Y_TBond_pct":-1.25,"US_Short_Bill_pct":0.32,"Shiller_US_CPI_pct":2.5,"Shiller_SP500_Real_pct":18.16,"Shiller_10Y_TBond_Real_pct":-3.66,"US_Short_Bill_Real_pct":-2.13},{"Year":2017,"Jan_SP500_Price":2275.12,"Jan_PE10_CAPE":28.06,"Jan_10Y_Yield_pct":2.43,"Shiller_SP500_TR_pct":24.99,"Shiller_10Y_TBond_pct":0.99,"US_Short_Bill_pct":0.95,"Shiller_US_CPI_pct":2.07,"Shiller_SP500_Real_pct":22.46,"Shiller_10Y_TBond_Real_pct":-1.05,"US_Short_Bill_Real_pct":-1.1},{"Year":2018,"Jan_SP500_Price":2789.8,"Jan_PE10_CAPE":33.31,"Jan_10Y_Yield_pct":2.58,"Shiller_SP500_TR_pct":-4.75,"Shiller_10Y_TBond_pct":1.75,"US_Short_Bill_pct":1.97,"Shiller_US_CPI_pct":1.55,"Shiller_SP500_Real_pct":-6.2,"Shiller_10Y_TBond_Real_pct":0.2,"US_Short_Bill_Real_pct":0.41},{"Year":2019,"Jan_SP500_Price":2607.39,"Jan_PE10_CAPE":28.38,"Jan_10Y_Yield_pct":2.71,"Shiller_SP500_TR_pct":28.15,"Shiller_10Y_TBond_pct":11.03,"US_Short_Bill_pct":2.11,"Shiller_US_CPI_pct":2.49,"Shiller_SP500_Real_pct":25.04,"Shiller_10Y_TBond_Real_pct":8.34,"US_Short_Bill_Real_pct":-0.37},{"Year":2020,"Jan_SP500_Price":3278.2,"Jan_PE10_CAPE":30.99,"Jan_10Y_Yield_pct":1.76,"Shiller_SP500_TR_pct":17.86,"Shiller_10Y_TBond_pct":7.31,"US_Short_Bill_pct":0.36,"Shiller_US_CPI_pct":1.4,"Shiller_SP500_Real_pct":16.24,"Shiller_10Y_TBond_Real_pct":5.83,"US_Short_Bill_Real_pct":-1.03},{"Year":2021,"Jan_SP500_Price":3793.75,"Jan_PE10_CAPE":34.51,"Jan_10Y_Yield_pct":1.08,"Shiller_SP500_TR_pct":22.21,"Shiller_10Y_TBond_pct":-4.79,"US_Short_Bill_pct":0.04,"Shiller_US_CPI_pct":7.48,"Shiller_SP500_Real_pct":13.71,"Shiller_10Y_TBond_Real_pct":-11.42,"US_Short_Bill_Real_pct":-6.92},{"Year":2022,"Jan_SP500_Price":4573.82,"Jan_PE10_CAPE":36.94,"Jan_10Y_Yield_pct":1.76,"Shiller_SP500_TR_pct":-12.01,"Shiller_10Y_TBond_pct":-11.9,"US_Short_Bill_pct":2.09,"Shiller_US_CPI_pct":6.41,"Shiller_SP500_Real_pct":-17.31,"Shiller_10Y_TBond_Real_pct":-17.2,"US_Short_Bill_Real_pct":-4.06},{"Year":2023,"Jan_SP500_Price":3960.66,"Jan_PE10_CAPE":28.33,"Jan_10Y_Yield_pct":3.53,"Shiller_SP500_TR_pct":23.53,"Shiller_10Y_TBond_pct":-0.52,"US_Short_Bill_pct":5.28,"Shiller_US_CPI_pct":3.09,"Shiller_SP500_Real_pct":19.83,"Shiller_10Y_TBond_Real_pct":-3.5,"US_Short_Bill_Real_pct":2.12},{"Year":2024,"Jan_SP500_Price":4815.61,"Jan_PE10_CAPE":32.05,"Jan_10Y_Yield_pct":4.06,"Shiller_SP500_TR_pct":24.88,"Shiller_10Y_TBond_pct":-1.64,"US_Short_Bill_pct":5.18,"Shiller_US_CPI_pct":2.89,"Shiller_SP500_Real_pct":21.37,"Shiller_10Y_TBond_Real_pct":-4.4,"US_Short_Bill_Real_pct":2.23},{"Year":2025,"Jan_SP500_Price":5979.52,"Jan_PE10_CAPE":37.13,"Jan_10Y_Yield_pct":4.63,"Shiller_SP500_TR_pct":17.72,"Shiller_10Y_TBond_pct":7.8,"US_Short_Bill_pct":4.21,"Shiller_US_CPI_pct":2.74,"Shiller_SP500_Real_pct":14.59,"Shiller_10Y_TBond_Real_pct":4.93,"US_Short_Bill_Real_pct":1.43}];
+    const NYU_DATA = [{"Year":1928,"NYU_SP500_pct":43.81,"NYU_US_Small_Cap_pct":62.15,"NYU_US_3M_TBill_pct":3.08,"NYU_US_10Y_TBond_pct":0.84,"NYU_US_Baa_Corp_Bond_pct":3.22,"NYU_US_Real_Estate_pct":1.49,"NYU_Gold_pct":0.1,"NYU_US_CPI_Inflation_pct":-1.16,"NYU_SP500_Real_pct":45.49,"NYU_US_Small_Cap_Real_pct":64.05,"NYU_US_3M_TBill_Real_pct":4.29,"NYU_US_10Y_TBond_Real_pct":2.01,"NYU_US_Baa_Corp_Bond_Real_pct":4.43,"NYU_US_Real_Estate_Real_pct":2.68,"NYU_Gold_Real_pct":1.27},{"Year":1929,"NYU_SP500_pct":-8.3,"NYU_US_Small_Cap_pct":-46.08,"NYU_US_3M_TBill_pct":3.16,"NYU_US_10Y_TBond_pct":4.2,"NYU_US_Baa_Corp_Bond_pct":3.02,"NYU_US_Real_Estate_pct":-2.06,"NYU_Gold_pct":-0.15,"NYU_US_CPI_Inflation_pct":0.58,"NYU_SP500_Real_pct":-8.83,"NYU_US_Small_Cap_Real_pct":-46.39,"NYU_US_3M_TBill_Real_pct":2.56,"NYU_US_10Y_TBond_Real_pct":3.6,"NYU_US_Baa_Corp_Bond_Real_pct":2.42,"NYU_US_Real_Estate_Real_pct":-2.63,"NYU_Gold_Real_pct":-0.73},{"Year":1930,"NYU_SP500_pct":-25.12,"NYU_US_Small_Cap_pct":-48.35,"NYU_US_3M_TBill_pct":4.55,"NYU_US_10Y_TBond_pct":4.54,"NYU_US_Baa_Corp_Bond_pct":0.54,"NYU_US_Real_Estate_pct":-4.3,"NYU_Gold_pct":0.1,"NYU_US_CPI_Inflation_pct":-6.4,"NYU_SP500_Real_pct":-20.01,"NYU_US_Small_Cap_Real_pct":-44.82,"NYU_US_3M_TBill_Real_pct":11.69,"NYU_US_10Y_TBond_Real_pct":11.68,"NYU_US_Baa_Corp_Bond_Real_pct":7.41,"NYU_US_Real_Estate_Real_pct":2.24,"NYU_Gold_Real_pct":6.94},{"Year":1931,"NYU_SP500_pct":-43.84,"NYU_US_Small_Cap_pct":-43.62,"NYU_US_3M_TBill_pct":2.31,"NYU_US_10Y_TBond_pct":-2.56,"NYU_US_Baa_Corp_Bond_pct":-15.68,"NYU_US_Real_Estate_pct":-8.15,"NYU_Gold_pct":-17.38,"NYU_US_CPI_Inflation_pct":-9.32,"NYU_SP500_Real_pct":-38.07,"NYU_US_Small_Cap_Real_pct":-37.83,"NYU_US_3M_TBill_Real_pct":12.82,"NYU_US_10Y_TBond_Real_pct":7.45,"NYU_US_Baa_Corp_Bond_Real_pct":-7.02,"NYU_US_Real_Estate_Real_pct":1.29,"NYU_Gold_Real_pct":-8.9},{"Year":1932,"NYU_SP500_pct":-8.64,"NYU_US_Small_Cap_pct":28.65,"NYU_US_3M_TBill_pct":1.07,"NYU_US_10Y_TBond_pct":8.79,"NYU_US_Baa_Corp_Bond_pct":23.59,"NYU_US_Real_Estate_pct":-10.47,"NYU_Gold_pct":21.28,"NYU_US_CPI_Inflation_pct":-10.27,"NYU_SP500_Real_pct":1.82,"NYU_US_Small_Cap_Real_pct":43.38,"NYU_US_3M_TBill_Real_pct":12.64,"NYU_US_10Y_TBond_Real_pct":21.25,"NYU_US_Baa_Corp_Bond_Real_pct":37.74,"NYU_US_Real_Estate_Real_pct":-0.21,"NYU_Gold_Real_pct":35.16},{"Year":1933,"NYU_SP500_pct":49.98,"NYU_US_Small_Cap_pct":146.6,"NYU_US_3M_TBill_pct":0.96,"NYU_US_10Y_TBond_pct":1.86,"NYU_US_Baa_Corp_Bond_pct":12.97,"NYU_US_Real_Estate_pct":-3.81,"NYU_Gold_pct":27.26,"NYU_US_CPI_Inflation_pct":0.76,"NYU_SP500_Real_pct":48.85,"NYU_US_Small_Cap_Real_pct":144.73,"NYU_US_3M_TBill_Real_pct":0.2,"NYU_US_10Y_TBond_Real_pct":1.08,"NYU_US_Baa_Corp_Bond_Real_pct":12.11,"NYU_US_Real_Estate_Real_pct":-4.54,"NYU_Gold_Real_pct":26.3},{"Year":1934,"NYU_SP500_pct":-1.19,"NYU_US_Small_Cap_pct":23.07,"NYU_US_3M_TBill_pct":0.28,"NYU_US_10Y_TBond_pct":7.96,"NYU_US_Baa_Corp_Bond_pct":18.82,"NYU_US_Real_Estate_pct":2.91,"NYU_Gold_pct":31.75,"NYU_US_CPI_Inflation_pct":1.52,"NYU_SP500_Real_pct":-2.66,"NYU_US_Small_Cap_Real_pct":21.23,"NYU_US_3M_TBill_Real_pct":-1.22,"NYU_US_10Y_TBond_Real_pct":6.35,"NYU_US_Baa_Corp_Bond_Real_pct":17.04,"NYU_US_Real_Estate_Real_pct":1.37,"NYU_Gold_Real_pct":29.78},{"Year":1935,"NYU_SP500_pct":46.74,"NYU_US_Small_Cap_pct":54.9,"NYU_US_3M_TBill_pct":0.17,"NYU_US_10Y_TBond_pct":4.47,"NYU_US_Baa_Corp_Bond_pct":13.31,"NYU_US_Real_Estate_pct":9.77,"NYU_Gold_pct":0.43,"NYU_US_CPI_Inflation_pct":2.99,"NYU_SP500_Real_pct":42.49,"NYU_US_Small_Cap_Real_pct":50.41,"NYU_US_3M_TBill_Real_pct":-2.74,"NYU_US_10Y_TBond_Real_pct":1.44,"NYU_US_Baa_Corp_Bond_Real_pct":10.02,"NYU_US_Real_Estate_Real_pct":6.58,"NYU_Gold_Real_pct":-2.48},{"Year":1936,"NYU_SP500_pct":31.94,"NYU_US_Small_Cap_pct":96.41,"NYU_US_3M_TBill_pct":0.17,"NYU_US_10Y_TBond_pct":5.02,"NYU_US_Baa_Corp_Bond_pct":11.38,"NYU_US_Real_Estate_pct":3.22,"NYU_Gold_pct":0.09,"NYU_US_CPI_Inflation_pct":1.45,"NYU_SP500_Real_pct":30.06,"NYU_US_Small_Cap_Real_pct":93.6,"NYU_US_3M_TBill_Real_pct":-1.26,"NYU_US_10Y_TBond_Real_pct":3.52,"NYU_US_Baa_Corp_Bond_Real_pct":9.79,"NYU_US_Real_Estate_Real_pct":1.74,"NYU_Gold_Real_pct":-1.34},{"Year":1937,"NYU_SP500_pct":-35.34,"NYU_US_Small_Cap_pct":-53.94,"NYU_US_3M_TBill_pct":0.28,"NYU_US_10Y_TBond_pct":1.38,"NYU_US_Baa_Corp_Bond_pct":-4.42,"NYU_US_Real_Estate_pct":2.56,"NYU_Gold_pct":-0.23,"NYU_US_CPI_Inflation_pct":2.86,"NYU_SP500_Real_pct":-37.13,"NYU_US_Small_Cap_Real_pct":-55.22,"NYU_US_3M_TBill_Real_pct":-2.51,"NYU_US_10Y_TBond_Real_pct":-1.44,"NYU_US_Baa_Corp_Bond_Real_pct":-7.07,"NYU_US_Real_Estate_Real_pct":-0.29,"NYU_Gold_Real_pct":-3.0},{"Year":1938,"NYU_SP500_pct":29.28,"NYU_US_Small_Cap_pct":5.16,"NYU_US_3M_TBill_pct":0.07,"NYU_US_10Y_TBond_pct":4.21,"NYU_US_Baa_Corp_Bond_pct":9.24,"NYU_US_Real_Estate_pct":-0.87,"NYU_Gold_pct":0.17,"NYU_US_CPI_Inflation_pct":-2.78,"NYU_SP500_Real_pct":32.98,"NYU_US_Small_Cap_Real_pct":8.16,"NYU_US_3M_TBill_Real_pct":2.92,"NYU_US_10Y_TBond_Real_pct":7.19,"NYU_US_Baa_Corp_Bond_Real_pct":12.36,"NYU_US_Real_Estate_Real_pct":1.96,"NYU_Gold_Real_pct":3.03},{"Year":1939,"NYU_SP500_pct":-1.1,"NYU_US_Small_Cap_pct":-4.86,"NYU_US_3M_TBill_pct":0.05,"NYU_US_10Y_TBond_pct":4.41,"NYU_US_Baa_Corp_Bond_pct":7.98,"NYU_US_Real_Estate_pct":-1.3,"NYU_Gold_pct":-1.23,"NYU_US_CPI_Inflation_pct":0.0,"NYU_SP500_Real_pct":-1.1,"NYU_US_Small_Cap_Real_pct":-4.86,"NYU_US_3M_TBill_Real_pct":0.05,"NYU_US_10Y_TBond_Real_pct":4.41,"NYU_US_Baa_Corp_Bond_Real_pct":7.98,"NYU_US_Real_Estate_Real_pct":-1.3,"NYU_Gold_Real_pct":-1.23},{"Year":1940,"NYU_SP500_pct":-10.67,"NYU_US_Small_Cap_pct":-32.88,"NYU_US_3M_TBill_pct":0.04,"NYU_US_10Y_TBond_pct":5.4,"NYU_US_Baa_Corp_Bond_pct":8.65,"NYU_US_Real_Estate_pct":3.31,"NYU_Gold_pct":-1.66,"NYU_US_CPI_Inflation_pct":0.71,"NYU_SP500_Real_pct":-11.31,"NYU_US_Small_Cap_Real_pct":-33.36,"NYU_US_3M_TBill_Real_pct":-0.67,"NYU_US_10Y_TBond_Real_pct":4.65,"NYU_US_Baa_Corp_Bond_Real_pct":7.88,"NYU_US_Real_Estate_Real_pct":2.57,"NYU_Gold_Real_pct":-2.35},{"Year":1941,"NYU_SP500_pct":-12.77,"NYU_US_Small_Cap_pct":-6.75,"NYU_US_3M_TBill_pct":0.13,"NYU_US_10Y_TBond_pct":-2.02,"NYU_US_Baa_Corp_Bond_pct":5.01,"NYU_US_Real_Estate_pct":-8.38,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":9.93,"NYU_SP500_Real_pct":-20.65,"NYU_US_Small_Cap_Real_pct":-15.17,"NYU_US_3M_TBill_Real_pct":-8.91,"NYU_US_10Y_TBond_Real_pct":-10.87,"NYU_US_Baa_Corp_Bond_Real_pct":-4.48,"NYU_US_Real_Estate_Real_pct":-16.66,"NYU_Gold_Real_pct":-9.03},{"Year":1942,"NYU_SP500_pct":19.17,"NYU_US_Small_Cap_pct":63.01,"NYU_US_3M_TBill_pct":0.34,"NYU_US_10Y_TBond_pct":2.29,"NYU_US_Baa_Corp_Bond_pct":5.18,"NYU_US_Real_Estate_pct":3.33,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":9.03,"NYU_SP500_Real_pct":9.3,"NYU_US_Small_Cap_Real_pct":49.51,"NYU_US_3M_TBill_Real_pct":-7.97,"NYU_US_10Y_TBond_Real_pct":-6.18,"NYU_US_Baa_Corp_Bond_Real_pct":-3.53,"NYU_US_Real_Estate_Real_pct":-5.23,"NYU_Gold_Real_pct":-8.28},{"Year":1943,"NYU_SP500_pct":25.06,"NYU_US_Small_Cap_pct":143.02,"NYU_US_3M_TBill_pct":0.38,"NYU_US_10Y_TBond_pct":2.49,"NYU_US_Baa_Corp_Bond_pct":8.04,"NYU_US_Real_Estate_pct":11.45,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":2.96,"NYU_SP500_Real_pct":21.47,"NYU_US_Small_Cap_Real_pct":136.04,"NYU_US_3M_TBill_Real_pct":-2.5,"NYU_US_10Y_TBond_Real_pct":-0.46,"NYU_US_Baa_Corp_Bond_Real_pct":4.94,"NYU_US_Real_Estate_Real_pct":8.24,"NYU_Gold_Real_pct":-2.87},{"Year":1944,"NYU_SP500_pct":19.03,"NYU_US_Small_Cap_pct":71.15,"NYU_US_3M_TBill_pct":0.38,"NYU_US_10Y_TBond_pct":2.58,"NYU_US_Baa_Corp_Bond_pct":6.57,"NYU_US_Real_Estate_pct":16.58,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":2.3,"NYU_SP500_Real_pct":16.36,"NYU_US_Small_Cap_Real_pct":67.3,"NYU_US_3M_TBill_Real_pct":-1.88,"NYU_US_10Y_TBond_Real_pct":0.27,"NYU_US_Baa_Corp_Bond_Real_pct":4.17,"NYU_US_Real_Estate_Real_pct":13.96,"NYU_Gold_Real_pct":-2.25},{"Year":1945,"NYU_SP500_pct":35.82,"NYU_US_Small_Cap_pct":94.41,"NYU_US_3M_TBill_pct":0.38,"NYU_US_10Y_TBond_pct":3.8,"NYU_US_Baa_Corp_Bond_pct":6.8,"NYU_US_Real_Estate_pct":11.78,"NYU_Gold_pct":2.54,"NYU_US_CPI_Inflation_pct":2.25,"NYU_SP500_Real_pct":32.84,"NYU_US_Small_Cap_Real_pct":90.14,"NYU_US_3M_TBill_Real_pct":-1.83,"NYU_US_10Y_TBond_Real_pct":1.52,"NYU_US_Baa_Corp_Bond_Real_pct":4.45,"NYU_US_Real_Estate_Real_pct":9.32,"NYU_Gold_Real_pct":0.29},{"Year":1946,"NYU_SP500_pct":-8.43,"NYU_US_Small_Cap_pct":-13.73,"NYU_US_3M_TBill_pct":0.38,"NYU_US_10Y_TBond_pct":3.13,"NYU_US_Baa_Corp_Bond_pct":2.51,"NYU_US_Real_Estate_pct":24.1,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":18.13,"NYU_SP500_Real_pct":-22.48,"NYU_US_Small_Cap_Real_pct":-26.97,"NYU_US_3M_TBill_Real_pct":-15.03,"NYU_US_10Y_TBond_Real_pct":-12.7,"NYU_US_Baa_Corp_Bond_Real_pct":-13.23,"NYU_US_Real_Estate_Real_pct":5.05,"NYU_Gold_Real_pct":-15.35},{"Year":1947,"NYU_SP500_pct":5.2,"NYU_US_Small_Cap_pct":-1.74,"NYU_US_3M_TBill_pct":0.6,"NYU_US_10Y_TBond_pct":0.92,"NYU_US_Baa_Corp_Bond_pct":0.26,"NYU_US_Real_Estate_pct":21.26,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":8.84,"NYU_SP500_Real_pct":-3.34,"NYU_US_Small_Cap_Real_pct":-9.72,"NYU_US_3M_TBill_Real_pct":-7.57,"NYU_US_10Y_TBond_Real_pct":-7.27,"NYU_US_Baa_Corp_Bond_Real_pct":-7.88,"NYU_US_Real_Estate_Real_pct":11.42,"NYU_Gold_Real_pct":-8.12},{"Year":1948,"NYU_SP500_pct":5.7,"NYU_US_Small_Cap_pct":-0.01,"NYU_US_3M_TBill_pct":1.04,"NYU_US_10Y_TBond_pct":1.95,"NYU_US_Baa_Corp_Bond_pct":3.44,"NYU_US_Real_Estate_pct":2.06,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":2.99,"NYU_SP500_Real_pct":2.63,"NYU_US_Small_Cap_Real_pct":-2.91,"NYU_US_3M_TBill_Real_pct":-1.89,"NYU_US_10Y_TBond_Real_pct":-1.01,"NYU_US_Baa_Corp_Bond_Real_pct":0.43,"NYU_US_Real_Estate_Real_pct":-0.91,"NYU_Gold_Real_pct":-2.9},{"Year":1949,"NYU_SP500_pct":18.3,"NYU_US_Small_Cap_pct":27.6,"NYU_US_3M_TBill_pct":1.11,"NYU_US_10Y_TBond_pct":4.66,"NYU_US_Baa_Corp_Bond_pct":5.38,"NYU_US_Real_Estate_pct":0.09,"NYU_Gold_pct":-8.7,"NYU_US_CPI_Inflation_pct":-2.07,"NYU_SP500_Real_pct":20.81,"NYU_US_Small_Cap_Real_pct":30.3,"NYU_US_3M_TBill_Real_pct":3.26,"NYU_US_10Y_TBond_Real_pct":6.88,"NYU_US_Baa_Corp_Bond_Real_pct":7.61,"NYU_US_Real_Estate_Real_pct":2.21,"NYU_Gold_Real_pct":-6.77},{"Year":1950,"NYU_SP500_pct":30.81,"NYU_US_Small_Cap_pct":52.81,"NYU_US_3M_TBill_pct":1.2,"NYU_US_10Y_TBond_pct":0.43,"NYU_US_Baa_Corp_Bond_pct":4.24,"NYU_US_Real_Estate_pct":3.64,"NYU_Gold_pct":9.56,"NYU_US_CPI_Inflation_pct":5.93,"NYU_SP500_Real_pct":23.48,"NYU_US_Small_Cap_Real_pct":44.25,"NYU_US_3M_TBill_Real_pct":-4.46,"NYU_US_10Y_TBond_Real_pct":-5.19,"NYU_US_Baa_Corp_Bond_Real_pct":-1.6,"NYU_US_Real_Estate_Real_pct":-2.16,"NYU_Gold_Real_pct":3.43},{"Year":1951,"NYU_SP500_pct":23.68,"NYU_US_Small_Cap_pct":3.87,"NYU_US_3M_TBill_pct":1.52,"NYU_US_10Y_TBond_pct":-0.3,"NYU_US_Baa_Corp_Bond_pct":-0.19,"NYU_US_Real_Estate_pct":6.05,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":6.0,"NYU_SP500_Real_pct":16.68,"NYU_US_Small_Cap_Real_pct":-2.01,"NYU_US_3M_TBill_Real_pct":-4.23,"NYU_US_10Y_TBond_Real_pct":-5.94,"NYU_US_Baa_Corp_Bond_Real_pct":-5.84,"NYU_US_Real_Estate_Real_pct":0.04,"NYU_Gold_Real_pct":-5.66},{"Year":1952,"NYU_SP500_pct":18.15,"NYU_US_Small_Cap_pct":1.02,"NYU_US_3M_TBill_pct":1.72,"NYU_US_10Y_TBond_pct":2.27,"NYU_US_Baa_Corp_Bond_pct":4.44,"NYU_US_Real_Estate_pct":4.41,"NYU_Gold_pct":-0.35,"NYU_US_CPI_Inflation_pct":0.75,"NYU_SP500_Real_pct":17.27,"NYU_US_Small_Cap_Real_pct":0.26,"NYU_US_3M_TBill_Real_pct":0.96,"NYU_US_10Y_TBond_Real_pct":1.5,"NYU_US_Baa_Corp_Bond_Real_pct":3.66,"NYU_US_Real_Estate_Real_pct":3.62,"NYU_Gold_Real_pct":-1.09},{"Year":1953,"NYU_SP500_pct":-1.21,"NYU_US_Small_Cap_pct":-5.97,"NYU_US_3M_TBill_pct":1.89,"NYU_US_10Y_TBond_pct":4.14,"NYU_US_Baa_Corp_Bond_pct":1.62,"NYU_US_Real_Estate_pct":11.52,"NYU_Gold_pct":0.69,"NYU_US_CPI_Inflation_pct":0.75,"NYU_SP500_Real_pct":-1.94,"NYU_US_Small_Cap_Real_pct":-6.67,"NYU_US_3M_TBill_Real_pct":1.13,"NYU_US_10Y_TBond_Real_pct":3.37,"NYU_US_Baa_Corp_Bond_Real_pct":0.86,"NYU_US_Real_Estate_Real_pct":10.69,"NYU_Gold_Real_pct":-0.06},{"Year":1954,"NYU_SP500_pct":52.56,"NYU_US_Small_Cap_pct":64.97,"NYU_US_3M_TBill_pct":0.94,"NYU_US_10Y_TBond_pct":3.29,"NYU_US_Baa_Corp_Bond_pct":6.16,"NYU_US_Real_Estate_pct":0.92,"NYU_Gold_pct":0.57,"NYU_US_CPI_Inflation_pct":-0.74,"NYU_SP500_Real_pct":53.71,"NYU_US_Small_Cap_Real_pct":66.21,"NYU_US_3M_TBill_Real_pct":1.69,"NYU_US_10Y_TBond_Real_pct":4.06,"NYU_US_Baa_Corp_Bond_Real_pct":6.95,"NYU_US_Real_Estate_Real_pct":1.68,"NYU_Gold_Real_pct":1.33},{"Year":1955,"NYU_SP500_pct":32.6,"NYU_US_Small_Cap_pct":26.72,"NYU_US_3M_TBill_pct":1.72,"NYU_US_10Y_TBond_pct":-1.34,"NYU_US_Baa_Corp_Bond_pct":2.04,"NYU_US_Real_Estate_pct":0.0,"NYU_Gold_pct":-0.03,"NYU_US_CPI_Inflation_pct":0.37,"NYU_SP500_Real_pct":32.1,"NYU_US_Small_Cap_Real_pct":26.25,"NYU_US_3M_TBill_Real_pct":1.34,"NYU_US_10Y_TBond_Real_pct":-1.7,"NYU_US_Baa_Corp_Bond_Real_pct":1.66,"NYU_US_Real_Estate_Real_pct":-0.37,"NYU_Gold_Real_pct":-0.4},{"Year":1956,"NYU_SP500_pct":7.44,"NYU_US_Small_Cap_pct":-0.89,"NYU_US_3M_TBill_pct":2.62,"NYU_US_10Y_TBond_pct":-2.26,"NYU_US_Baa_Corp_Bond_pct":-2.35,"NYU_US_Real_Estate_pct":0.91,"NYU_Gold_pct":-0.11,"NYU_US_CPI_Inflation_pct":2.99,"NYU_SP500_Real_pct":4.33,"NYU_US_Small_Cap_Real_pct":-3.76,"NYU_US_3M_TBill_Real_pct":-0.35,"NYU_US_10Y_TBond_Real_pct":-5.09,"NYU_US_Baa_Corp_Bond_Real_pct":-5.18,"NYU_US_Real_Estate_Real_pct":-2.01,"NYU_Gold_Real_pct":-3.01},{"Year":1957,"NYU_SP500_pct":-10.46,"NYU_US_Small_Cap_pct":-15.19,"NYU_US_3M_TBill_pct":3.22,"NYU_US_10Y_TBond_pct":6.8,"NYU_US_Baa_Corp_Bond_pct":-0.72,"NYU_US_Real_Estate_pct":2.72,"NYU_Gold_pct":-0.11,"NYU_US_CPI_Inflation_pct":2.9,"NYU_SP500_Real_pct":-12.98,"NYU_US_Small_Cap_Real_pct":-17.58,"NYU_US_3M_TBill_Real_pct":0.32,"NYU_US_10Y_TBond_Real_pct":3.79,"NYU_US_Baa_Corp_Bond_Real_pct":-3.52,"NYU_US_Real_Estate_Real_pct":-0.18,"NYU_Gold_Real_pct":-2.93},{"Year":1958,"NYU_SP500_pct":43.72,"NYU_US_Small_Cap_pct":68.8,"NYU_US_3M_TBill_pct":1.77,"NYU_US_10Y_TBond_pct":-2.1,"NYU_US_Baa_Corp_Bond_pct":6.43,"NYU_US_Real_Estate_pct":0.66,"NYU_Gold_pct":0.43,"NYU_US_CPI_Inflation_pct":1.76,"NYU_SP500_Real_pct":41.23,"NYU_US_Small_Cap_Real_pct":65.88,"NYU_US_3M_TBill_Real_pct":0.01,"NYU_US_10Y_TBond_Real_pct":-3.79,"NYU_US_Baa_Corp_Bond_Real_pct":4.59,"NYU_US_Real_Estate_Real_pct":-1.08,"NYU_Gold_Real_pct":-1.31},{"Year":1959,"NYU_SP500_pct":12.06,"NYU_US_Small_Cap_pct":12.7,"NYU_US_3M_TBill_pct":3.39,"NYU_US_10Y_TBond_pct":-2.65,"NYU_US_Baa_Corp_Bond_pct":1.57,"NYU_US_Real_Estate_pct":0.11,"NYU_Gold_pct":0.0,"NYU_US_CPI_Inflation_pct":1.73,"NYU_SP500_Real_pct":10.15,"NYU_US_Small_Cap_Real_pct":10.78,"NYU_US_3M_TBill_Real_pct":1.63,"NYU_US_10Y_TBond_Real_pct":-4.3,"NYU_US_Baa_Corp_Bond_Real_pct":-0.15,"NYU_US_Real_Estate_Real_pct":-1.59,"NYU_Gold_Real_pct":-1.7},{"Year":1960,"NYU_SP500_pct":0.34,"NYU_US_Small_Cap_pct":-3.57,"NYU_US_3M_TBill_pct":2.87,"NYU_US_10Y_TBond_pct":11.64,"NYU_US_Baa_Corp_Bond_pct":6.66,"NYU_US_Real_Estate_pct":0.77,"NYU_Gold_pct":0.48,"NYU_US_CPI_Inflation_pct":1.36,"NYU_SP500_Real_pct":-1.01,"NYU_US_Small_Cap_Real_pct":-4.86,"NYU_US_3M_TBill_Real_pct":1.49,"NYU_US_10Y_TBond_Real_pct":10.14,"NYU_US_Baa_Corp_Bond_Real_pct":5.23,"NYU_US_Real_Estate_Real_pct":-0.59,"NYU_Gold_Real_pct":-0.86},{"Year":1961,"NYU_SP500_pct":26.64,"NYU_US_Small_Cap_pct":29.45,"NYU_US_3M_TBill_pct":2.35,"NYU_US_10Y_TBond_pct":2.06,"NYU_US_Baa_Corp_Bond_pct":5.1,"NYU_US_Real_Estate_pct":0.98,"NYU_Gold_pct":-0.06,"NYU_US_CPI_Inflation_pct":0.67,"NYU_SP500_Real_pct":25.79,"NYU_US_Small_Cap_Real_pct":28.59,"NYU_US_3M_TBill_Real_pct":1.67,"NYU_US_10Y_TBond_Real_pct":1.38,"NYU_US_Baa_Corp_Bond_Real_pct":4.4,"NYU_US_Real_Estate_Real_pct":0.3,"NYU_Gold_Real_pct":-0.72},{"Year":1962,"NYU_SP500_pct":-8.81,"NYU_US_Small_Cap_pct":-9.78,"NYU_US_3M_TBill_pct":2.77,"NYU_US_10Y_TBond_pct":5.69,"NYU_US_Baa_Corp_Bond_pct":6.5,"NYU_US_Real_Estate_pct":0.32,"NYU_Gold_pct":-0.06,"NYU_US_CPI_Inflation_pct":1.33,"NYU_SP500_Real_pct":-10.01,"NYU_US_Small_Cap_Real_pct":-10.97,"NYU_US_3M_TBill_Real_pct":1.42,"NYU_US_10Y_TBond_Real_pct":4.3,"NYU_US_Baa_Corp_Bond_Real_pct":5.09,"NYU_US_Real_Estate_Real_pct":-1.0,"NYU_Gold_Real_pct":-1.37},{"Year":1963,"NYU_SP500_pct":22.61,"NYU_US_Small_Cap_pct":19.65,"NYU_US_3M_TBill_pct":3.16,"NYU_US_10Y_TBond_pct":1.68,"NYU_US_Baa_Corp_Bond_pct":5.46,"NYU_US_Real_Estate_pct":2.14,"NYU_Gold_pct":-0.4,"NYU_US_CPI_Inflation_pct":1.64,"NYU_SP500_Real_pct":20.63,"NYU_US_Small_Cap_Real_pct":17.71,"NYU_US_3M_TBill_Real_pct":1.49,"NYU_US_10Y_TBond_Real_pct":0.04,"NYU_US_Baa_Corp_Bond_Real_pct":3.76,"NYU_US_Real_Estate_Real_pct":0.49,"NYU_Gold_Real_pct":-2.01},{"Year":1964,"NYU_SP500_pct":16.42,"NYU_US_Small_Cap_pct":23.25,"NYU_US_3M_TBill_pct":3.55,"NYU_US_10Y_TBond_pct":3.73,"NYU_US_Baa_Corp_Bond_pct":5.16,"NYU_US_Real_Estate_pct":1.26,"NYU_Gold_pct":0.03,"NYU_US_CPI_Inflation_pct":0.97,"NYU_SP500_Real_pct":15.3,"NYU_US_Small_Cap_Real_pct":22.06,"NYU_US_3M_TBill_Real_pct":2.55,"NYU_US_10Y_TBond_Real_pct":2.73,"NYU_US_Baa_Corp_Bond_Real_pct":4.15,"NYU_US_Real_Estate_Real_pct":0.29,"NYU_Gold_Real_pct":-0.93},{"Year":1965,"NYU_SP500_pct":12.4,"NYU_US_Small_Cap_pct":45.24,"NYU_US_3M_TBill_pct":3.95,"NYU_US_10Y_TBond_pct":0.72,"NYU_US_Baa_Corp_Bond_pct":3.19,"NYU_US_Real_Estate_pct":1.66,"NYU_Gold_pct":0.06,"NYU_US_CPI_Inflation_pct":1.92,"NYU_SP500_Real_pct":10.28,"NYU_US_Small_Cap_Real_pct":42.5,"NYU_US_3M_TBill_Real_pct":1.99,"NYU_US_10Y_TBond_Real_pct":-1.18,"NYU_US_Baa_Corp_Bond_Real_pct":1.24,"NYU_US_Real_Estate_Real_pct":-0.26,"NYU_Gold_Real_pct":-1.83},{"Year":1966,"NYU_SP500_pct":-9.97,"NYU_US_Small_Cap_pct":-9.47,"NYU_US_3M_TBill_pct":4.86,"NYU_US_10Y_TBond_pct":2.91,"NYU_US_Baa_Corp_Bond_pct":-3.45,"NYU_US_Real_Estate_pct":1.22,"NYU_Gold_pct":0.03,"NYU_US_CPI_Inflation_pct":3.46,"NYU_SP500_Real_pct":-12.98,"NYU_US_Small_Cap_Real_pct":-12.5,"NYU_US_3M_TBill_Real_pct":1.35,"NYU_US_10Y_TBond_Real_pct":-0.53,"NYU_US_Baa_Corp_Bond_Real_pct":-6.67,"NYU_US_Real_Estate_Real_pct":-2.16,"NYU_Gold_Real_pct":-3.32},{"Year":1967,"NYU_SP500_pct":23.8,"NYU_US_Small_Cap_pct":115.87,"NYU_US_3M_TBill_pct":4.29,"NYU_US_10Y_TBond_pct":-1.58,"NYU_US_Baa_Corp_Bond_pct":0.9,"NYU_US_Real_Estate_pct":2.32,"NYU_Gold_pct":-0.51,"NYU_US_CPI_Inflation_pct":3.04,"NYU_SP500_Real_pct":20.15,"NYU_US_Small_Cap_Real_pct":109.5,"NYU_US_3M_TBill_Real_pct":1.22,"NYU_US_10Y_TBond_Real_pct":-4.48,"NYU_US_Baa_Corp_Bond_Real_pct":-2.08,"NYU_US_Real_Estate_Real_pct":-0.7,"NYU_Gold_Real_pct":-3.45},{"Year":1968,"NYU_SP500_pct":10.81,"NYU_US_Small_Cap_pct":60.69,"NYU_US_3M_TBill_pct":5.34,"NYU_US_10Y_TBond_pct":3.27,"NYU_US_Baa_Corp_Bond_pct":4.85,"NYU_US_Real_Estate_pct":4.13,"NYU_Gold_pct":12.47,"NYU_US_CPI_Inflation_pct":4.72,"NYU_SP500_Real_pct":5.82,"NYU_US_Small_Cap_Real_pct":53.45,"NYU_US_3M_TBill_Real_pct":0.59,"NYU_US_10Y_TBond_Real_pct":-1.38,"NYU_US_Baa_Corp_Bond_Real_pct":0.12,"NYU_US_Real_Estate_Real_pct":-0.56,"NYU_Gold_Real_pct":7.41},{"Year":1969,"NYU_SP500_pct":-8.24,"NYU_US_Small_Cap_pct":-32.95,"NYU_US_3M_TBill_pct":6.67,"NYU_US_10Y_TBond_pct":-5.01,"NYU_US_Baa_Corp_Bond_pct":-2.03,"NYU_US_Real_Estate_pct":6.99,"NYU_Gold_pct":5.01,"NYU_US_CPI_Inflation_pct":6.2,"NYU_SP500_Real_pct":-13.6,"NYU_US_Small_Cap_Real_pct":-36.86,"NYU_US_3M_TBill_Real_pct":0.44,"NYU_US_10Y_TBond_Real_pct":-10.56,"NYU_US_Baa_Corp_Bond_Real_pct":-7.74,"NYU_US_Real_Estate_Real_pct":0.75,"NYU_Gold_Real_pct":-1.12},{"Year":1970,"NYU_SP500_pct":3.56,"NYU_US_Small_Cap_pct":-18.78,"NYU_US_3M_TBill_pct":6.39,"NYU_US_10Y_TBond_pct":16.75,"NYU_US_Baa_Corp_Bond_pct":5.65,"NYU_US_Real_Estate_pct":8.22,"NYU_Gold_pct":-9.45,"NYU_US_CPI_Inflation_pct":5.57,"NYU_SP500_Real_pct":-1.9,"NYU_US_Small_Cap_Real_pct":-23.07,"NYU_US_3M_TBill_Real_pct":0.78,"NYU_US_10Y_TBond_Real_pct":10.59,"NYU_US_Baa_Corp_Bond_Real_pct":0.08,"NYU_US_Real_Estate_Real_pct":2.51,"NYU_Gold_Real_pct":-14.23},{"Year":1971,"NYU_SP500_pct":14.22,"NYU_US_Small_Cap_pct":15.96,"NYU_US_3M_TBill_pct":4.33,"NYU_US_10Y_TBond_pct":9.79,"NYU_US_Baa_Corp_Bond_pct":14.0,"NYU_US_Real_Estate_pct":4.24,"NYU_Gold_pct":16.69,"NYU_US_CPI_Inflation_pct":3.27,"NYU_SP500_Real_pct":10.61,"NYU_US_Small_Cap_Real_pct":12.29,"NYU_US_3M_TBill_Real_pct":1.03,"NYU_US_10Y_TBond_Real_pct":6.31,"NYU_US_Baa_Corp_Bond_Real_pct":10.4,"NYU_US_Real_Estate_Real_pct":0.95,"NYU_Gold_Real_pct":13.0},{"Year":1972,"NYU_SP500_pct":18.76,"NYU_US_Small_Cap_pct":0.16,"NYU_US_3M_TBill_pct":4.06,"NYU_US_10Y_TBond_pct":2.82,"NYU_US_Baa_Corp_Bond_pct":11.41,"NYU_US_Real_Estate_pct":2.98,"NYU_Gold_pct":48.78,"NYU_US_CPI_Inflation_pct":3.41,"NYU_SP500_Real_pct":14.84,"NYU_US_Small_Cap_Real_pct":-3.14,"NYU_US_3M_TBill_Real_pct":0.63,"NYU_US_10Y_TBond_Real_pct":-0.57,"NYU_US_Baa_Corp_Bond_Real_pct":7.74,"NYU_US_Real_Estate_Real_pct":-0.42,"NYU_Gold_Real_pct":43.88},{"Year":1973,"NYU_SP500_pct":-14.31,"NYU_US_Small_Cap_pct":-38.8,"NYU_US_3M_TBill_pct":7.04,"NYU_US_10Y_TBond_pct":3.66,"NYU_US_Baa_Corp_Bond_pct":4.32,"NYU_US_Real_Estate_pct":3.42,"NYU_Gold_pct":72.96,"NYU_US_CPI_Inflation_pct":8.71,"NYU_SP500_Real_pct":-21.17,"NYU_US_Small_Cap_Real_pct":-43.7,"NYU_US_3M_TBill_Real_pct":-1.54,"NYU_US_10Y_TBond_Real_pct":-4.64,"NYU_US_Baa_Corp_Bond_Real_pct":-4.04,"NYU_US_Real_Estate_Real_pct":-4.86,"NYU_Gold_Real_pct":59.11},{"Year":1974,"NYU_SP500_pct":-25.9,"NYU_US_Small_Cap_pct":-26.9,"NYU_US_3M_TBill_pct":7.85,"NYU_US_10Y_TBond_pct":1.99,"NYU_US_Baa_Corp_Bond_pct":-4.38,"NYU_US_Real_Estate_pct":10.07,"NYU_Gold_pct":66.15,"NYU_US_CPI_Inflation_pct":12.34,"NYU_SP500_Real_pct":-34.04,"NYU_US_Small_Cap_Real_pct":-34.93,"NYU_US_3M_TBill_Real_pct":-4.0,"NYU_US_10Y_TBond_Real_pct":-9.21,"NYU_US_Baa_Corp_Bond_Real_pct":-14.88,"NYU_US_Real_Estate_Real_pct":-2.02,"NYU_Gold_Real_pct":47.9},{"Year":1975,"NYU_SP500_pct":37.0,"NYU_US_Small_Cap_pct":59.68,"NYU_US_3M_TBill_pct":5.79,"NYU_US_10Y_TBond_pct":3.61,"NYU_US_Baa_Corp_Bond_pct":11.05,"NYU_US_Real_Estate_pct":6.77,"NYU_Gold_pct":-24.8,"NYU_US_CPI_Inflation_pct":6.94,"NYU_SP500_Real_pct":28.11,"NYU_US_Small_Cap_Real_pct":49.32,"NYU_US_3M_TBill_Real_pct":-1.08,"NYU_US_10Y_TBond_Real_pct":-3.12,"NYU_US_Baa_Corp_Bond_Real_pct":3.85,"NYU_US_Real_Estate_Real_pct":-0.15,"NYU_Gold_Real_pct":-29.68},{"Year":1976,"NYU_SP500_pct":23.83,"NYU_US_Small_Cap_pct":48.62,"NYU_US_3M_TBill_pct":4.98,"NYU_US_10Y_TBond_pct":15.98,"NYU_US_Baa_Corp_Bond_pct":19.75,"NYU_US_Real_Estate_pct":8.18,"NYU_Gold_pct":-4.1,"NYU_US_CPI_Inflation_pct":4.86,"NYU_SP500_Real_pct":18.09,"NYU_US_Small_Cap_Real_pct":41.73,"NYU_US_3M_TBill_Real_pct":0.11,"NYU_US_10Y_TBond_Real_pct":10.6,"NYU_US_Baa_Corp_Bond_Real_pct":14.2,"NYU_US_Real_Estate_Real_pct":3.16,"NYU_Gold_Real_pct":-8.55},{"Year":1977,"NYU_SP500_pct":-6.98,"NYU_US_Small_Cap_pct":30.29,"NYU_US_3M_TBill_pct":5.26,"NYU_US_10Y_TBond_pct":1.29,"NYU_US_Baa_Corp_Bond_pct":9.95,"NYU_US_Real_Estate_pct":14.65,"NYU_Gold_pct":22.64,"NYU_US_CPI_Inflation_pct":6.7,"NYU_SP500_Real_pct":-12.82,"NYU_US_Small_Cap_Real_pct":22.11,"NYU_US_3M_TBill_Real_pct":-1.35,"NYU_US_10Y_TBond_Real_pct":-5.07,"NYU_US_Baa_Corp_Bond_Real_pct":3.05,"NYU_US_Real_Estate_Real_pct":7.45,"NYU_Gold_Real_pct":14.94},{"Year":1978,"NYU_SP500_pct":6.51,"NYU_US_Small_Cap_pct":28.89,"NYU_US_3M_TBill_pct":7.18,"NYU_US_10Y_TBond_pct":-0.78,"NYU_US_Baa_Corp_Bond_pct":3.14,"NYU_US_Real_Estate_pct":15.72,"NYU_Gold_pct":37.01,"NYU_US_CPI_Inflation_pct":9.02,"NYU_SP500_Real_pct":-2.3,"NYU_US_Small_Cap_Real_pct":18.23,"NYU_US_3M_TBill_Real_pct":-1.69,"NYU_US_10Y_TBond_Real_pct":-8.99,"NYU_US_Baa_Corp_Bond_Real_pct":-5.39,"NYU_US_Real_Estate_Real_pct":6.15,"NYU_Gold_Real_pct":25.68},{"Year":1979,"NYU_SP500_pct":18.52,"NYU_US_Small_Cap_pct":41.69,"NYU_US_3M_TBill_pct":10.05,"NYU_US_10Y_TBond_pct":0.67,"NYU_US_Baa_Corp_Bond_pct":-2.01,"NYU_US_Real_Estate_pct":13.74,"NYU_Gold_pct":126.55,"NYU_US_CPI_Inflation_pct":13.29,"NYU_SP500_Real_pct":4.61,"NYU_US_Small_Cap_Real_pct":25.06,"NYU_US_3M_TBill_Real_pct":-2.86,"NYU_US_10Y_TBond_Real_pct":-11.14,"NYU_US_Baa_Corp_Bond_Real_pct":-13.51,"NYU_US_Real_Estate_Real_pct":0.4,"NYU_Gold_Real_pct":99.97},{"Year":1980,"NYU_SP500_pct":31.74,"NYU_US_Small_Cap_pct":41.92,"NYU_US_3M_TBill_pct":11.39,"NYU_US_10Y_TBond_pct":-2.99,"NYU_US_Baa_Corp_Bond_pct":-3.32,"NYU_US_Real_Estate_pct":7.4,"NYU_Gold_pct":15.19,"NYU_US_CPI_Inflation_pct":12.52,"NYU_SP500_Real_pct":17.08,"NYU_US_Small_Cap_Real_pct":26.13,"NYU_US_3M_TBill_Real_pct":-1.0,"NYU_US_10Y_TBond_Real_pct":-13.78,"NYU_US_Baa_Corp_Bond_Real_pct":-14.07,"NYU_US_Real_Estate_Real_pct":-4.55,"NYU_Gold_Real_pct":2.37},{"Year":1981,"NYU_SP500_pct":-4.7,"NYU_US_Small_Cap_pct":-4.29,"NYU_US_3M_TBill_pct":14.04,"NYU_US_10Y_TBond_pct":8.2,"NYU_US_Baa_Corp_Bond_pct":8.46,"NYU_US_Real_Estate_pct":5.1,"NYU_Gold_pct":-32.6,"NYU_US_CPI_Inflation_pct":8.92,"NYU_SP500_Real_pct":-12.51,"NYU_US_Small_Cap_Real_pct":-12.13,"NYU_US_3M_TBill_Real_pct":4.69,"NYU_US_10Y_TBond_Real_pct":-0.66,"NYU_US_Baa_Corp_Bond_Real_pct":-0.42,"NYU_US_Real_Estate_Real_pct":-3.51,"NYU_Gold_Real_pct":-38.12},{"Year":1982,"NYU_SP500_pct":20.42,"NYU_US_Small_Cap_pct":26.85,"NYU_US_3M_TBill_pct":11.09,"NYU_US_10Y_TBond_pct":32.81,"NYU_US_Baa_Corp_Bond_pct":29.05,"NYU_US_Real_Estate_pct":0.56,"NYU_Gold_pct":15.62,"NYU_US_CPI_Inflation_pct":3.83,"NYU_SP500_Real_pct":15.98,"NYU_US_Small_Cap_Real_pct":22.17,"NYU_US_3M_TBill_Real_pct":6.99,"NYU_US_10Y_TBond_Real_pct":27.92,"NYU_US_Baa_Corp_Bond_Real_pct":24.29,"NYU_US_Real_Estate_Real_pct":-3.15,"NYU_Gold_Real_pct":11.36},{"Year":1983,"NYU_SP500_pct":22.34,"NYU_US_Small_Cap_pct":34.86,"NYU_US_3M_TBill_pct":8.95,"NYU_US_10Y_TBond_pct":3.2,"NYU_US_Baa_Corp_Bond_pct":16.19,"NYU_US_Real_Estate_pct":4.75,"NYU_Gold_pct":-16.8,"NYU_US_CPI_Inflation_pct":3.79,"NYU_SP500_Real_pct":17.87,"NYU_US_Small_Cap_Real_pct":29.93,"NYU_US_3M_TBill_Real_pct":4.97,"NYU_US_10Y_TBond_Real_pct":-0.57,"NYU_US_Baa_Corp_Bond_Real_pct":11.95,"NYU_US_Real_Estate_Real_pct":0.92,"NYU_Gold_Real_pct":-19.84},{"Year":1984,"NYU_SP500_pct":6.15,"NYU_US_Small_Cap_pct":-14.5,"NYU_US_3M_TBill_pct":9.92,"NYU_US_10Y_TBond_pct":13.73,"NYU_US_Baa_Corp_Bond_pct":15.62,"NYU_US_Real_Estate_pct":4.68,"NYU_Gold_pct":-19.38,"NYU_US_CPI_Inflation_pct":3.95,"NYU_SP500_Real_pct":2.11,"NYU_US_Small_Cap_Real_pct":-17.75,"NYU_US_3M_TBill_Real_pct":5.74,"NYU_US_10Y_TBond_Real_pct":9.41,"NYU_US_Baa_Corp_Bond_Real_pct":11.23,"NYU_US_Real_Estate_Real_pct":0.7,"NYU_Gold_Real_pct":-22.44},{"Year":1985,"NYU_SP500_pct":31.24,"NYU_US_Small_Cap_pct":24.51,"NYU_US_3M_TBill_pct":7.72,"NYU_US_10Y_TBond_pct":25.71,"NYU_US_Baa_Corp_Bond_pct":23.86,"NYU_US_Real_Estate_pct":7.47,"NYU_Gold_pct":6.0,"NYU_US_CPI_Inflation_pct":3.8,"NYU_SP500_Real_pct":26.43,"NYU_US_Small_Cap_Real_pct":19.95,"NYU_US_3M_TBill_Real_pct":3.78,"NYU_US_10Y_TBond_Real_pct":21.11,"NYU_US_Baa_Corp_Bond_Real_pct":19.33,"NYU_US_Real_Estate_Real_pct":3.54,"NYU_Gold_Real_pct":2.12},{"Year":1986,"NYU_SP500_pct":18.49,"NYU_US_Small_Cap_pct":2.09,"NYU_US_3M_TBill_pct":6.15,"NYU_US_10Y_TBond_pct":24.28,"NYU_US_Baa_Corp_Bond_pct":22.15,"NYU_US_Real_Estate_pct":9.61,"NYU_Gold_pct":18.96,"NYU_US_CPI_Inflation_pct":1.1,"NYU_SP500_Real_pct":17.21,"NYU_US_Small_Cap_Real_pct":0.98,"NYU_US_3M_TBill_Real_pct":5.0,"NYU_US_10Y_TBond_Real_pct":22.93,"NYU_US_Baa_Corp_Bond_Real_pct":20.82,"NYU_US_Real_Estate_Real_pct":8.42,"NYU_Gold_Real_pct":17.66},{"Year":1987,"NYU_SP500_pct":5.81,"NYU_US_Small_Cap_pct":-14.0,"NYU_US_3M_TBill_pct":5.96,"NYU_US_10Y_TBond_pct":-4.96,"NYU_US_Baa_Corp_Bond_pct":1.12,"NYU_US_Real_Estate_pct":7.85,"NYU_Gold_pct":24.53,"NYU_US_CPI_Inflation_pct":4.43,"NYU_SP500_Real_pct":1.32,"NYU_US_Small_Cap_Real_pct":-17.65,"NYU_US_3M_TBill_Real_pct":1.46,"NYU_US_10Y_TBond_Real_pct":-9.0,"NYU_US_Baa_Corp_Bond_Real_pct":-3.18,"NYU_US_Real_Estate_Real_pct":3.27,"NYU_Gold_Real_pct":19.24},{"Year":1988,"NYU_SP500_pct":16.54,"NYU_US_Small_Cap_pct":17.15,"NYU_US_3M_TBill_pct":6.89,"NYU_US_10Y_TBond_pct":8.22,"NYU_US_Baa_Corp_Bond_pct":15.68,"NYU_US_Real_Estate_pct":7.22,"NYU_Gold_pct":-15.26,"NYU_US_CPI_Inflation_pct":4.42,"NYU_SP500_Real_pct":11.6,"NYU_US_Small_Cap_Real_pct":12.19,"NYU_US_3M_TBill_Real_pct":2.37,"NYU_US_10Y_TBond_Real_pct":3.64,"NYU_US_Baa_Corp_Bond_Real_pct":10.79,"NYU_US_Real_Estate_Real_pct":2.68,"NYU_Gold_Real_pct":-18.84},{"Year":1989,"NYU_SP500_pct":31.48,"NYU_US_Small_Cap_pct":6.96,"NYU_US_3M_TBill_pct":8.39,"NYU_US_10Y_TBond_pct":17.69,"NYU_US_Baa_Corp_Bond_pct":16.31,"NYU_US_Real_Estate_pct":4.39,"NYU_Gold_pct":-2.84,"NYU_US_CPI_Inflation_pct":4.65,"NYU_SP500_Real_pct":25.64,"NYU_US_Small_Cap_Real_pct":2.21,"NYU_US_3M_TBill_Real_pct":3.58,"NYU_US_10Y_TBond_Real_pct":12.47,"NYU_US_Baa_Corp_Bond_Real_pct":11.15,"NYU_US_Real_Estate_Real_pct":-0.24,"NYU_Gold_Real_pct":-7.15},{"Year":1990,"NYU_SP500_pct":-3.06,"NYU_US_Small_Cap_pct":-27.77,"NYU_US_3M_TBill_pct":7.75,"NYU_US_10Y_TBond_pct":6.24,"NYU_US_Baa_Corp_Bond_pct":5.65,"NYU_US_Real_Estate_pct":-0.69,"NYU_Gold_pct":-3.11,"NYU_US_CPI_Inflation_pct":6.11,"NYU_SP500_Real_pct":-8.64,"NYU_US_Small_Cap_Real_pct":-31.93,"NYU_US_3M_TBill_Real_pct":1.55,"NYU_US_10Y_TBond_Real_pct":0.12,"NYU_US_Baa_Corp_Bond_Real_pct":-0.43,"NYU_US_Real_Estate_Real_pct":-6.4,"NYU_Gold_Real_pct":-8.69},{"Year":1991,"NYU_SP500_pct":30.23,"NYU_US_Small_Cap_pct":46.07,"NYU_US_3M_TBill_pct":5.54,"NYU_US_10Y_TBond_pct":15.0,"NYU_US_Baa_Corp_Bond_pct":16.4,"NYU_US_Real_Estate_pct":-0.17,"NYU_Gold_pct":-8.56,"NYU_US_CPI_Inflation_pct":3.06,"NYU_SP500_Real_pct":26.36,"NYU_US_Small_Cap_Real_pct":41.73,"NYU_US_3M_TBill_Real_pct":2.4,"NYU_US_10Y_TBond_Real_pct":11.59,"NYU_US_Baa_Corp_Bond_Real_pct":12.94,"NYU_US_Real_Estate_Real_pct":-3.14,"NYU_Gold_Real_pct":-11.28},{"Year":1992,"NYU_SP500_pct":7.49,"NYU_US_Small_Cap_pct":25.34,"NYU_US_3M_TBill_pct":3.51,"NYU_US_10Y_TBond_pct":9.36,"NYU_US_Baa_Corp_Bond_pct":13.68,"NYU_US_Real_Estate_pct":0.82,"NYU_Gold_pct":-5.73,"NYU_US_CPI_Inflation_pct":2.9,"NYU_SP500_Real_pct":4.46,"NYU_US_Small_Cap_Real_pct":21.81,"NYU_US_3M_TBill_Real_pct":0.59,"NYU_US_10Y_TBond_Real_pct":6.28,"NYU_US_Baa_Corp_Bond_Real_pct":10.48,"NYU_US_Real_Estate_Real_pct":-2.02,"NYU_Gold_Real_pct":-8.39},{"Year":1993,"NYU_SP500_pct":9.97,"NYU_US_Small_Cap_pct":25.56,"NYU_US_3M_TBill_pct":3.07,"NYU_US_10Y_TBond_pct":14.21,"NYU_US_Baa_Corp_Bond_pct":16.44,"NYU_US_Real_Estate_pct":2.16,"NYU_Gold_pct":17.68,"NYU_US_CPI_Inflation_pct":2.75,"NYU_SP500_Real_pct":7.03,"NYU_US_Small_Cap_Real_pct":22.2,"NYU_US_3M_TBill_Real_pct":0.31,"NYU_US_10Y_TBond_Real_pct":11.16,"NYU_US_Baa_Corp_Bond_Real_pct":13.33,"NYU_US_Real_Estate_Real_pct":-0.58,"NYU_Gold_Real_pct":14.53},{"Year":1994,"NYU_SP500_pct":1.33,"NYU_US_Small_Cap_pct":-4.76,"NYU_US_3M_TBill_pct":4.37,"NYU_US_10Y_TBond_pct":-8.04,"NYU_US_Baa_Corp_Bond_pct":-1.23,"NYU_US_Real_Estate_pct":2.52,"NYU_Gold_pct":-2.17,"NYU_US_CPI_Inflation_pct":2.67,"NYU_SP500_Real_pct":-1.31,"NYU_US_Small_Cap_Real_pct":-7.24,"NYU_US_3M_TBill_Real_pct":1.65,"NYU_US_10Y_TBond_Real_pct":-10.43,"NYU_US_Baa_Corp_Bond_Real_pct":-3.8,"NYU_US_Real_Estate_Real_pct":-0.16,"NYU_Gold_Real_pct":-4.72},{"Year":1995,"NYU_SP500_pct":37.2,"NYU_US_Small_Cap_pct":32.12,"NYU_US_3M_TBill_pct":5.66,"NYU_US_10Y_TBond_pct":23.48,"NYU_US_Baa_Corp_Bond_pct":20.09,"NYU_US_Real_Estate_pct":1.79,"NYU_Gold_pct":0.98,"NYU_US_CPI_Inflation_pct":2.54,"NYU_SP500_Real_pct":33.8,"NYU_US_Small_Cap_Real_pct":28.85,"NYU_US_3M_TBill_Real_pct":3.04,"NYU_US_10Y_TBond_Real_pct":20.42,"NYU_US_Baa_Corp_Bond_Real_pct":17.11,"NYU_US_Real_Estate_Real_pct":-0.73,"NYU_Gold_Real_pct":-1.52},{"Year":1996,"NYU_SP500_pct":22.68,"NYU_US_Small_Cap_pct":14.79,"NYU_US_3M_TBill_pct":5.15,"NYU_US_10Y_TBond_pct":1.43,"NYU_US_Baa_Corp_Bond_pct":5.28,"NYU_US_Real_Estate_pct":2.43,"NYU_Gold_pct":-4.59,"NYU_US_CPI_Inflation_pct":3.32,"NYU_SP500_Real_pct":18.74,"NYU_US_Small_Cap_Real_pct":11.1,"NYU_US_3M_TBill_Real_pct":1.77,"NYU_US_10Y_TBond_Real_pct":-1.83,"NYU_US_Baa_Corp_Bond_Real_pct":1.89,"NYU_US_Real_Estate_Real_pct":-0.87,"NYU_Gold_Real_pct":-7.65},{"Year":1997,"NYU_SP500_pct":33.1,"NYU_US_Small_Cap_pct":22.06,"NYU_US_3M_TBill_pct":5.2,"NYU_US_10Y_TBond_pct":9.94,"NYU_US_Baa_Corp_Bond_pct":11.3,"NYU_US_Real_Estate_pct":4.02,"NYU_Gold_pct":-21.41,"NYU_US_CPI_Inflation_pct":1.7,"NYU_SP500_Real_pct":30.88,"NYU_US_Small_Cap_Real_pct":20.02,"NYU_US_3M_TBill_Real_pct":3.44,"NYU_US_10Y_TBond_Real_pct":8.1,"NYU_US_Baa_Corp_Bond_Real_pct":9.43,"NYU_US_Real_Estate_Real_pct":2.28,"NYU_Gold_Real_pct":-22.72},{"Year":1998,"NYU_SP500_pct":28.34,"NYU_US_Small_Cap_pct":-13.47,"NYU_US_3M_TBill_pct":4.91,"NYU_US_10Y_TBond_pct":14.92,"NYU_US_Baa_Corp_Bond_pct":8.1,"NYU_US_Real_Estate_pct":6.44,"NYU_Gold_pct":-0.83,"NYU_US_CPI_Inflation_pct":1.61,"NYU_SP500_Real_pct":26.3,"NYU_US_Small_Cap_Real_pct":-14.84,"NYU_US_3M_TBill_Real_pct":3.25,"NYU_US_10Y_TBond_Real_pct":13.1,"NYU_US_Baa_Corp_Bond_Real_pct":6.39,"NYU_US_Real_Estate_Real_pct":4.75,"NYU_Gold_Real_pct":-2.4},{"Year":1999,"NYU_SP500_pct":20.89,"NYU_US_Small_Cap_pct":37.71,"NYU_US_3M_TBill_pct":4.78,"NYU_US_10Y_TBond_pct":-8.25,"NYU_US_Baa_Corp_Bond_pct":0.97,"NYU_US_Real_Estate_pct":7.68,"NYU_Gold_pct":0.85,"NYU_US_CPI_Inflation_pct":2.68,"NYU_SP500_Real_pct":17.72,"NYU_US_Small_Cap_Real_pct":34.11,"NYU_US_3M_TBill_Real_pct":2.04,"NYU_US_10Y_TBond_Real_pct":-10.65,"NYU_US_Baa_Corp_Bond_Real_pct":-1.67,"NYU_US_Real_Estate_Real_pct":4.86,"NYU_Gold_Real_pct":-1.79},{"Year":2000,"NYU_SP500_pct":-9.03,"NYU_US_Small_Cap_pct":-9.13,"NYU_US_3M_TBill_pct":6.0,"NYU_US_10Y_TBond_pct":16.66,"NYU_US_Baa_Corp_Bond_pct":9.38,"NYU_US_Real_Estate_pct":9.29,"NYU_Gold_pct":-5.44,"NYU_US_CPI_Inflation_pct":3.39,"NYU_SP500_Real_pct":-12.01,"NYU_US_Small_Cap_Real_pct":-12.11,"NYU_US_3M_TBill_Real_pct":2.53,"NYU_US_10Y_TBond_Real_pct":12.83,"NYU_US_Baa_Corp_Bond_Real_pct":5.8,"NYU_US_Real_Estate_Real_pct":5.71,"NYU_Gold_Real_pct":-8.54},{"Year":2001,"NYU_SP500_pct":-11.85,"NYU_US_Small_Cap_pct":32.14,"NYU_US_3M_TBill_pct":3.48,"NYU_US_10Y_TBond_pct":5.57,"NYU_US_Baa_Corp_Bond_pct":8.6,"NYU_US_Real_Estate_pct":6.68,"NYU_Gold_pct":0.75,"NYU_US_CPI_Inflation_pct":1.55,"NYU_SP500_Real_pct":-13.2,"NYU_US_Small_Cap_Real_pct":30.12,"NYU_US_3M_TBill_Real_pct":1.9,"NYU_US_10Y_TBond_Real_pct":3.96,"NYU_US_Baa_Corp_Bond_Real_pct":6.94,"NYU_US_Real_Estate_Real_pct":5.05,"NYU_Gold_Real_pct":-0.79},{"Year":2002,"NYU_SP500_pct":-21.97,"NYU_US_Small_Cap_pct":-3.61,"NYU_US_3M_TBill_pct":1.64,"NYU_US_10Y_TBond_pct":15.12,"NYU_US_Baa_Corp_Bond_pct":12.06,"NYU_US_Real_Estate_pct":9.56,"NYU_Gold_pct":25.57,"NYU_US_CPI_Inflation_pct":2.38,"NYU_SP500_Real_pct":-23.78,"NYU_US_Small_Cap_Real_pct":-5.85,"NYU_US_3M_TBill_Real_pct":-0.72,"NYU_US_10Y_TBond_Real_pct":12.44,"NYU_US_Baa_Corp_Bond_Real_pct":9.45,"NYU_US_Real_Estate_Real_pct":7.02,"NYU_Gold_Real_pct":22.65},{"Year":2003,"NYU_SP500_pct":28.36,"NYU_US_Small_Cap_pct":91.23,"NYU_US_3M_TBill_pct":1.03,"NYU_US_10Y_TBond_pct":0.38,"NYU_US_Baa_Corp_Bond_pct":12.38,"NYU_US_Real_Estate_pct":9.81,"NYU_Gold_pct":19.89,"NYU_US_CPI_Inflation_pct":1.88,"NYU_SP500_Real_pct":25.99,"NYU_US_Small_Cap_Real_pct":87.7,"NYU_US_3M_TBill_Real_pct":-0.83,"NYU_US_10Y_TBond_Real_pct":-1.48,"NYU_US_Baa_Corp_Bond_Real_pct":10.31,"NYU_US_Real_Estate_Real_pct":7.79,"NYU_Gold_Real_pct":17.68},{"Year":2004,"NYU_SP500_pct":10.74,"NYU_US_Small_Cap_pct":17.3,"NYU_US_3M_TBill_pct":1.4,"NYU_US_10Y_TBond_pct":4.49,"NYU_US_Baa_Corp_Bond_pct":10.33,"NYU_US_Real_Estate_pct":13.64,"NYU_Gold_pct":4.65,"NYU_US_CPI_Inflation_pct":3.26,"NYU_SP500_Real_pct":7.25,"NYU_US_Small_Cap_Real_pct":13.6,"NYU_US_3M_TBill_Real_pct":-1.8,"NYU_US_10Y_TBond_Real_pct":1.2,"NYU_US_Baa_Corp_Bond_Real_pct":6.85,"NYU_US_Real_Estate_Real_pct":10.06,"NYU_Gold_Real_pct":1.35},{"Year":2005,"NYU_SP500_pct":4.83,"NYU_US_Small_Cap_pct":3.78,"NYU_US_3M_TBill_pct":3.22,"NYU_US_10Y_TBond_pct":2.87,"NYU_US_Baa_Corp_Bond_pct":5.13,"NYU_US_Real_Estate_pct":13.51,"NYU_Gold_pct":17.77,"NYU_US_CPI_Inflation_pct":3.42,"NYU_SP500_Real_pct":1.37,"NYU_US_Small_Cap_Real_pct":0.35,"NYU_US_3M_TBill_Real_pct":-0.19,"NYU_US_10Y_TBond_Real_pct":-0.53,"NYU_US_Baa_Corp_Bond_Real_pct":1.66,"NYU_US_Real_Estate_Real_pct":9.76,"NYU_Gold_Real_pct":13.88},{"Year":2006,"NYU_SP500_pct":15.61,"NYU_US_Small_Cap_pct":18.4,"NYU_US_3M_TBill_pct":4.85,"NYU_US_10Y_TBond_pct":1.96,"NYU_US_Baa_Corp_Bond_pct":5.27,"NYU_US_Real_Estate_pct":1.73,"NYU_Gold_pct":23.2,"NYU_US_CPI_Inflation_pct":2.54,"NYU_SP500_Real_pct":12.75,"NYU_US_Small_Cap_Real_pct":15.47,"NYU_US_3M_TBill_Real_pct":2.25,"NYU_US_10Y_TBond_Real_pct":-0.57,"NYU_US_Baa_Corp_Bond_Real_pct":2.66,"NYU_US_Real_Estate_Real_pct":-0.79,"NYU_Gold_Real_pct":20.14},{"Year":2007,"NYU_SP500_pct":5.48,"NYU_US_Small_Cap_pct":-9.11,"NYU_US_3M_TBill_pct":4.48,"NYU_US_10Y_TBond_pct":10.21,"NYU_US_Baa_Corp_Bond_pct":4.9,"NYU_US_Real_Estate_pct":-5.4,"NYU_Gold_pct":31.92,"NYU_US_CPI_Inflation_pct":4.08,"NYU_SP500_Real_pct":1.35,"NYU_US_Small_Cap_Real_pct":-12.67,"NYU_US_3M_TBill_Real_pct":0.38,"NYU_US_10Y_TBond_Real_pct":5.89,"NYU_US_Baa_Corp_Bond_Real_pct":0.79,"NYU_US_Real_Estate_Real_pct":-9.11,"NYU_Gold_Real_pct":26.75},{"Year":2008,"NYU_SP500_pct":-36.55,"NYU_US_Small_Cap_pct":-44.68,"NYU_US_3M_TBill_pct":1.4,"NYU_US_10Y_TBond_pct":20.1,"NYU_US_Baa_Corp_Bond_pct":-3.44,"NYU_US_Real_Estate_pct":-12.0,"NYU_Gold_pct":4.32,"NYU_US_CPI_Inflation_pct":0.09,"NYU_SP500_Real_pct":-36.61,"NYU_US_Small_Cap_Real_pct":-44.73,"NYU_US_3M_TBill_Real_pct":1.31,"NYU_US_10Y_TBond_Real_pct":19.99,"NYU_US_Baa_Corp_Bond_Real_pct":-3.53,"NYU_US_Real_Estate_Real_pct":-12.08,"NYU_Gold_Real_pct":4.22},{"Year":2009,"NYU_SP500_pct":25.94,"NYU_US_Small_Cap_pct":46.94,"NYU_US_3M_TBill_pct":0.15,"NYU_US_10Y_TBond_pct":-11.12,"NYU_US_Baa_Corp_Bond_pct":19.96,"NYU_US_Real_Estate_pct":-3.85,"NYU_Gold_pct":25.04,"NYU_US_CPI_Inflation_pct":2.72,"NYU_SP500_Real_pct":22.6,"NYU_US_Small_Cap_Real_pct":43.05,"NYU_US_3M_TBill_Real_pct":-2.5,"NYU_US_10Y_TBond_Real_pct":-13.47,"NYU_US_Baa_Corp_Bond_Real_pct":16.78,"NYU_US_Real_Estate_Real_pct":-6.4,"NYU_Gold_Real_pct":21.72},{"Year":2010,"NYU_SP500_pct":14.82,"NYU_US_Small_Cap_pct":27.73,"NYU_US_3M_TBill_pct":0.14,"NYU_US_10Y_TBond_pct":8.46,"NYU_US_Baa_Corp_Bond_pct":9.4,"NYU_US_Real_Estate_pct":-4.12,"NYU_Gold_pct":29.24,"NYU_US_CPI_Inflation_pct":1.5,"NYU_SP500_Real_pct":13.13,"NYU_US_Small_Cap_Real_pct":25.85,"NYU_US_3M_TBill_Real_pct":-1.34,"NYU_US_10Y_TBond_Real_pct":6.86,"NYU_US_Baa_Corp_Bond_Real_pct":7.79,"NYU_US_Real_Estate_Real_pct":-5.53,"NYU_Gold_Real_pct":27.34},{"Year":2011,"NYU_SP500_pct":2.1,"NYU_US_Small_Cap_pct":-14.04,"NYU_US_3M_TBill_pct":0.05,"NYU_US_10Y_TBond_pct":16.04,"NYU_US_Baa_Corp_Bond_pct":12.26,"NYU_US_Real_Estate_pct":-3.89,"NYU_Gold_pct":12.02,"NYU_US_CPI_Inflation_pct":2.96,"NYU_SP500_Real_pct":-0.84,"NYU_US_Small_Cap_Real_pct":-16.51,"NYU_US_3M_TBill_Real_pct":-2.83,"NYU_US_10Y_TBond_Real_pct":12.7,"NYU_US_Baa_Corp_Bond_Real_pct":9.03,"NYU_US_Real_Estate_Real_pct":-6.65,"NYU_Gold_Real_pct":8.8},{"Year":2012,"NYU_SP500_pct":15.89,"NYU_US_Small_Cap_pct":18.96,"NYU_US_3M_TBill_pct":0.09,"NYU_US_10Y_TBond_pct":2.97,"NYU_US_Baa_Corp_Bond_pct":9.4,"NYU_US_Real_Estate_pct":6.44,"NYU_Gold_pct":5.68,"NYU_US_CPI_Inflation_pct":1.74,"NYU_SP500_Real_pct":13.91,"NYU_US_Small_Cap_Real_pct":16.92,"NYU_US_3M_TBill_Real_pct":-1.62,"NYU_US_10Y_TBond_Real_pct":1.21,"NYU_US_Baa_Corp_Bond_Real_pct":7.53,"NYU_US_Real_Estate_Real_pct":4.61,"NYU_Gold_Real_pct":3.88},{"Year":2013,"NYU_SP500_pct":32.15,"NYU_US_Small_Cap_pct":50.3,"NYU_US_3M_TBill_pct":0.06,"NYU_US_10Y_TBond_pct":-9.1,"NYU_US_Baa_Corp_Bond_pct":-1.13,"NYU_US_Real_Estate_pct":10.72,"NYU_Gold_pct":-27.61,"NYU_US_CPI_Inflation_pct":1.5,"NYU_SP500_Real_pct":30.19,"NYU_US_Small_Cap_Real_pct":48.08,"NYU_US_3M_TBill_Real_pct":-1.42,"NYU_US_10Y_TBond_Real_pct":-10.45,"NYU_US_Baa_Corp_Bond_Real_pct":-2.59,"NYU_US_Real_Estate_Real_pct":9.08,"NYU_Gold_Real_pct":-28.69},{"Year":2014,"NYU_SP500_pct":13.52,"NYU_US_Small_Cap_pct":1.53,"NYU_US_3M_TBill_pct":0.03,"NYU_US_10Y_TBond_pct":10.75,"NYU_US_Baa_Corp_Bond_pct":10.75,"NYU_US_Real_Estate_pct":4.5,"NYU_Gold_pct":0.12,"NYU_US_CPI_Inflation_pct":0.76,"NYU_SP500_Real_pct":12.67,"NYU_US_Small_Cap_Real_pct":0.77,"NYU_US_3M_TBill_Real_pct":-0.72,"NYU_US_10Y_TBond_Real_pct":9.91,"NYU_US_Baa_Corp_Bond_Real_pct":9.91,"NYU_US_Real_Estate_Real_pct":3.72,"NYU_Gold_Real_pct":-0.63},{"Year":2015,"NYU_SP500_pct":1.38,"NYU_US_Small_Cap_pct":-9.12,"NYU_US_3M_TBill_pct":0.05,"NYU_US_10Y_TBond_pct":1.28,"NYU_US_Baa_Corp_Bond_pct":-1.5,"NYU_US_Real_Estate_pct":5.19,"NYU_Gold_pct":-12.11,"NYU_US_CPI_Inflation_pct":0.73,"NYU_SP500_Real_pct":0.64,"NYU_US_Small_Cap_Real_pct":-9.78,"NYU_US_3M_TBill_Real_pct":-0.67,"NYU_US_10Y_TBond_Real_pct":0.55,"NYU_US_Baa_Corp_Bond_Real_pct":-2.21,"NYU_US_Real_Estate_Real_pct":4.43,"NYU_Gold_Real_pct":-12.74},{"Year":2016,"NYU_SP500_pct":11.77,"NYU_US_Small_Cap_pct":17.02,"NYU_US_3M_TBill_pct":0.32,"NYU_US_10Y_TBond_pct":0.69,"NYU_US_Baa_Corp_Bond_pct":11.52,"NYU_US_Real_Estate_pct":5.31,"NYU_Gold_pct":8.1,"NYU_US_CPI_Inflation_pct":2.07,"NYU_SP500_Real_pct":9.5,"NYU_US_Small_Cap_Real_pct":14.64,"NYU_US_3M_TBill_Real_pct":-1.72,"NYU_US_10Y_TBond_Real_pct":-1.36,"NYU_US_Baa_Corp_Bond_Real_pct":9.26,"NYU_US_Real_Estate_Real_pct":3.17,"NYU_Gold_Real_pct":5.91},{"Year":2017,"NYU_SP500_pct":21.61,"NYU_US_Small_Cap_pct":15.13,"NYU_US_3M_TBill_pct":0.95,"NYU_US_10Y_TBond_pct":2.8,"NYU_US_Baa_Corp_Bond_pct":9.15,"NYU_US_Real_Estate_pct":6.21,"NYU_Gold_pct":12.66,"NYU_US_CPI_Inflation_pct":2.11,"NYU_SP500_Real_pct":19.09,"NYU_US_Small_Cap_Real_pct":12.75,"NYU_US_3M_TBill_Real_pct":-1.14,"NYU_US_10Y_TBond_Real_pct":0.68,"NYU_US_Baa_Corp_Bond_Real_pct":6.9,"NYU_US_Real_Estate_Real_pct":4.01,"NYU_Gold_Real_pct":10.34},{"Year":2018,"NYU_SP500_pct":-4.23,"NYU_US_Small_Cap_pct":-16.21,"NYU_US_3M_TBill_pct":1.97,"NYU_US_10Y_TBond_pct":-0.02,"NYU_US_Baa_Corp_Bond_pct":-3.18,"NYU_US_Real_Estate_pct":4.52,"NYU_Gold_pct":-0.93,"NYU_US_CPI_Inflation_pct":1.91,"NYU_SP500_Real_pct":-6.02,"NYU_US_Small_Cap_Real_pct":-17.78,"NYU_US_3M_TBill_Real_pct":0.06,"NYU_US_10Y_TBond_Real_pct":-1.89,"NYU_US_Baa_Corp_Bond_Real_pct":-5.0,"NYU_US_Real_Estate_Real_pct":2.56,"NYU_Gold_Real_pct":-2.79},{"Year":2019,"NYU_SP500_pct":31.21,"NYU_US_Small_Cap_pct":11.92,"NYU_US_3M_TBill_pct":2.11,"NYU_US_10Y_TBond_pct":9.64,"NYU_US_Baa_Corp_Bond_pct":15.25,"NYU_US_Real_Estate_pct":3.69,"NYU_Gold_pct":19.08,"NYU_US_CPI_Inflation_pct":2.29,"NYU_SP500_Real_pct":28.28,"NYU_US_Small_Cap_Real_pct":9.42,"NYU_US_3M_TBill_Real_pct":-0.17,"NYU_US_10Y_TBond_Real_pct":7.19,"NYU_US_Baa_Corp_Bond_Real_pct":12.67,"NYU_US_Real_Estate_Real_pct":1.37,"NYU_Gold_Real_pct":16.42},{"Year":2020,"NYU_SP500_pct":18.02,"NYU_US_Small_Cap_pct":34.16,"NYU_US_3M_TBill_pct":0.36,"NYU_US_10Y_TBond_pct":11.33,"NYU_US_Baa_Corp_Bond_pct":10.6,"NYU_US_Real_Estate_pct":10.43,"NYU_Gold_pct":24.17,"NYU_US_CPI_Inflation_pct":1.36,"NYU_SP500_Real_pct":16.44,"NYU_US_Small_Cap_Real_pct":32.36,"NYU_US_3M_TBill_Real_pct":-0.99,"NYU_US_10Y_TBond_Real_pct":9.84,"NYU_US_Baa_Corp_Bond_Real_pct":9.12,"NYU_US_Real_Estate_Real_pct":8.94,"NYU_Gold_Real_pct":22.5},{"Year":2021,"NYU_SP500_pct":28.47,"NYU_US_Small_Cap_pct":22.41,"NYU_US_3M_TBill_pct":0.04,"NYU_US_10Y_TBond_pct":-4.42,"NYU_US_Baa_Corp_Bond_pct":1.02,"NYU_US_Real_Estate_pct":18.86,"NYU_Gold_pct":-3.75,"NYU_US_CPI_Inflation_pct":7.04,"NYU_SP500_Real_pct":20.02,"NYU_US_Small_Cap_Real_pct":14.36,"NYU_US_3M_TBill_Real_pct":-6.54,"NYU_US_10Y_TBond_Real_pct":-10.7,"NYU_US_Baa_Corp_Bond_Real_pct":-5.62,"NYU_US_Real_Estate_Real_pct":11.05,"NYU_Gold_Real_pct":-10.08},{"Year":2022,"NYU_SP500_pct":-18.04,"NYU_US_Small_Cap_pct":-22.9,"NYU_US_3M_TBill_pct":2.09,"NYU_US_10Y_TBond_pct":-17.83,"NYU_US_Baa_Corp_Bond_pct":-15.23,"NYU_US_Real_Estate_pct":5.65,"NYU_Gold_pct":0.55,"NYU_US_CPI_Inflation_pct":6.45,"NYU_SP500_Real_pct":-23.01,"NYU_US_Small_Cap_Real_pct":-27.57,"NYU_US_3M_TBill_Real_pct":-4.1,"NYU_US_10Y_TBond_Real_pct":-22.81,"NYU_US_Baa_Corp_Bond_Real_pct":-20.37,"NYU_US_Real_Estate_Real_pct":-0.75,"NYU_Gold_Real_pct":-5.55},{"Year":2023,"NYU_SP500_pct":26.06,"NYU_US_Small_Cap_pct":5.19,"NYU_US_3M_TBill_pct":5.28,"NYU_US_10Y_TBond_pct":3.88,"NYU_US_Baa_Corp_Bond_pct":8.74,"NYU_US_Real_Estate_pct":5.68,"NYU_Gold_pct":13.26,"NYU_US_CPI_Inflation_pct":3.35,"NYU_SP500_Real_pct":21.97,"NYU_US_Small_Cap_Real_pct":1.78,"NYU_US_3M_TBill_Real_pct":1.87,"NYU_US_10Y_TBond_Real_pct":0.51,"NYU_US_Baa_Corp_Bond_Real_pct":5.21,"NYU_US_Real_Estate_Real_pct":2.25,"NYU_Gold_Real_pct":9.59},{"Year":2024,"NYU_SP500_pct":24.88,"NYU_US_Small_Cap_pct":8.7,"NYU_US_3M_TBill_pct":5.18,"NYU_US_10Y_TBond_pct":-1.64,"NYU_US_Baa_Corp_Bond_pct":1.74,"NYU_US_Real_Estate_pct":3.96,"NYU_Gold_pct":25.96,"NYU_US_CPI_Inflation_pct":2.89,"NYU_SP500_Real_pct":21.37,"NYU_US_Small_Cap_Real_pct":5.65,"NYU_US_3M_TBill_Real_pct":2.23,"NYU_US_10Y_TBond_Real_pct":-4.4,"NYU_US_Baa_Corp_Bond_Real_pct":-1.12,"NYU_US_Real_Estate_Real_pct":1.05,"NYU_Gold_Real_pct":22.42},{"Year":2025,"NYU_SP500_pct":17.72,"NYU_US_Small_Cap_pct":16.53,"NYU_US_3M_TBill_pct":4.21,"NYU_US_10Y_TBond_pct":7.8,"NYU_US_Baa_Corp_Bond_pct":6.96,"NYU_US_Real_Estate_pct":1.58,"NYU_Gold_pct":66.22,"NYU_US_CPI_Inflation_pct":2.74,"NYU_SP500_Real_pct":14.59,"NYU_US_Small_Cap_Real_pct":13.43,"NYU_US_3M_TBill_Real_pct":1.44,"NYU_US_10Y_TBond_Real_pct":4.93,"NYU_US_Baa_Corp_Bond_Real_pct":4.12,"NYU_US_Real_Estate_Real_pct":-1.13,"NYU_Gold_Real_pct":61.79}];
+
+
+    // ---- 1. Deterministic Time-Value-of-Money (Excel-compatible PMT / NPER / RATE) ----
+    function calcPMT(rate, nper, pv, fv = 0, type = 1) {
+      if (nper <= 0) return 0;
+      if (Math.abs(rate) < 1e-10) return -(pv + fv) / nper;
+      const pvif = Math.pow(1 + rate, nper);
+      let pmt = (rate / (pvif - 1)) * -(pv * pvif + fv);
+      if (type === 1) pmt /= (1 + rate);
+      return pmt;
+    }
+
+    function calcNPER(rate, pmt, pv, fv = 0, type = 1) {
+      if (Math.abs(rate) < 1e-10) {
+        if (Math.abs(pmt) < 1e-12) return Infinity;
+        return -(pv + fv) / pmt;
+      }
+      const pmtAdj = pmt * (1 + rate * type);
+      const num = pmtAdj - fv * rate;
+      const den = pv * rate + pmtAdj;
+      if (Math.abs(den) < 1e-12 || !isFinite(num / den) || num / den <= 0) return Infinity;
+      return Math.log(num / den) / Math.log(1 + rate);
+    }
+
+    function calcRATE(nper, pmt, pv, fv = 0, type = 1) {
+      if (nper <= 0) return NaN;
+      let lo = -0.5, hi = 1.0;
+      const f = r => {
+        if (Math.abs(r) < 1e-9) return pv + pmt * nper + fv;
+        const g = Math.pow(1 + r, nper);
+        return pv * g + pmt * (1 + r * type) * ((g - 1) / r) + fv;
+      };
+      let flo = f(lo), fhi = f(hi);
+      if (flo * fhi > 0) return NaN;
+      for (let it = 0; it < 90; it++) {
+        const mid = 0.5 * (lo + hi);
+        const fmid = f(mid);
+        if (Math.abs(fmid) < 1e-9) return mid;
+        if (flo * fmid <= 0) { hi = mid; fhi = fmid; } else { lo = mid; flo = fmid; }
+      }
+      return 0.5 * (lo + hi);
+    }
+
+    // ---- 2. Closed-Form & Sequential MWR (Maximum Sustainable Withdrawal Rate) ----
+    // eqRets, bdRets, infs are decimal arrays (e.g. 0.08, 0.03) of length >= horizon
+    function computeCohortMWR(eqRets, bdRets, infs, startIdx, horizon, eqWeight, {
+      timing = "start", feeDec = 0, taxEff = 0, targetPreserveMode = "deplete", targetFrac = 0,
+      realSpendMultipliers = null, eqGlideWeights = null
+    } = {}) {
+      let denom = 0.0, cumInf = 1.0, cumPort = 1.0;
+      for (let t = 0; t < horizon; t++) {
+        const idx = startIdx + t;
+        const wEq = eqGlideWeights ? eqGlideWeights[t] : eqWeight;
+        const grossR = wEq * eqRets[idx] + (1 - wEq) * bdRets[idx];
+        const netR = grossR * (1 - taxEff) - feeDec;
+        const pi = infs[idx];
+        const spendMult = realSpendMultipliers ? realSpendMultipliers[t] : 1.0;
+        if (timing === "start") {
+          denom += (cumInf * spendMult) / cumPort;
+        }
+        cumPort *= (1 + netR);
+        cumInf *= (1 + pi);
+        if (timing === "end") {
+          denom += (cumInf * spendMult) / cumPort;
+        }
+      }
+      if (denom <= 0 || cumPort <= 0) return 0;
+      let numer = 1.0;
+      if (targetPreserveMode === "nominal") numer = Math.max(0, 1.0 - targetFrac / cumPort);
+      else if (targetPreserveMode === "real") numer = Math.max(0, 1.0 - (targetFrac * cumInf) / cumPort);
+      return Math.max(0, (numer / denom) * 100.0);
+    }
+
+    // ---- 3. Multi-Variable OLS Regression (Gaussian Elimination) ----
+    function solveLinearSystem(A_in, b_in) {
+      const n = b_in.length;
+      const A = A_in.map(row => row.slice());
+      const b = b_in.slice();
+      for (let k = 0; k < n; k++) {
+        let maxR = k;
+        for (let r = k + 1; r < n; r++) {
+          if (Math.abs(A[r][k]) > Math.abs(A[maxR][k])) maxR = r;
+        }
+        if (maxR !== k) {
+          [A[k], A[maxR]] = [A[maxR], A[k]];
+          [b[k], b[maxR]] = [b[maxR], b[k]];
+        }
+        const piv = A[k][k];
+        if (Math.abs(piv) < 1e-12) return null;
+        for (let j = k; j < n; j++) A[k][j] /= piv;
+        b[k] /= piv;
+        for (let i = 0; i < n; i++) {
+          if (i === k) continue;
+          const f = A[i][k];
+          for (let j = k; j < n; j++) A[i][j] -= f * A[k][j];
+          b[i] -= f * b[k];
+        }
+      }
+      return b;
+    }
+
+    function fitOLS(yArr, XMat) {
+      const n = yArr.length, p = XMat[0].length;
+      const XtX = Array.from({ length: p }, () => new Array(p).fill(0));
+      const Xty = new Array(p).fill(0);
+      for (let i = 0; i < n; i++) {
+        const xi = XMat[i], yi = yArr[i];
+        for (let j = 0; j < p; j++) {
+          Xty[j] += xi[j] * yi;
+          for (let k = 0; k < p; k++) XtX[j][k] += xi[j] * xi[k];
+        }
+      }
+      const beta = solveLinearSystem(XtX, Xty);
+      if (!beta) return null;
+      const yMean = meanArr(yArr);
+      let sst = 0, sse = 0;
+      const preds = new Array(n);
+      for (let i = 0; i < n; i++) {
+        let yh = 0;
+        for (let j = 0; j < p; j++) yh += beta[j] * XMat[i][j];
+        preds[i] = yh;
+        sst += (yArr[i] - yMean) ** 2;
+        sse += (yArr[i] - yh) ** 2;
+      }
+      const r2 = sst > 1e-12 ? 1 - sse / sst : 0;
+      const rmse = Math.sqrt(sse / Math.max(1, n - p));
+      return { beta, r2, rmse, preds };
+    }
+
+    // ---- 4. Long-Only Markowitz Efficient Frontier (Projected Gradient Descent on Simplex) ----
+    function projectSimplex(v) {
+      const n = v.length;
+      const u = v.slice().sort((a, b) => b - a);
+      let cssv = 0, rho = -1;
+      for (let i = 0; i < n; i++) {
+        cssv += u[i];
+        if (u[i] + (1 - cssv) / (i + 1) > 0) rho = i;
+      }
+      const theta = (1 - u.slice(0, rho + 1).reduce((a, b) => a + b, 0)) / (rho + 1);
+      return v.map(x => Math.max(0, x + theta));
+    }
+
+    function solveEfficientFrontier(means, stds, corr, numPoints = 41) {
+      const n = means.length;
+      const cov = Array.from({ length: n }, (_, i) =>
+        Array.from({ length: n }, (__, j) => stds[i] * stds[j] * corr[i][j])
+      );
+      const minMu = Math.min(...means), maxMu = Math.max(...means);
+      const frontier = [];
+      for (let p = 0; p < numPoints; p++) {
+        const targetMu = minMu + (p / (numPoints - 1)) * (maxMu - minMu);
+        // Minimize 0.5 * w' Cov w + lambda * (w' mu - targetMu)^2 via projected gradient
+        let w = new Array(n).fill(1 / n);
+        const lam = 60.0;
+        const lr = 0.25;
+        for (let it = 0; it < 700; it++) {
+          let curMu = 0;
+          for (let i = 0; i < n; i++) curMu += w[i] * means[i];
+          const grad = new Array(n).fill(0);
+          for (let i = 0; i < n; i++) {
+            let cw = 0;
+            for (let j = 0; j < n; j++) cw += cov[i][j] * w[j];
+            grad[i] = cw + 2 * lam * (curMu - targetMu) * means[i];
+          }
+          const step = lr / (1 + it * 0.008);
+          const next = w.map((wi, i) => wi - step * grad[i]);
+          w = projectSimplex(next);
+        }
+        let mu = 0, v = 0;
+        for (let i = 0; i < n; i++) {
+          mu += w[i] * means[i];
+          for (let j = 0; j < n; j++) v += w[i] * w[j] * cov[i][j];
+        }
+        frontier.push({ weights: w, mean: mu, std: Math.sqrt(Math.max(0, v)) });
+      }
+      // Keep upper (non-dominated) portion of frontier above min-variance portfolio
+      let minStdIdx = 0;
+      for (let i = 1; i < frontier.length; i++) {
+        if (frontier[i].std < frontier[minStdIdx].std) minStdIdx = i;
+      }
+      return frontier.slice(minStdIdx);
+    }
+
+    // ---- 5. Ch. 3A Correlated AR(1) Low-Yield Stochastic Return Engine ----
+    // Calibrates directly to historical Shiller data (or Ch. 3A defaults) with initial seed y0, pi0
+    function calibrateCh3AEngine(shillerRows) {
+      const valid = shillerRows.filter(r => r.Year >= 1890 && r.Year <= 2023 && r.Jan_10Y_Yield_pct !== null);
+      const n = valid.length;
+      const infs = [], ylds = [], erps = [];
+      for (let i = 0; i < n; i++) {
+        const pi = valid[i].Shiller_US_CPI_pct / 100.0;
+        const y = valid[i].Jan_10Y_Yield_pct / 100.0;
+        const rs = valid[i].Shiller_SP500_TR_pct / 100.0;
+        infs.push(pi);
+        ylds.push(y);
+        erps.push(rs - y);
+      }
+      const stats = arr => {
+        const m = meanArr(arr);
+        let s2 = 0;
+        for (const x of arr) s2 += (x - m) ** 2;
+        const sd = Math.sqrt(s2 / Math.max(1, arr.length - 1));
+        return { m, sd };
+      };
+      const stInf = stats(infs), stY = stats(ylds), stErp = stats(erps);
+      // AR(1) phi for inflation and yields
+      const fitAR1 = (arr, m) => {
+        let num = 0, den = 0;
+        for (let t = 1; t < arr.length; t++) {
+          num += (arr[t] - m) * (arr[t - 1] - m);
+          den += (arr[t - 1] - m) ** 2;
+        }
+        const phi = Math.max(0.1, Math.min(0.96, den > 0 ? num / den : 0.5));
+        const res = [];
+        for (let t = 1; t < arr.length; t++) res.push((arr[t] - m) - phi * (arr[t - 1] - m));
+        return { phi, sig: stats(res).sd };
+      };
+      const arInf = fitAR1(infs, stInf.m);
+      const arY = fitAR1(ylds, stY.m);
+      // Residuals for ERP (i.i.d.) and AR(1) innovations for Yield & Inflation
+      const rErp = [], rY = [], rInf = [];
+      for (let t = 1; t < n; t++) {
+        rErp.push((erps[t] - stErp.m) / (stErp.sd || 1));
+        rY.push(((ylds[t] - stY.m) - arY.phi * (ylds[t - 1] - stY.m)) / (arY.sig || 1));
+        rInf.push(((infs[t] - stInf.m) - arInf.phi * (infs[t - 1] - stInf.m)) / (arInf.sig || 1));
+      }
+      const corr2 = (a, b) => {
+        let s = 0;
+        for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+        return Math.max(-0.85, Math.min(0.85, s / Math.max(1, a.length - 1)));
+      };
+      const c12 = corr2(rErp, rY), c13 = corr2(rErp, rInf), c23 = corr2(rY, rInf);
+      // 3x3 Cholesky lower triangular L
+      const l11 = 1.0, l21 = c12, l31 = c13;
+      const l22 = Math.sqrt(Math.max(1e-6, 1 - l21 * l21));
+      const l32 = (c23 - l31 * l21) / l22;
+      const l33 = Math.sqrt(Math.max(1e-6, 1 - l31 * l31 - l32 * l32));
+      return {
+        muErp: stErp.m, sdErp: stErp.sd,
+        muY: stY.m, phiY: arY.phi, sigY: arY.sig,
+        muInf: stInf.m, phiInf: arInf.phi, sigInf: arInf.sig,
+        L: [l11, l21, l22, l31, l32, l33]
+      };
+    }
+
+    function simulateCh3APath(cal, horizon, rng, y0 = 0.0245, pi0 = 0.017) {
+      const [l11, l21, l22, l31, l32, l33] = cal.L;
+      const eq = new Float64Array(horizon);
+      const bd = new Float64Array(horizon);
+      const inf = new Float64Array(horizon);
+      const yld = new Float64Array(horizon);
+      let yPrev = y0, piPrev = pi0;
+      for (let t = 0; t < horizon; t++) {
+        const z1 = randNormal(rng), z2 = randNormal(rng), z3 = randNormal(rng);
+        const eErp = l11 * z1;
+        const eY = l21 * z1 + l22 * z2;
+        const eInf = l31 * z1 + l32 * z2 + l33 * z3;
+        const yCur = Math.max(0.001, Math.min(0.20, cal.muY + cal.phiY * (yPrev - cal.muY) + cal.sigY * eY));
+        const piCur = Math.max(-0.12, Math.min(0.25, cal.muInf + cal.phiInf * (piPrev - cal.muInf) + cal.sigInf * eInf));
+        const erpCur = cal.muErp + cal.sdErp * eErp;
+        const rStock = Math.max(-0.80, Math.min(1.20, yPrev + erpCur));
+        // Constant-maturity 10Y bond fund approximation (average coupon yield ~yPrev, duration ~7.5 yrs)
+        const dur = yCur > 0.005 ? (1 - Math.pow(1 + yCur, -9)) / yCur : 8.5;
+        const rBond = Math.max(-0.50, Math.min(0.60, yPrev - dur * (yCur - yPrev) * 0.85));
+        eq[t] = rStock;
+        bd[t] = rBond;
+        inf[t] = piCur;
+        yld[t] = yCur;
+        yPrev = yCur;
+        piPrev = piCur;
+      }
+      return { eq, bd, inf, yld };
+    }
+
+    // ---- 6. Mortality Survival Curve Helper ----
+    function buildSurvivalCurve(mortRows, { table = "soa_2017", startAge = 65, household = "male", healthMult = 1.0 } = {}) {
+      const byAge = {};
+      for (const r of mortRows) byAge[r.Age] = r;
+      const getQx = (age, sex, yrIdx) => {
+        const r = byAge[Math.min(120, Math.max(50, age))];
+        if (!r || age >= 120) return 1.0;
+        let q = 0;
+        if (table === "ssa") {
+          q = sex === "F" ? r.SSA_Period_Female_qx : r.SSA_Period_Male_qx;
+        } else if (table === "soa_period") {
+          q = sex === "F" ? r.SOA_2012_IAM_Period_Female_qx : r.SOA_2012_IAM_Period_Male_qx;
+        } else {
+          const baseYear = table === "soa_2026" ? 2026 : 2017;
+          const qBase = sex === "F" ? r.SOA_2012_IAM_Basic_Female_qx : r.SOA_2012_IAM_Basic_Male_qx;
+          const g2 = sex === "F" ? r.SOA_ScaleG2_Female : r.SOA_ScaleG2_Male;
+          q = qBase * Math.pow(1 - g2, baseYear + yrIdx - 2012);
+        }
+        return Math.max(0, Math.min(1.0, (q || 0) * healthMult));
+      };
+
+      const maxK = 120 - startAge;
+      const pM = [1.0], pF = [1.0];
+      for (let k = 0; k < maxK; k++) {
+        pM.push(pM[k] * (1 - getQx(startAge + k, "M", k)));
+        pF.push(pF[k] * (1 - getQx(startAge + k, "F", k)));
+      }
+      const surv = [];
+      for (let k = 0; k <= maxK; k++) {
+        let p = 1;
+        if (household === "male") p = pM[k];
+        else if (household === "female") p = pF[k];
+        else if (household === "couple") p = 1 - (1 - pM[k]) * (1 - pF[k]);
+        else if (household === "two_males") p = 1 - (1 - pM[k]) * (1 - pM[k]);
+        else if (household === "two_females") p = 1 - (1 - pF[k]) * (1 - pF[k]);
+        surv.push({ age: startAge + k, k, p });
+      }
+      // Death probabilities q_death[k] = surv[k].p - surv[k+1].p
+      const pdf = [];
+      let meanAge = startAge;
+      for (let k = 0; k < maxK; k++) {
+        const d = surv[k].p - surv[k + 1].p;
+        pdf.push({ age: startAge + k, k, prob: d });
+        meanAge += surv[k + 1].p;
+      }
+      const ageAtSurv = targetP => {
+        for (let k = 0; k < maxK; k++) {
+          if (surv[k].p >= targetP && surv[k + 1].p <= targetP) {
+            const span = surv[k].p - surv[k + 1].p;
+            return startAge + k + (span > 1e-9 ? (surv[k].p - targetP) / span : 0);
+          }
+        }
+        return 120;
+      };
+      return { surv, pdf, meanAge, p50Age: ageAtSurv(0.5), p10Age: ageAtSurv(0.1), p90Age: ageAtSurv(0.9), p25Age: ageAtSurv(0.25) };
+    }
+
+    // ---- 7. Chapter 6: Exact 10 Variable Spending Strategies + PAY Rule Calibrator ----
+    function computeZoltGlidePath(V0, w0, horizonGP = 45, piGP = 0.03) {
+      // Solve sum_{k=0}^{H-1} q^k = 1 / w0 where q = (1 + piGP)/(1 + rReq)
+      const invW = 1.0 / Math.max(1e-6, w0);
+      let lo = 0.5, hi = 1.3;
+      const sumQ = q => Math.abs(q - 1) < 1e-8 ? horizonGP : (1 - Math.pow(q, horizonGP)) / (1 - q);
+      for (let it = 0; it < 70; it++) {
+        const mid = 0.5 * (lo + hi);
+        if (sumQ(mid) < invW) lo = mid; else hi = mid;
+      }
+      const q = 0.5 * (lo + hi);
+      const rReq = (1 + piGP) / q - 1;
+      const path = new Float64Array(horizonGP + 1);
+      path[0] = V0;
+      let wNom = w0 * V0;
+      for (let t = 0; t < horizonGP; t++) {
+        path[t + 1] = Math.max(0, (path[t] - wNom) * (1 + rReq));
+        wNom *= (1 + piGP);
+      }
+      return { path, rReq };
+    }
+
+    function simulateCh6Strategy(stratId, w0, eqRets, bdRets, infs, {
+      V0 = 100000, eqWeight = 0.50, horizon = 30, startAge = 65, rmdByAge = null,
+      hybridAlpha = 0.50, maN = 3, bengenFloor = 0.85, bengenCeil = 1.20,
+      vgFloor = 0.975, vgCeil = 1.05, vgNominal = true,
+      kitcesThresh = 1.50, kitcesRaise = 1.10, kitcesCooldown = 3,
+      gkGuardrail = 0.20, gkCut = 0.90, gkRaise = 1.10, gkCutoffRem = 15,
+      zoltH = 45, zoltPi = 0.03
+    } = {}) {
+      let kMult = 1.0;
+      if (stratId === 10 && rmdByAge) {
+        const base65 = 1.0 / (rmdByAge[startAge] || 31.0);
+        kMult = w0 / base65;
+      }
+      const zoltGP = stratId === 9 ? computeZoltGlidePath(V0, w0, Math.max(zoltH, horizon + 5), zoltPi).path : null;
+
+      let vNom = V0, cumInf = 1.0;
+      let wPrevNom = w0 * V0;
+      let wInitReal = w0 * V0;
+      let lastRatchetT = 1;
+      const vHistNom = [V0];
+
+      const spendReal = new Float64Array(horizon);
+      const wealthReal = new Float64Array(horizon + 1);
+      wealthReal[0] = V0;
+
+      let dsvSum = 0;
+      let depleted = false;
+
+      for (let t = 1; t <= horizon; t++) {
+        const piPrev = t >= 2 ? infs[t - 2] : 0;
+        const rPrevPort = t >= 2 ? (eqWeight * eqRets[t - 2] + (1 - eqWeight) * bdRets[t - 2]) : 0;
+        const prevCumInf = cumInf;
+        let wTargetNom = 0;
+
+        if (t === 1) {
+          wTargetNom = w0 * V0;
+        } else if (vNom <= 0) {
+          wTargetNom = 0;
+        } else {
+          switch (stratId) {
+            case 1: // Constant Real
+              wTargetNom = wInitReal * prevCumInf;
+              break;
+            case 2: // Fixed %
+              wTargetNom = w0 * vNom;
+              break;
+            case 3: // Endowment Hybrid (static convex combination of Strat 1 & Strat 2)
+              wTargetNom = hybridAlpha * (wInitReal * prevCumInf) + (1 - hybridAlpha) * (w0 * vNom);
+              break;
+            case 4: { // Endowment N-Yr Moving Average (nominal balances)
+              const startK = Math.max(0, vHistNom.length - maN);
+              let sumV = 0;
+              for (let k = startK; k < vHistNom.length; k++) sumV += vHistNom[k];
+              wTargetNom = w0 * (sumV / (vHistNom.length - startK));
+              break;
+            }
+            case 5: { // Bengen Hard-Dollar Real Floor/Ceiling
+              const rawReal = w0 * (vNom / prevCumInf);
+              const clamped = Math.max(bengenFloor * wInitReal, Math.min(bengenCeil * wInitReal, rawReal));
+              wTargetNom = clamped * prevCumInf;
+              break;
+            }
+            case 6: { // Vanguard % Floor/Ceiling (Pfau nominal or inflation-adjusted)
+              const basePrev = vgNominal ? wPrevNom : wPrevNom * (1 + piPrev);
+              wTargetNom = Math.max(vgFloor * basePrev, Math.min(vgCeil * basePrev, w0 * vNom));
+              break;
+            }
+            case 7: { // Kitces Ratcheting
+              let wBase = wPrevNom * (1 + piPrev);
+              if (vNom > kitcesThresh * V0 && (t - lastRatchetT) >= kitcesCooldown) {
+                wBase *= kitcesRaise;
+                lastRatchetT = t;
+              }
+              wTargetNom = wBase;
+              break;
+            }
+            case 8: { // Guyton-Klinger (2006)
+              const infFreez = (rPrevPort < 0 && piPrev > 0 && (wPrevNom * (1 + piPrev) / vNom) > w0);
+              const wStep1 = infFreez ? wPrevNom : wPrevNom * (1 + piPrev);
+              const curWr = wStep1 / vNom;
+              const remYrs = horizon - t + 1;
+              if (remYrs > gkCutoffRem && curWr > w0 * (1 + gkGuardrail)) wTargetNom = wStep1 * gkCut;
+              else if (curWr < w0 * (1 - gkGuardrail)) wTargetNom = wStep1 * gkRaise;
+              else wTargetNom = wStep1;
+              break;
+            }
+            case 9: { // Zolt Glide Path (TPA)
+              const gpTarget = zoltGP[Math.min(t - 1, zoltGP.length - 1)];
+              wTargetNom = (vNom < gpTarget && piPrev > 0) ? wPrevNom : wPrevNom * (1 + piPrev);
+              break;
+            }
+            case 10: { // Modified RMD
+              const div = (rmdByAge && rmdByAge[Math.min(120, startAge + t - 1)]) || Math.max(1.9, 31 - (startAge + t - 1 - 65) * 0.72);
+              const rPct = Math.min(1.0, kMult / div);
+              wTargetNom = rPct * vNom;
+              break;
+            }
+            default:
+              wTargetNom = wInitReal * prevCumInf;
+          }
+        }
+
+        const wActualNom = Math.max(0, Math.min(vNom, wTargetNom));
+        const wActualReal = wActualNom / prevCumInf;
+        spendReal[t - 1] = wActualReal;
+
+        if (t >= 2) {
+          if (wActualReal <= 1e-9 || spendReal[t - 2] <= 1e-9) {
+            dsvSum += -1.0;
+          } else {
+            const chg = (wActualReal - spendReal[t - 2]) / spendReal[t - 2];
+            if (chg < 0) dsvSum += chg;
+          }
+        }
+
+        wPrevNom = wActualNom;
+        const remNom = Math.max(0, vNom - wActualNom);
+        if (remNom <= 1e-9) depleted = true;
+
+        const rPort = eqWeight * eqRets[t - 1] + (1 - eqWeight) * bdRets[t - 1];
+        const piCur = infs[t - 1];
+        vNom = remNom * (1 + rPort);
+        cumInf *= (1 + piCur);
+        vHistNom.push(vNom);
+        wealthReal[t] = vNom / cumInf;
+      }
+
+      return {
+        spendReal,
+        wealthReal,
+        endWealthReal: wealthReal[horizon],
+        dsvPct: (dsvSum / horizon) * 100.0,
+        depleted
+      };
+    }
+
+    function calibratePayRuleW0(stratId, paths, targetXpct, targetYamt, horizon, simOpts) {
+      // Find max w0 (to 1 bp = 0.0001) such that Q_{X%}(endWealthReal) >= targetYamt
+      const N = paths.length;
+      const qFrac = targetXpct / 100.0;
+      const buf = new Float64Array(N);
+      const evalQ = w0 => {
+        for (let i = 0; i < N; i++) {
+          const res = simulateCh6Strategy(stratId, w0, paths[i].eq, paths[i].bd, paths[i].inf, { ...simOpts, horizon });
+          buf[i] = res.endWealthReal;
+        }
+        buf.sort();
+        return quantileSorted(buf, qFrac);
+      };
+      let lo = 0.005, hi = 0.16;
+      for (let it = 0; it < 22; it++) {
+        const mid = 0.5 * (lo + hi);
+        if (evalQ(mid) >= targetYamt) lo = mid; else hi = mid;
+      }
+      return Math.round(lo * 10000) / 10000;
+    }
+
+    const state = { tab: "glide", mcMode: "bootstrap", seed: 202603, lastExport: [], cachedLife: null, cachedRev: null };
+    const CH3A_CAL = calibrateCh3AEngine(SHILLER_DATA);
+
+    function getSeriesData() {
+      const ds = document.getElementById("datasetSelect").value;
+      const rows = ds === "nyu" ? NYU_DATA : SHILLER_DATA;
+      const years = rows.map(r => r.Year);
+      const eq = rows.map(r => (ds === "nyu" ? r.NYU_SP500_pct : r.Shiller_SP500_TR_pct) / 100);
+      const bd = rows.map(r => (ds === "nyu" ? r.NYU_US_10Y_TBond_pct : r.Shiller_10Y_TBond_pct) / 100);
+      const inf = rows.map(r => (ds === "nyu" ? r.NYU_US_CPI_Inflation_pct : r.Shiller_US_CPI_pct) / 100);
+      return { ds, years, eq, bd, inf };
+    }
+
+    function syncCohortSelect(years, retYrs) {
+      const sel = document.getElementById("focusCohort");
+      const maxIdx = years.length - retYrs;
+      const cur = parseInt(sel.value, 10) || 1966;
+      sel.innerHTML = "";
+      for (let i = 0; i <= maxIdx; i++) {
+        const y = years[i];
+        const o = document.createElement("option");
+        o.value = y; o.textContent = y;
+        if (y === cur) o.selected = true;
+        sel.appendChild(o);
+      }
+      if (!sel.value && maxIdx >= 0) sel.value = years[Math.min(maxIdx, 0)];
+    }
+
+    function computeAll() {
+      const s = getSeriesData();
+      const eqW = (parseFloat(document.getElementById("eqPctSlider").value) || 50) / 100;
+      document.getElementById("eqPctHint").textContent = `${Math.round(eqW * 100)} / ${Math.round((1 - eqW) * 100)}`;
+      document.getElementById("eqPctSlider").style.setProperty("--pct", Math.round(eqW * 100) + "%");
+      const wr = (parseFloat(document.getElementById("initWrPct").value) || 6.3) / 100;
+      const retYrs = Math.max(10, Math.min(45, parseInt(document.getElementById("retYrs").value, 10) || 30));
+      const workYrs = Math.max(10, Math.min(40, parseInt(document.getElementById("workYrs").value, 10) || 30));
+      const saveRate = (parseFloat(document.getElementById("saveRatePct").value) || 15) / 100;
+      const timing = document.getElementById("timingSel").value;
+      syncCohortSelect(s.years, retYrs);
+      const focusYr = parseInt(document.getElementById("focusCohort").value, 10) || 1966;
+
+      // Mean real compounded return for fixed benchmark
+      let prodR = 1;
+      for (let i = 0; i < s.years.length; i++) {
+        const rp = eqW * s.eq[i] + (1 - eqW) * s.bd[i];
+        prodR *= (1 + rp) / (1 + s.inf[i]);
+      }
+      const avgRealCagr = Math.pow(prodR, 1 / s.years.length) - 1;
+
+      // Rolling retirement cohorts
+      const cohorts = [];
+      const nCoh = s.years.length - retYrs + 1;
+      for (let i = 0; i < nCoh; i++) {
+        let bal = 100.0;
+        const wPath = [100.0], wrPath = [];
+        let depletedYr = null;
+        let realProd = 1.0;
+        for (let t = 0; t < retYrs; t++) {
+          const rp = eqW * s.eq[i + t] + (1 - eqW) * s.bd[i + t];
+          const rr = (1 + rp) / (1 + s.inf[i + t]) - 1;
+          realProd *= (1 + rr);
+          const wAmt = wr * 100.0;
+          if (bal <= 0) {
+            wrPath.push(30);
+          } else if (timing === "start") {
+            wrPath.push(Math.min(30, (wAmt / bal) * 100));
+            bal = Math.max(0, bal - wAmt) * (1 + rr);
+            if (bal <= 0 && depletedYr === null) depletedYr = t + 1;
+          } else {
+            const g = bal * (1 + rr);
+            wrPath.push(g > 0 ? Math.min(30, (wAmt / g) * 100) : 30);
+            bal = Math.max(0, g - wAmt);
+            if (bal <= 0 && depletedYr === null) depletedYr = t + 1;
+          }
+          wPath.push(bal);
+        }
+        const mwr = computeCohortMWR(s.eq, s.bd, s.inf, i, retYrs, eqW, { timing });
+        const cagr = Math.pow(realProd, 1 / retYrs) - 1;
+        const cagrMwr = Math.max(0, -calcPMT(cagr, retYrs, 100, 0, timing === "start" ? 1 : 0));
+        cohorts.push({ yr: s.years[i], wPath, wrPath, endBal: bal, depletedYr, mwr, cagr: cagr * 100, cagrMwr });
+      }
+      // Fixed benchmark path at avgRealCagr
+      const fixedW = [100.0];
+      let fb = 100.0;
+      for (let t = 0; t < retYrs; t++) {
+        fb = timing === "start" ? Math.max(0, fb - wr * 100) * (1 + avgRealCagr) : Math.max(0, fb * (1 + avgRealCagr) - wr * 100);
+        fixedW.push(fb);
+      }
+
+      const survCnt = cohorts.filter(c => c.endBal > 0).length;
+      const bestC = cohorts.reduce((a, b) => b.endBal > a.endBal ? b : a, cohorts[0]);
+      const depCohs = cohorts.filter(c => c.depletedYr !== null);
+      const worstC = depCohs.length ? depCohs.reduce((a, b) => b.depletedYr < a.depletedYr ? b : a, depCohs[0]) : cohorts.reduce((a, b) => b.endBal < a.endBal ? b : a, cohorts[0]);
+      const focusC = cohorts.find(c => c.yr === focusYr) || cohorts[0];
+
+      const isZh = currentLang === "zh-CN";
+      document.getElementById("k3Surv").textContent = `${((survCnt / cohorts.length) * 100).toFixed(1)}%`;
+      document.getElementById("k3SurvSub").textContent = `${survCnt} / ${cohorts.length} ${isZh ? "个历史起点" : "cohorts"}`;
+      document.getElementById("k3Best").textContent = `$${bestC.endBal.toFixed(1)}`;
+      document.getElementById("k3BestSub").textContent = `${bestC.yr} (${isZh ? "初始 $100" : "of $100"})`;
+      document.getElementById("k3Worst").textContent = worstC.depletedYr ? `${isZh ? "第" : "Yr "}${worstC.depletedYr}${isZh ? "年" : ""}` : `$${worstC.endBal.toFixed(1)}`;
+      document.getElementById("k3WorstSub").textContent = `${worstC.yr} (${isZh ? "历史最差" : "worst cohort"})`;
+      document.getElementById("k3Focus").textContent = focusC.depletedYr ? `${isZh ? "耗尽 Yr" : "Depleted Yr "}${focusC.depletedYr}` : `$${focusC.endBal.toFixed(1)}`;
+      document.getElementById("k3FocusSub").textContent = `${focusC.yr} · MWR ${focusC.mwr.toFixed(2)}%`;
+
+      state.lastExport = cohorts.map(c => [c.yr, c.endBal.toFixed(2), c.mwr.toFixed(2), c.cagr.toFixed(2), c.cagrMwr.toFixed(2), c.depletedYr || ""]);
+
+      if (state.tab === "glide") {
+        drawSpaghetti(cohorts, focusC, fixedW, retYrs);
+        drawWrSpiral(cohorts, focusC, retYrs);
+      } else if (state.tab === "lifetime") {
+        computeAndDrawLifetime(s, eqW, workYrs, retYrs, saveRate, timing, cohorts);
+      } else {
+        computeAndDrawReverse(s, eqW, workYrs, retYrs, saveRate, timing, cohorts, avgRealCagr);
+      }
+    }
+
+    function drawSpaghetti(cohorts, focusC, fixedW, retYrs) {
+      const sc = setupCanvas(document.getElementById("glideCanvas"));
+      if (!sc) return;
+      const { ctx, w, h } = sc; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+      const maxV = Math.min(500, Math.max(200, ...cohorts.map(c => Math.max(...c.wPath)))) * 1.05;
+      const pad = { l: 48, r: 16, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+      const ticks = computeNiceLinearTicks(0, maxV, 4); const topV = ticks[ticks.length - 1];
+      const mapX = t => pad.l + (t / retYrs) * cw;
+      const mapY = v => pad.t + ch - (Math.min(topV, Math.max(0, v)) / topV) * ch;
+      ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right"; ctx.fillStyle = C.muted;
+      ticks.forEach(v => { const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke(); ctx.fillText("$" + v, pad.l - 6, y + 4); });
+      ctx.save(); ctx.strokeStyle = C.muted; ctx.globalAlpha = 0.22; ctx.lineWidth = 1;
+      cohorts.forEach(c => {
+        ctx.beginPath(); c.wPath.forEach((v, t) => { const x = mapX(t), y = mapY(v); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke();
+      });
+      ctx.restore();
+      // Fixed mean line
+      ctx.beginPath(); ctx.strokeStyle = C.accent; ctx.lineWidth = 2.2; ctx.setLineDash([5, 3]);
+      fixedW.forEach((v, t) => { const x = mapX(t), y = mapY(v); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+      ctx.stroke(); ctx.setLineDash([]);
+      // Highlighted cohort
+      ctx.beginPath(); ctx.strokeStyle = C.port; ctx.lineWidth = 2.6;
+      focusC.wPath.forEach((v, t) => { const x = mapX(t), y = mapY(v); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+      ctx.stroke();
+      ctx.fillStyle = C.muted; ctx.textAlign = "center";
+      [0, Math.round(retYrs / 2), retYrs].forEach(t => ctx.fillText("Yr " + t, mapX(t), h - 8));
+    }
+
+    function drawWrSpiral(cohorts, focusC, retYrs) {
+      const sc = setupCanvas(document.getElementById("wrCanvas"));
+      if (!sc) return;
+      const { ctx, w, h } = sc; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+      const pad = { l: 44, r: 16, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+      const mapX = t => pad.l + (t / (retYrs - 1)) * cw;
+      const mapY = v => pad.t + ch - (Math.min(30, v) / 30) * ch;
+      ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right"; ctx.fillStyle = C.muted;
+      [0, 10, 20, 30].forEach(v => { const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke(); ctx.fillText(v + "%", pad.l - 6, y + 4); });
+      // 10% threshold line
+      ctx.strokeStyle = C.danger; ctx.lineWidth = 1.3; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(pad.l, mapY(10)); ctx.lineTo(w - pad.r, mapY(10)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.save(); ctx.strokeStyle = C.muted; ctx.globalAlpha = 0.22; ctx.lineWidth = 1;
+      cohorts.forEach(c => { ctx.beginPath(); c.wrPath.forEach((v, t) => { const x = mapX(t), y = mapY(v); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); });
+      ctx.restore();
+      ctx.beginPath(); ctx.strokeStyle = C.port; ctx.lineWidth = 2.6;
+      focusC.wrPath.forEach((v, t) => { const x = mapX(t), y = mapY(v); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+      ctx.stroke();
+      ctx.fillStyle = C.muted; ctx.textAlign = "center";
+      [0, Math.round((retYrs - 1) / 2), retYrs - 1].forEach(t => ctx.fillText("Yr " + (t + 1), mapX(t), h - 8));
+    }
+
+    function computeAndDrawLifetime(s, eqW, workYrs, retYrs, saveRate, timing, cohorts) {
+      // Accumulation cohorts: 30-yr work ending in year Y
+      const acc = [];
+      for (let i = workYrs; i < s.years.length; i++) {
+        let mult = 0;
+        for (let k = 0; k < workYrs; k++) {
+          const idx = i - workYrs + k;
+          const rr = (1 + eqW * s.eq[idx] + (1 - eqW) * s.bd[idx]) / (1 + s.inf[idx]) - 1;
+          mult = (mult + saveRate) * (1 + rr);
+        }
+        acc.push({ retYr: s.years[i], mult });
+      }
+      const mults = acc.map(a => a.mult).slice().sort((a, b) => a - b);
+      const minA = acc.reduce((a, b) => b.mult < a.mult ? b : a, acc[0]);
+      const maxA = acc.reduce((a, b) => b.mult > a.mult ? b : a, acc[0]);
+      const minM = cohorts.reduce((a, b) => b.mwr < a.mwr ? b : a, cohorts[0]);
+      const maxM = cohorts.reduce((a, b) => b.mwr > a.mwr ? b : a, cohorts[0]);
+
+      document.getElementById("kAccMed").textContent = quantileSorted(mults, 0.5).toFixed(1) + "×";
+      document.getElementById("kAccSub").textContent = `${workYrs}y @ ${Math.round(saveRate * 100)}%`;
+      document.getElementById("kAccRng").textContent = `${minA.mult.toFixed(1)}× – ${maxA.mult.toFixed(1)}×`;
+      document.getElementById("kAccRngSub").textContent = `${minA.retYr} / ${maxA.retYr}`;
+      document.getElementById("kMwrRng").textContent = `${minM.mwr.toFixed(2)}% – ${maxM.mwr.toFixed(2)}%`;
+      document.getElementById("kMwrRngSub").textContent = `${minM.yr} / ${maxM.yr}`;
+
+      // MC R^2 attribution (Ex. 3.6): 2,000 simulated 60-yr lifecycles (fast & accurate to 0.2%)
+      const totYrs = workYrs + retYrs;
+      const N = 2500;
+      const rng = mulberry32(state.seed);
+      const W = s.years.length;
+      const matR = Array.from({ length: totYrs }, () => new Float64Array(N));
+      const accOut = new Float64Array(N), retOut = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        const path = state.mcMode === "ch3a" ? simulateCh3APath(CH3A_CAL, totYrs, rng) : null;
+        const eqArr = new Float64Array(totYrs), bdArr = new Float64Array(totYrs), infArr = new Float64Array(totYrs);
+        for (let t = 0; t < totYrs; t++) {
+          if (path) { eqArr[t] = path.eq[t]; bdArr[t] = path.bd[t]; infArr[t] = path.inf[t]; }
+          else { const k = Math.floor(rng() * W); eqArr[t] = s.eq[k]; bdArr[t] = s.bd[k]; infArr[t] = s.inf[k]; }
+          matR[t][i] = (1 + eqW * eqArr[t] + (1 - eqW) * bdArr[t]) / (1 + infArr[t]) - 1;
+        }
+        let mult = 0;
+        for (let t = 0; t < workYrs; t++) mult = (mult + saveRate) * (1 + matR[t][i]);
+        accOut[i] = mult;
+        retOut[i] = computeCohortMWR(eqArr, bdArr, infArr, workYrs, retYrs, eqW, { timing });
+      }
+      const r2ByYr = [];
+      for (let t = 0; t < totYrs; t++) {
+        const yVec = t < workYrs ? accOut : retOut;
+        const x = matR[t];
+        const mx = meanArr(x), my = meanArr(yVec);
+        let cov = 0, vx = 0, vy = 0;
+        for (let i = 0; i < N; i++) {
+          const dx = x[i] - mx, dy = yVec[i] - my;
+          cov += dx * dy; vx += dx * dx; vy += dy * dy;
+        }
+        r2ByYr.push(vx > 0 && vy > 0 ? ((cov * cov) / (vx * vy)) * 100 : 0);
+      }
+      document.getElementById("kYr1R2").textContent = r2ByYr[workYrs].toFixed(1) + "%";
+
+      // Draw Adam chart (Ex. 3.4 & 3.5)
+      const sc1 = setupCanvas(document.getElementById("adamCanvas"));
+      if (sc1) {
+        const { ctx, w, h } = sc1; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const pad = { l: 44, r: 44, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const mMap = {}; cohorts.forEach(c => { mMap[c.yr] = c.mwr; });
+        const aMap = {}; acc.forEach(a => { aMap[a.retYr] = a.mult; });
+        const allY = s.years;
+        const mapX = i => pad.l + (i / (allY.length - 1)) * cw;
+        const maxMult = Math.max(18, maxA.mult) * 1.05;
+        const maxMwr = Math.max(10, maxM.mwr) * 1.05;
+        const mapY1 = v => pad.t + ch - (v / maxMult) * ch;
+        const mapY2 = v => pad.t + ch - (v / maxMwr) * ch;
+        ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT;
+        [0, 5, 10, 15, 20].filter(v => v <= maxMult).forEach(v => {
+          const y = mapY1(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+          ctx.fillStyle = C.accent; ctx.textAlign = "right"; ctx.fillText(v + "×", pad.l - 5, y + 4);
+        });
+        [0, 4, 8, 12].filter(v => v <= maxMwr).forEach(v => {
+          ctx.fillStyle = C.port; ctx.textAlign = "left"; ctx.fillText(v + "%", w - pad.r + 5, mapY2(v) + 4);
+        });
+        ctx.beginPath(); ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
+        let started = false;
+        allY.forEach((y, i) => { if (aMap[y] !== undefined) { const px = mapX(i), py = mapY1(aMap[y]); if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py); } });
+        ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle = C.port; ctx.lineWidth = 2;
+        started = false;
+        allY.forEach((y, i) => { if (mMap[y] !== undefined) { const px = mapX(i), py = mapY2(mMap[y]); if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py); } });
+        ctx.stroke();
+        ctx.fillStyle = C.muted; ctx.textAlign = "center";
+        allY.forEach((y, i) => { if (y % 20 === 0) ctx.fillText(String(y), mapX(i), h - 8); });
+      }
+
+      // Draw R2 chart (Ex. 3.6)
+      const sc2 = setupCanvas(document.getElementById("r2Canvas"));
+      if (sc2) {
+        const { ctx, w, h } = sc2; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const pad = { l: 42, r: 16, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const maxR2 = Math.max(15, ...r2ByYr) * 1.1;
+        const bw = Math.max(2, (cw / totYrs) * 0.72);
+        const mapX = i => pad.l + ((i + 0.5) / totYrs) * cw;
+        const mapY = v => pad.t + ch - (v / maxR2) * ch;
+        ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right"; ctx.fillStyle = C.muted;
+        computeNiceLinearTicks(0, maxR2, 4).forEach(v => {
+          const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+          ctx.fillText(v.toFixed(0) + "%", pad.l - 5, y + 4);
+        });
+        r2ByYr.forEach((v, i) => {
+          ctx.fillStyle = i < workYrs ? C.accent : C.port;
+          const x = mapX(i), y = mapY(v);
+          ctx.fillRect(x - bw / 2, y, bw, pad.t + ch - y);
+        });
+        ctx.fillStyle = C.muted; ctx.textAlign = "center";
+        [0, workYrs - 1, workYrs, totYrs - 1].forEach(i => ctx.fillText("Yr " + (i + 1), mapX(i), h - 8));
+      }
+    }
+
+    function computeAndDrawReverse(s, eqW, workYrs, retYrs, saveRate, timing, cohorts) {
+      // Draw Ex. 3.8 MWR vs Fixed-CAGR MWR
+      const sc1 = setupCanvas(document.getElementById("seqGapCanvas"));
+      if (sc1) {
+        const { ctx, w, h } = sc1; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const pad = { l: 44, r: 16, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const maxM = Math.max(10, ...cohorts.map(c => Math.max(c.mwr, c.cagrMwr))) * 1.05;
+        const ticks = computeNiceLinearTicks(0, maxM, 4); const topM = ticks[ticks.length - 1];
+        const mapX = i => pad.l + (i / (cohorts.length - 1)) * cw;
+        const mapY = v => pad.t + ch - (v / topM) * ch;
+        ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right"; ctx.fillStyle = C.muted;
+        ticks.forEach(v => { const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke(); ctx.fillText(v + "%", pad.l - 5, y + 4); });
+        ctx.beginPath(); ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
+        cohorts.forEach((c, i) => { const x = mapX(i), y = mapY(c.cagrMwr); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+        ctx.stroke();
+        ctx.beginPath(); ctx.strokeStyle = C.port; ctx.lineWidth = 2.4;
+        cohorts.forEach((c, i) => { const x = mapX(i), y = mapY(c.mwr); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+        ctx.stroke();
+        ctx.fillStyle = C.muted; ctx.textAlign = "center";
+        cohorts.forEach((c, i) => { if (c.yr % 15 === 0 || i === 0 || i === cohorts.length - 1) ctx.fillText(String(c.yr), mapX(i), h - 8); });
+      }
+
+      // Compute Ex. 3.9 Reverse-Engineered IRRs across 5,000 runs
+      const N = 5000, rng = mulberry32(state.seed), W = s.years.length;
+      const irrLump = new Float64Array(N), irrAcc = new Float64Array(N), irrRet = new Float64Array(N);
+      const tType = timing === "start" ? 1 : 0;
+      for (let i = 0; i < N; i++) {
+        const len = Math.max(workYrs, retYrs);
+        const path = state.mcMode === "ch3a" ? simulateCh3APath(CH3A_CAL, len, rng) : null;
+        const eqArr = new Float64Array(len), bdArr = new Float64Array(len), infArr = new Float64Array(len);
+        const rr = new Float64Array(len);
+        for (let t = 0; t < len; t++) {
+          if (path) { eqArr[t] = path.eq[t]; bdArr[t] = path.bd[t]; infArr[t] = path.inf[t]; }
+          else { const k = Math.floor(rng() * W); eqArr[t] = s.eq[k]; bdArr[t] = s.bd[k]; infArr[t] = s.inf[k]; }
+          rr[t] = (1 + eqW * eqArr[t] + (1 - eqW) * bdArr[t]) / (1 + infArr[t]) - 1;
+        }
+        let prod = 1.0;
+        for (let t = 0; t < retYrs; t++) prod *= (1 + rr[t]);
+        irrLump[i] = (Math.pow(prod, 1 / retYrs) - 1) * 100;
+        let mult = 0;
+        for (let t = 0; t < workYrs; t++) mult = (mult + saveRate) * (1 + rr[t]);
+        const rA = calcRATE(workYrs, -saveRate, 0, mult, 0);
+        irrAcc[i] = isFinite(rA) ? rA * 100 : 0;
+        const mwrDec = computeCohortMWR(eqArr, bdArr, infArr, 0, retYrs, eqW, { timing }) / 100;
+        const rRet = calcRATE(retYrs, -mwrDec, 1.0, 0, tType);
+        irrRet[i] = isFinite(rRet) ? rRet * 100 : 0;
+      }
+      irrLump.sort(); irrAcc.sort(); irrRet.sort();
+      const pcts = [0.05, 0.10, 0.25, 0.50, 0.75, 0.90];
+      const isZh = currentLang === "zh-CN";
+      document.getElementById("irrHead").innerHTML = `<tr><th>${isZh ? "投资阶段" : "Investor Phase"}</th>${pcts.map(p => `<th>P${Math.round(p * 100)} (${Math.round((1 - p) * 100)}% ${isZh ? "达标" : "succ."})</th>`).join("")}<th>SD</th></tr>`;
+      const sdOf = a => { const m = meanArr(a); let s2 = 0; for (let i = 0; i < a.length; i++) s2 += (a[i] - m) ** 2; return Math.sqrt(s2 / a.length); };
+      const rows = [
+        [isZh ? "整笔投资 (Lump-Sum)" : "Lump-Sum Investor", irrLump],
+        [isZh ? "工作期储蓄 (Accumulator)" : "Career Accumulator", irrAcc],
+        [isZh ? "退休期提取 (Retiree)" : "Retiree (Sequence Risk)", irrRet],
+      ];
+      document.getElementById("irrBody").innerHTML = rows.map(([lbl, arr]) => `<tr><td><strong>${lbl}</strong></td>${pcts.map(p => `<td>${quantileSorted(arr, p).toFixed(2)}%</td>`).join("")}<td>${sdOf(arr).toFixed(2)}%</td></tr>`).join("");
+
+      const sc2 = setupCanvas(document.getElementById("irrCanvas"));
+      if (sc2) {
+        const { ctx, w, h } = sc2; const C = getThemeColors(); ctx.clearRect(0, 0, w, h);
+        const pad = { l: 44, r: 16, t: 18, b: 28 }, cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+        const minY = Math.min(-2, quantileSorted(irrRet, 0.05)) - 0.5, maxY = Math.max(10, quantileSorted(irrRet, 0.95)) + 0.5;
+        const ticks = computeNiceLinearTicks(minY, maxY, 4); const bV = ticks[0], tV = ticks[ticks.length - 1];
+        const mapX = i => pad.l + (i / (pcts.length - 1)) * cw;
+        const mapY = v => pad.t + ch - ((v - bV) / (tV - bV || 1)) * ch;
+        ctx.strokeStyle = C.grid; ctx.font = CANVAS_FONT; ctx.textAlign = "right"; ctx.fillStyle = C.muted;
+        ticks.forEach(v => { const y = mapY(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke(); ctx.fillText(v.toFixed(1) + "%", pad.l - 5, y + 4); });
+        const cols = [C.muted, C.accent, C.port];
+        rows.forEach(([_, arr], rIdx) => {
+          ctx.beginPath(); ctx.strokeStyle = cols[rIdx]; ctx.lineWidth = rIdx === 2 ? 2.6 : 1.8;
+          pcts.forEach((p, i) => { const x = mapX(i), y = mapY(quantileSorted(arr, p)); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+          ctx.stroke();
+        });
+        ctx.fillStyle = C.muted; ctx.textAlign = "center";
+        pcts.forEach((p, i) => ctx.fillText("P" + Math.round(p * 100), mapX(i), h - 8));
+      }
+    }
+
+    function applyPreset(name) {
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active", b.dataset.preset === name));
+      if (name === "ex32") {
+        document.getElementById("initWrPct").value = "6.3"; document.getElementById("eqPctSlider").value = "50";
+        document.getElementById("focusCohort").value = "1966";
+        document.querySelector('[data-tab="glide"]').click();
+      } else if (name === "ex34") {
+        document.getElementById("saveRatePct").value = "15"; document.getElementById("workYrs").value = "30";
+        document.querySelector('[data-tab="lifetime"]').click();
+      } else if (name === "ex38") {
+        document.querySelector('[data-tab="reverse"]').click();
+      } else if (name === "ex39") {
+        document.querySelector('[data-tab="reverse"]').click();
+      }
+      computeAll();
+    }
+
+    function onThemeOrLangChange() { computeAll(); }
+
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      b.addEventListener("click", () => {
+        state.tab = b.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(x => { x.classList.toggle("active", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+        document.getElementById("paneGlide").style.display = state.tab === "glide" ? "block" : "none";
+        document.getElementById("paneLifetime").style.display = state.tab === "lifetime" ? "block" : "none";
+        document.getElementById("paneReverse").style.display = state.tab === "reverse" ? "block" : "none";
+        computeAll();
+      });
+    });
+    document.querySelectorAll("#mcModeCtl button").forEach(b => {
+      b.addEventListener("click", () => {
+        state.mcMode = b.dataset.v;
+        document.querySelectorAll("#mcModeCtl button").forEach(x => setBtnActive(x, x === b));
+        computeAll();
+      });
+    });
+    document.getElementById("btnRerun").addEventListener("click", () => { state.seed = (state.seed + 7919) >>> 0; computeAll(); });
+    document.querySelectorAll(".preset-btn").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
+    document.getElementById("btnReset").addEventListener("click", () => applyPreset("ex32"));
+    document.getElementById("btnExportCsv").addEventListener("click", () => {
+      downloadCsv("pfau_ch3_cohorts.csv", ["Start_Year", "End_Real_Wealth_100", "MWR_pct", "Real_CAGR_pct", "Fixed_CAGR_MWR_pct", "Depleted_Yr"], state.lastExport);
+    });
+    ["datasetSelect", "eqPctSlider", "initWrPct", "retYrs", "workYrs", "saveRatePct", "focusCohort", "timingSel"].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("input", computeAll);
+      el.addEventListener("change", computeAll);
+    });
+    window.addEventListener("resize", () => requestAnimationFrame(computeAll));
+
+    initSharedControls();
+    applyStaticI18n();
+    computeAll();
+
+  </script>
+</body>
+</html>

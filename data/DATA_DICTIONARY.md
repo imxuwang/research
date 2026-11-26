@@ -44,3 +44,15 @@ All values in the CSV files are expressed as **annual percentage total returns**
 Because Bloomberg's Global Aggregate Bond Index begins on **January 1, 1990**, rows for `1988–1989` (in the 1988–2025 file) and `1976–1989` (in the 1976–2025 file) are intentionally left blank (`""`) rather than fabricated. For backtests starting in 1988 or 1976 that include a Global Bond sleeve, standard institutional practice (e.g., Dimensional Fund Advisors' Core Allocations) is one of:
 1. Start the Global Bond allocation test in **1990–2025** (36 years), or
 2. Proxy pre-1990 Global Aggregate Hedged USD returns (`1976–1989`) using `Bloomberg_US_Agg_Bond_pct` (since FX-hedged global sovereign/aggregate bond returns converge closely to domestic USD interest-rate carry plus global term premium).
+
+---
+
+## 4. Extended Datasets for *How Much Can I Spend in Retirement?* (`docs/retirement-spending/`)
+
+| File | Span / Scope | Primary Use Case & Sources |
+| :--- | :--- | :--- |
+| `shiller_us_1871_2025_annual.csv` | **1871–2025** (155 yrs) | **Long-Run US Stocks, 10Y Bonds, CAPE (`PE10`), Yields & CPI**: Robert Shiller `ie_data.xls` (Jan-to-Jan S&P TR, 10Y Bond TR, CPI, `PE10`, `GS10` for 1871–2023), extended through 2025 with NYU Stern (`1928–2025` T-Bills & 2024–2025 returns), `datasets/s-and-p-500` prices, and FRED (`CPIAUCSL`, `GS10`, `TB3MS`). `Jan_PE10_CAPE` is blank (`""`) for 1871–1880 before 10 years of earnings exist. |
+| `us_treasury_tips_yields.csv` | **2003–2026** (25 snapshots) | **Nominal Treasury & TIPS Real Yield Curves + Breakeven Inflation**: FRED constant-maturity nominal yields (`DGS1`–`DGS30`), TIPS real yields (`DFII5`–`DFII30`), and implied breakeven inflation (`BEI_5Y`–`BEI_30Y`) on the first January trading day each year (plus `2017-01-03` book baseline and latest `2026-11-24`). Pre-2010 `DFII30` and pre-2004 `DFII20` gaps remain blank (`""`). |
+| `pfau_2017_strips_tips_quotes.csv` | **2017–2046** (30 rungs) | **WSJ Jan 3, 2017 Bond Ladder Quotes (Exhibits 7.11 & 7.12)**: Exact 30-year Treasury STRIPS ask prices & YTMs and TIPS real coupons, real ask prices, accrued principals, nominal ask prices, real YTMs, and maturity gaps (`2030–2031`, `2033–2039` have `TIPS_Available=0`). |
+| `mortality_and_rmd_tables.csv` | **Ages 50–120** (71 rows) | **Mortality & Statutory RMD Divisors**: Official SSA Period Life Table (`table4c6`), SOA 2012 Individual Annuity Mortality Basic (`2581`/`2582`) & Period (`2585`/`2586`) tables, SOA Projection Scale G2 (`2583`/`2584`), Pre-2022 IRS Uniform Lifetime Table (extended to ages 60–69 per Ch. 6), and 2022+ SECURE Act RMD divisors. |
+| `dms_global_swr_benchmarks.csv` | **1900–2015** (22 series) | **International 4% Rule Benchmarks (Exhibits 5.2–5.3)**: Dimson-Marsh-Staunton / Morningstar 20-country + World + World Ex-US 30-year 50/50 Stocks/Bills SAFEMAX, SAFEMAX year, 10th-percentile MWR, and 4%/5% failure statistics as published in Ch. 5. |
