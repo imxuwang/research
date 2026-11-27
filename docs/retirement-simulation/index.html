@@ -773,6 +773,38 @@
       pointer-events: none;
       transition: opacity 0.14s;
     }
+    .rolling-empty-state {
+      display: none;
+      padding: 28px 20px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: left;
+    }
+    #tabSingle.is-rolling-empty #rollingEmptyState { display: block; }
+    #tabSingle.is-rolling-empty #simKpis,
+    #tabSingle.is-rolling-empty > .panel-block { display: none; }
+    .rolling-empty-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 6px;
+      text-wrap: balance;
+    }
+    .rolling-empty-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin: 0 0 14px;
+      line-height: 1.5;
+      max-width: 64ch;
+      text-wrap: pretty;
+    }
+    .rolling-empty-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
     .tabs-controls {
       display: flex;
       gap: 6px;
@@ -1783,6 +1815,7 @@
         <select id="simMode">
           <option value="sequential" selected>sequential</option>
           <option value="random">random</option>
+          <option value="rolling">rolling</option>
         </select>
         <select id="rebalanceMode">
           <option value="annual" selected>annual</option>
@@ -1814,6 +1847,9 @@
               <span data-i18n="tab_random">Random</span>
               <span class="tab-spinner" aria-hidden="true"></span>
             </button>
+            <button type="button" class="tab-btn" id="tabBtnRolling" role="tab" aria-selected="false" aria-controls="tabSingle" tabindex="-1" data-tab="rolling" data-i18n-title="tip_tab_roll" title="Run every complete rolling historical window starting from Data from through the window ending at Data to">
+              <span data-i18n="tab_rolling">Rolling</span>
+            </button>
             <button type="button" class="tab-btn" id="tabBtnCompare" role="tab" aria-selected="false" aria-controls="tabCompare" tabindex="-1" data-tab="compare" data-i18n-title="tip_tab_compare" title="Vary one parameter across multiple values with 10,000 paired random runs and compare key metrics">
               <span data-i18n="tab_compare">Compare</span>
               <span class="tab-spinner" aria-hidden="true"></span>
@@ -1844,7 +1880,7 @@
           </div>
         </div>
         <div class="results-body">
-      <!-- TAB 1: UNIFIED SIMULATION VIEW (SEQUENTIAL OR MULTI-RUN RANDOM) -->
+      <!-- TAB 1: UNIFIED SIMULATION VIEW (SEQUENTIAL, RANDOM, OR ROLLING) -->
       <div id="tabSingle" role="tabpanel" aria-labelledby="tabBtnSequential">
         <div class="run-status-bar is-flush-top" id="randRunStatus" role="status" aria-live="polite">
           <div class="run-status-inner">
@@ -1855,6 +1891,14 @@
             <span class="run-status-prog tabular" id="randRunStatusProg">0%</span>
           </div>
           <div class="run-progress-track"><div class="run-progress-fill" id="randRunProgressFill"></div></div>
+        </div>
+        <div id="rollingEmptyState" class="rolling-empty-state" role="status">
+          <div class="rolling-empty-title" id="rollingEmptyTitle"></div>
+          <p class="rolling-empty-desc" id="rollingEmptyDesc"></p>
+          <div class="rolling-empty-actions">
+            <button type="button" class="btn btn-accent" id="btnRollUseLongDataset"></button>
+            <button type="button" class="btn" id="btnRollMatchHorizon"></button>
+          </div>
         </div>
         <div class="kpis kpis-flush-top" id="simKpis">
           <div class="kpi kpi-port">
@@ -1915,6 +1959,15 @@
           <div class="card-title">
             <h2 class="card-title" id="ledgerTitle" style="margin:0;">Simulated Year-by-Year Cashflow &amp; Balance Ledger</h2>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div class="seg-group" id="rollingViewWrap" role="group" aria-label="Rolling table view" data-i18n-aria-label="aria_rolling_view" style="display:none;">
+                <button type="button" class="scale-btn active" data-rview="cohorts" aria-pressed="true" data-i18n="roll_view_cohorts">By Window</button>
+                <button type="button" class="scale-btn" data-rview="years" aria-pressed="false" data-i18n="roll_view_years">By Sim Year</button>
+              </div>
+              <div class="filter-pills" id="rollingFilters" role="group" aria-label="Filter rolling windows" data-i18n-aria-label="aria_rolling_filter" style="display:none;">
+                <button type="button" class="filter-pill active" data-rfilter="all" aria-pressed="true" data-i18n="rflt_all">All Windows</button>
+                <button type="button" class="filter-pill" data-rfilter="depleted" aria-pressed="false" data-i18n="rflt_depleted">Depleted</button>
+                <button type="button" class="filter-pill" data-rfilter="below_init" aria-pressed="false" data-i18n="rflt_below_init">Below Initial</button>
+              </div>
               <div class="filter-pills" id="ledgerFilters" role="group" aria-label="Filter ledger rows" data-i18n-aria-label="aria_ledger_filter">
                 <button type="button" class="filter-pill active" data-filter="all" aria-pressed="true" data-i18n="flt_all">All Years</button>
                 <button type="button" class="filter-pill" data-filter="neg" aria-pressed="false" data-i18n="flt_neg">Negative Return</button>
@@ -2232,6 +2285,22 @@
         "en-UK": "Sequential uses {y0}–{yEnd} (first {sim} of {w} yrs); Random draws from all {w} yrs.",
         "zh-CN": "顺序回测使用 {y0}–{yEnd}（前 {sim} 年 / 共 {w} 年）；随机模拟从全部 {w} 年中抽样。"
       },
+      notice_roll_many: {
+        "en-UK": "Rolling runs {n} windows ({sim} yrs each): {f0}–{f1}, {s0}–{s1}, … to {l0}–{l1}.",
+        "zh-CN": "滚动回测共运行 {n} 个窗口（每个 {sim} 年）：{f0}–{f1}、{s0}–{s1} … 直至 {l0}–{l1}。"
+      },
+      notice_roll_two: {
+        "en-UK": "Rolling runs 2 windows ({sim} yrs each): {f0}–{f1} and {l0}–{l1}.",
+        "zh-CN": "滚动回测共运行 2 个窗口（每个 {sim} 年）：{f0}–{f1} 与 {l0}–{l1}。"
+      },
+      notice_roll_one: {
+        "en-UK": "Rolling runs 1 window ({sim} yrs): {f0}–{f1} (matches selected data length).",
+        "zh-CN": "滚动回测运行 1 个窗口（{sim} 年）：{f0}–{f1}（与所选数据年数一致）。"
+      },
+      notice_roll_short: {
+        "en-UK": "Selected window {y0}–{y1} ({w} yrs) is shorter than {sim} years; no complete {sim}-yr rolling window fits.",
+        "zh-CN": "所选区间 {y0}–{y1}（共 {w} 年）短于 {sim} 年，无法构成完整的 {sim} 年滚动窗口。"
+      },
       lbl_stress_scenarios: { "en-UK": "Stress-test scenarios", "zh-CN": "压力测试情景" },
       tip_stress_scenarios: {
         "en-UK": "Three common advisor failure modes: 1966 Stagflation (high CPI + weak stocks & bonds), 2000/1929 Early Crash (immediate bear market), and Lower-Return CMA (−2.0%/yr stocks, −1.0%/yr bonds).",
@@ -2270,8 +2339,8 @@
         "zh-CN": "1929 大萧条（1929–2025）：退休初期股市暴跌超 80%，对高股票仓位计划最具考验。"
       },
       sc_desc_low_return: {
-        "en-UK": "Lower-return CMA active: −2.0%/yr stocks and −1.0%/yr bonds applied across Sequential, Random, and Compare.",
-        "zh-CN": "低收益 CMA 生效中：所有年份股票 −2.0%/年、债券 −1.0%/年（适用于顺序、随机与对比模式）。"
+        "en-UK": "Lower-return CMA active: −2.0%/yr stocks and −1.0%/yr bonds applied across Sequential, Random, Rolling, and Compare.",
+        "zh-CN": "低收益 CMA 生效中：所有年份股票 −2.0%/年、债券 −1.0%/年（适用于顺序、随机、滚动与对比模式）。"
       },
       cma_tag_short: {
         "en-UK": "CMA −2% eq / −1% bd",
@@ -2364,6 +2433,11 @@
         "en-UK": "10,000 Monte Carlo bootstrap runs sampling years at random with replacement from your selected data window",
         "zh-CN": "从所选历史数据窗口中有放回随机抽样，进行 10,000 次蒙特卡洛模拟"
       },
+      tab_rolling: { "en-UK": "Rolling", "zh-CN": "滚动回测" },
+      tip_tab_roll: {
+        "en-UK": "Run every complete rolling historical window starting from Data from through the window ending at Data to",
+        "zh-CN": "从所选起始年份开始逐年向后滚动，运行至结束年份为止的所有完整历史窗口"
+      },
       tab_data: { "en-UK": "Market & CPI Data", "zh-CN": "市场与 CPI 数据" },
       tip_tab_data: {
         "en-UK": "Inspect annual historical equity/bond returns and US CPI inflation",
@@ -2382,6 +2456,8 @@
       aria_center_stat: { "en-UK": "Summary statistic", "zh-CN": "统计口径" },
       aria_scale: { "en-UK": "Y-axis scale", "zh-CN": "纵轴刻度" },
       aria_ledger_filter: { "en-UK": "Filter ledger rows", "zh-CN": "筛选明细行" },
+      aria_rolling_view: { "en-UK": "Rolling table view", "zh-CN": "滚动表格视图切换" },
+      aria_rolling_filter: { "en-UK": "Filter rolling windows", "zh-CN": "筛选滚动窗口" },
       aria_data_scope: { "en-UK": "Historical data scope", "zh-CN": "历史数据范围" },
       aria_info_spending: { "en-UK": "About annual spending", "zh-CN": "关于首年支出说明" },
       aria_info_bad_yr: { "en-UK": "About bad-year spending cuts", "zh-CN": "关于逆境削减支出说明" },
@@ -2643,8 +2719,8 @@
       cmp_tip_vol: { "en-UK": "Ann. Volatility:", "zh-CN": "年化波动率：" },
       badge_varied_compare: { "en-UK": "Varied in Compare", "zh-CN": "对比变量" },
       tip_swept_compare: {
-        "en-UK": "Swept in Compare mode. Your saved plan setting is preserved for Sequential and Random.",
-        "zh-CN": "当前在参数对比中作为变化变量；原有计划设置已保留，切回顺序或随机模式后自动恢复。"
+        "en-UK": "Swept in Compare mode. Your saved plan setting is preserved for Sequential, Random, and Rolling.",
+        "zh-CN": "当前在参数对比中作为变化变量；原有计划设置已保留，切回顺序、随机或滚动模式后自动恢复。"
       },
       note_bad_yr_trigger_active: {
         "en-UK": "Trigger rule below still applies.",
@@ -2671,7 +2747,99 @@
       status_running_compare_prog: {
         "en-UK": "{done} / {configs} ({pct}%)",
         "zh-CN": "{done} / {configs} ({pct}%)"
-      }
+      },
+
+      // Rolling Window Simulation Tab
+      roll_empty_title: {
+        "en-UK": "Selected range {y0}–{y1} ({w} yrs) is shorter than your {sim}-year horizon",
+        "zh-CN": "当前所选区间 {y0}–{y1}（共 {w} 年）短于 {sim} 年退休模拟期"
+      },
+      roll_empty_desc: {
+        "en-UK": "Rolling simulation tests complete consecutive {sim}-year historical windows without wrapping past {y1}. Select an earlier start year / longer dataset, or shorten Years in retirement to {w} years or less.",
+        "zh-CN": "滚动回测仅测试不跨过 {y1} 年循环拼接的完整连续 {sim} 年历史窗口。请选择起始更早的长周期数据集，或将退休模拟年数缩短至 {w} 年以内。"
+      },
+      roll_btn_use_nyu: {
+        "en-UK": "Use 1928–2025 US Long-Run (98 yrs)",
+        "zh-CN": "切换至 1928–2025 美国长周期 (98 年)"
+      },
+      roll_btn_match_yrs: {
+        "en-UK": "Set horizon to {w} years",
+        "zh-CN": "将退休年数设为 {w} 年"
+      },
+      sub_survival_roll: {
+        "en-UK": "{surv}/{runs} windows • {grew}% ≥ initial",
+        "zh-CN": "{surv}/{runs} 个窗口存活 • {grew}% ≥ 初始本金"
+      },
+      sub_roll_worst_best: {
+        "en-UK": "Worst {wYr} ({wVal}) • Best {bYr} ({bVal})",
+        "zh-CN": "最差 {wYr} ({wVal}) • 最佳 {bYr} ({bVal})"
+      },
+      roll_depl_short: { "en-UK": "Depl. Yr {step}", "zh-CN": "第{step}年耗尽" },
+      sub_survived_roll_cnt: { "en-UK": "{cnt} survived", "zh-CN": "{cnt} 个窗口存活" },
+      sub_worst_roll_dd: { "en-UK": "Worst ({yr}): {dd}", "zh-CN": "最差起点 ({yr})：{dd}" },
+      leg_port_roll: {
+        "en-UK": "Portfolio {stat} ({runs} windows)",
+        "zh-CN": "投资组合{stat}（{runs} 个滚动窗口）"
+      },
+      sub_wealth_roll_hist: {
+        "en-UK": "Rolling {sim}-yr windows: {f0}–{f1} to {l0}–{l1} (Matched US CPI)",
+        "zh-CN": "滚动 {sim} 年窗口：{f0}–{f1} 至 {l0}–{l1}（匹配当年美国 CPI）"
+      },
+      sub_wealth_roll_fix: {
+        "en-UK": "Rolling {sim}-yr windows: {f0}–{f1} to {l0}–{l1} ({rate}% Fixed Inflation)",
+        "zh-CN": "滚动 {sim} 年窗口：{f0}–{f1} 至 {l0}–{l1}（{rate}% 固定通胀率）"
+      },
+      leg_roll_grew: { "en-UK": "Ended ≥ Initial", "zh-CN": "期末 ≥ 初始本金" },
+      leg_roll_below: { "en-UK": "Survived (< Initial)", "zh-CN": "存活但低于本金" },
+      leg_roll_depl: { "en-UK": "Depleted ($0)", "zh-CN": "资产耗尽 ($0)" },
+      leg_roll_init_line: { "en-UK": "Starting Portfolio", "zh-CN": "初始本金基准" },
+      sub_dd_roll: {
+        "en-UK": "Ending balance by retirement start year ({basis})",
+        "zh-CN": "各退休起始年份对应期末资产（{basis}）"
+      },
+      tip_w_roll_init: {
+        "en-UK": "Initial Start (Yr 0 • {runs} windows)",
+        "zh-CN": "初始起点（第 0 年 • {runs} 个窗口）"
+      },
+      tip_w_roll_yr: {
+        "en-UK": "Simulated Year {yr} ({runs} windows)",
+        "zh-CN": "模拟第 {yr} 年（{runs} 个窗口）"
+      },
+      tip_min_worst: { "en-UK": "Worst Window:", "zh-CN": "最差窗口：" },
+      tip_roll_coh_hdr: {
+        "en-UK": "Window {y0}–{y1} ({yrs} yrs)",
+        "zh-CN": "滚动窗口 {y0}–{y1}（{yrs} 年）"
+      },
+      tip_end_bal: { "en-UK": "Ending Balance:", "zh-CN": "期末资产：" },
+      tip_tot_exp: { "en-UK": "Total Expense:", "zh-CN": "累计总支出：" },
+      tip_twwr: { "en-UK": "Port. TWWR:", "zh-CN": "组合年化收益：" },
+      tip_sharpe: { "en-UK": "Sharpe Ratio:", "zh-CN": "夏普比率：" },
+      roll_view_cohorts: { "en-UK": "By Window", "zh-CN": "按滚动窗口" },
+      roll_view_years: { "en-UK": "By Sim Year", "zh-CN": "按模拟年份" },
+      rflt_all: { "en-UK": "All Windows", "zh-CN": "全部窗口" },
+      rflt_depleted: { "en-UK": "Depleted", "zh-CN": "已耗尽" },
+      rflt_below_init: { "en-UK": "Below Initial", "zh-CN": "低于初始本金" },
+      ledger_title_roll_cohorts: {
+        "en-UK": "Rolling Historical Windows ({f0}–{f1} to {l0}–{l1})",
+        "zh-CN": "历史滚动窗口回测明细表（{f0}–{f1} 至 {l0}–{l1}）"
+      },
+      ledger_title_roll_years: {
+        "en-UK": "Simulated Year-by-Year Distribution ({runs} Rolling Windows)",
+        "zh-CN": "逐年模拟结果分布表（{runs} 个滚动窗口）"
+      },
+      th_window: { "en-UK": "Window", "zh-CN": "滚动窗口" },
+      th_outcome: { "en-UK": "Outcome", "zh-CN": "结果状态" },
+      th_multiple: { "en-UK": "Multiple", "zh-CN": "期末倍数" },
+      th_tot_exp_plain: { "en-UK": "Total Expense", "zh-CN": "累计总支出" },
+      th_cut_yrs_plain: { "en-UK": "Cut Yrs", "zh-CN": "缩减年数" },
+      th_worst_yr: { "en-UK": "Worst Yr", "zh-CN": "最差单年" },
+      val_survived: { "en-UK": "Survived", "zh-CN": "存活" },
+      val_survived_below: { "en-UK": "Survived (< initial)", "zh-CN": "存活（低于本金）" },
+      val_depl_yr: { "en-UK": "Depleted Yr {step} ({yr})", "zh-CN": "第 {step} 年耗尽 ({yr})" },
+      cnt_windows_all: { "en-UK": "{total} windows", "zh-CN": "共 {total} 个窗口" },
+      cnt_windows_filtered: { "en-UK": "{shown} / {total} windows", "zh-CN": "显示 {shown} / {total} 个窗口" },
+      cnt_steps_windows: { "en-UK": "{steps} steps • {runs} windows", "zh-CN": "{steps} 年 • {runs} 个窗口" },
+      roll_tbl_no_match: { "en-UK": "No rolling windows match this filter.", "zh-CN": "没有符合当前筛选条件的滚动窗口。" }
     };
 
     const NUM_RANDOM_RUNS = 10000;
@@ -2751,6 +2919,10 @@
       sequenceKey: "",
       batchCache: null,
       batchKey: "",
+      rollingCache: null,
+      rollingKey: "",
+      rollingTableView: "cohorts",
+      rollingFilter: "all",
       compareVar: "equity_pct",
       compareValuesMap: {
         equity_pct: COMPARE_DEFAULTS.equity_pct.values,
@@ -3720,6 +3892,8 @@
     function renderLedger(sim) {
       document.getElementById("ledgerTitle").textContent = t("ledger_title_seq");
       document.getElementById("ledgerFilters").style.display = "inline-flex";
+      document.getElementById("rollingViewWrap").style.display = "none";
+      document.getElementById("rollingFilters").style.display = "none";
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
           <th>${t("th_sim_yr")}</th>
@@ -4239,6 +4413,255 @@
       };
     }
 
+    function compareCohortOutcome(a, b) {
+      if (a.sim.survived !== b.sim.survived) return a.sim.survived ? 1 : -1;
+      if (!a.sim.survived) {
+        const da = a.sim.depletedStep || 0;
+        const db = b.sim.depletedStep || 0;
+        if (da !== db) return da - db;
+        return a.sim.totalExpenseDisp - b.sim.totalExpenseDisp;
+      }
+      return a.sim.endVal - b.sim.endVal;
+    }
+
+    function computeRollingBatch(poolYears, simYears, cfg) {
+      const W = poolYears.length;
+      if (W === 0 || simYears <= 0 || W < simYears) {
+        return {
+          isRolling: true,
+          insufficientData: true,
+          numRuns: 0,
+          simYears,
+          poolYears,
+          initialAsset: cfg.initialAsset
+        };
+      }
+
+      const numRuns = W - simYears + 1;
+      const expenseFloorPct = cfg.expenseFloorPct !== undefined ? cfg.expenseFloorPct : 100;
+      const cohorts = [];
+
+      const endVals = new Float64Array(numRuns);
+      const twwrs = new Float64Array(numRuns);
+      const vols = new Float64Array(numRuns);
+      const sharpes = new Float64Array(numRuns);
+      const maxDDs = new Float64Array(numRuns);
+      const avgInfs = new Float64Array(numRuns);
+      const survExpsTot = new Float64Array(numRuns);
+      const survCutYrs = new Float64Array(numRuns);
+
+      let survivedCount = 0;
+      let grewCount = 0;
+
+      for (let t = 0; t < numRuns; t++) {
+        const yearSeq = poolYears.slice(t, t + simYears);
+        const startYear = yearSeq[0];
+        const endYear = yearSeq[yearSeq.length - 1];
+        const sim = runSequence(yearSeq, cfg);
+
+        const cumExpByStep = new Float64Array(simYears + 1);
+        let cum = 0;
+        cumExpByStep[0] = 0;
+        for (let s = 1; s <= simYears; s++) {
+          cum += sim.rows[s - 1].expDisp;
+          cumExpByStep[s] = cum;
+        }
+
+        cohorts.push({
+          idx: t,
+          startYear,
+          endYear,
+          label: `${startYear}–${endYear}`,
+          sim,
+          cumExpByStep
+        });
+
+        endVals[t] = sim.endVal;
+        twwrs[t] = sim.twwr;
+        vols[t] = sim.vol;
+        sharpes[t] = sim.sharpe;
+        maxDDs[t] = sim.maxDDPct;
+        avgInfs[t] = sim.avgInfPct;
+
+        if (sim.survived) {
+          survExpsTot[survivedCount] = sim.totalExpenseDisp;
+          survCutYrs[survivedCount] = sim.cutYearsCount;
+          survivedCount += 1;
+        }
+        if (sim.endVal >= cfg.initialAsset) grewCount += 1;
+      }
+
+      const worstCohort = cohorts.reduce((a, b) => (compareCohortOutcome(b, a) < 0 ? b : a), cohorts[0]);
+      const bestCohort = cohorts.reduce((a, b) => (compareCohortOutcome(b, a) > 0 ? b : a), cohorts[0]);
+      const worstDDCohort = cohorts.reduce((a, b) => (b.sim.maxDDPct < a.sim.maxDDPct ? b : a), cohorts[0]);
+
+      const bands = {
+        p10: [], p25: [], p50: [], p75: [], p90: [], mean: [],
+        min: [], max: [], minLabel: [],
+        survRate: [], survCount: [],
+        ddP10: [], ddP50: [], ddP90: [], ddMean: [],
+        retMean: [], retP50: [],
+        expMean: [], expP50: [], expP10: [], expP90: [],
+        cumExpP10: [], cumExpP25: [], cumExpP50: [], cumExpP75: [], cumExpP90: [], cumExpMean: [],
+        infMean: [], infP50: [], cutRate: []
+      };
+
+      const sortBuf = new Float64Array(numRuns);
+      const ddBuf = new Float64Array(numRuns);
+      const retBuf = new Float64Array(numRuns);
+      const infBuf = new Float64Array(numRuns);
+
+      for (let s = 0; s <= simYears; s++) {
+        let minV = Infinity;
+        let maxV = -Infinity;
+        let minLbl = cohorts[0].label;
+        let minDepl = Infinity;
+        for (let t = 0; t < numRuns; t++) {
+          const c = cohorts[t];
+          const v = c.sim.points[s].port;
+          sortBuf[t] = v;
+          const deplStep = c.sim.depletedStep !== null ? c.sim.depletedStep : Infinity;
+          if (v < minV || (v === 0 && minV === 0 && deplStep < minDepl)) {
+            minV = v;
+            minLbl = c.label;
+            minDepl = deplStep;
+          }
+          if (v > maxV) maxV = v;
+        }
+        sortBuf.sort();
+        bands.p10.push(quantileSorted(sortBuf, 0.10));
+        bands.p25.push(quantileSorted(sortBuf, 0.25));
+        bands.p50.push(quantileSorted(sortBuf, 0.50));
+        bands.p75.push(quantileSorted(sortBuf, 0.75));
+        bands.p90.push(quantileSorted(sortBuf, 0.90));
+        bands.mean.push(meanArray(sortBuf));
+        bands.min.push(minV);
+        bands.max.push(maxV);
+        bands.minLabel.push(minLbl);
+
+        let alive = 0;
+        for (let t = 0; t < numRuns; t++) {
+          if (cohorts[t].sim.points[s].port > 0) {
+            sortBuf[alive++] = cohorts[t].cumExpByStep[s];
+          }
+        }
+        bands.survCount.push(alive);
+        bands.survRate.push((alive / numRuns) * 100);
+        if (alive > 0) {
+          const cExps = sortBuf.subarray(0, alive);
+          cExps.sort();
+          bands.cumExpP10.push(quantileSorted(cExps, 0.10));
+          bands.cumExpP25.push(quantileSorted(cExps, 0.25));
+          bands.cumExpP50.push(quantileSorted(cExps, 0.50));
+          bands.cumExpP75.push(quantileSorted(cExps, 0.75));
+          bands.cumExpP90.push(quantileSorted(cExps, 0.90));
+          bands.cumExpMean.push(meanArray(cExps));
+        } else {
+          bands.cumExpP10.push(0);
+          bands.cumExpP25.push(0);
+          bands.cumExpP50.push(0);
+          bands.cumExpP75.push(0);
+          bands.cumExpP90.push(0);
+          bands.cumExpMean.push(0);
+        }
+      }
+
+      for (let i = 0; i < simYears; i++) {
+        let aliveStep = 0;
+        let cutCnt = 0;
+        for (let t = 0; t < numRuns; t++) {
+          const c = cohorts[t];
+          const r = c.sim.rows[i];
+          ddBuf[t] = r.ddPct;
+          retBuf[t] = r.portRetPct;
+          infBuf[t] = r.infPct;
+          if (c.sim.points[i + 1].port > 0) {
+            sortBuf[aliveStep++] = r.expDisp;
+            if (r.expCutApplied) cutCnt += 1;
+          }
+        }
+        ddBuf.sort();
+        bands.ddP10.push(quantileSorted(ddBuf, 0.10));
+        bands.ddP50.push(quantileSorted(ddBuf, 0.50));
+        bands.ddP90.push(quantileSorted(ddBuf, 0.90));
+        bands.ddMean.push(meanArray(ddBuf));
+
+        retBuf.sort();
+        bands.retP50.push(quantileSorted(retBuf, 0.50));
+        bands.retMean.push(meanArray(retBuf));
+
+        infBuf.sort();
+        bands.infP50.push(quantileSorted(infBuf, 0.50));
+        bands.infMean.push(meanArray(infBuf));
+
+        if (aliveStep > 0) {
+          const exps = sortBuf.subarray(0, aliveStep);
+          exps.sort();
+          bands.expP10.push(quantileSorted(exps, 0.10));
+          bands.expP50.push(quantileSorted(exps, 0.50));
+          bands.expP90.push(quantileSorted(exps, 0.90));
+          bands.expMean.push(meanArray(exps));
+          bands.cutRate.push((cutCnt / aliveStep) * 100);
+        } else {
+          bands.expP10.push(0);
+          bands.expP50.push(0);
+          bands.expP90.push(0);
+          bands.expMean.push(0);
+          bands.cutRate.push(0);
+        }
+      }
+
+      endVals.sort();
+      twwrs.sort();
+      vols.sort();
+      sharpes.sort();
+      maxDDs.sort();
+      avgInfs.sort();
+      const expsTot = survivedCount > 0 ? survExpsTot.subarray(0, survivedCount) : new Float64Array(1);
+      const cutYrsArr = survivedCount > 0 ? survCutYrs.subarray(0, survivedCount) : new Float64Array(1);
+      if (survivedCount > 0) {
+        expsTot.sort();
+        cutYrsArr.sort();
+      }
+
+      return {
+        isRolling: true,
+        insufficientData: false,
+        numRuns,
+        simYears,
+        poolYears,
+        initialAsset: cfg.initialAsset,
+        cohorts,
+        worstCohort,
+        bestCohort,
+        worstDDCohort,
+        survivedCount,
+        survivalPct: (survivedCount / numRuns) * 100,
+        grewPct: (grewCount / numRuns) * 100,
+        endMean: meanArray(endVals),
+        endMedian: quantileSorted(endVals, 0.50),
+        endP10: quantileSorted(endVals, 0.10),
+        endP90: quantileSorted(endVals, 0.90),
+        expMean: survivedCount > 0 ? meanArray(expsTot) : 0,
+        expMedian: survivedCount > 0 ? quantileSorted(expsTot, 0.50) : 0,
+        twwrMean: meanArray(twwrs),
+        twwrMedian: quantileSorted(twwrs, 0.50),
+        volMean: meanArray(vols),
+        volMedian: quantileSorted(vols, 0.50),
+        sharpeMean: meanArray(sharpes),
+        sharpeMedian: quantileSorted(sharpes, 0.50),
+        maxDDMean: meanArray(maxDDs),
+        maxDDMedian: quantileSorted(maxDDs, 0.50),
+        maxDDP10: quantileSorted(maxDDs, 0.10),
+        infMean: meanArray(avgInfs),
+        infMedian: quantileSorted(avgInfs, 0.50),
+        cutYrsMean: survivedCount > 0 ? meanArray(cutYrsArr) : 0,
+        cutYrsMedian: survivedCount > 0 ? quantileSorted(cutYrsArr, 0.50) : 0,
+        expenseFloorPct,
+        bands
+      };
+    }
+
     function drawRandomBandChart(batch, hoverStep = state.hoverStepIdx) {
       const canvas = document.getElementById("wealthCanvas");
       const { ctx, w, h } = setupCanvas(canvas);
@@ -4376,7 +4799,7 @@
         });
       }
 
-      canvas._chartMeta = { kind: "random", batch, ptsLen: simYears + 1, pad, cw, ch, mapX, mapY, w, h };
+      canvas._chartMeta = { kind: batch.isRolling ? "rolling" : "random", batch, ptsLen: simYears + 1, pad, cw, ch, mapX, mapY, w, h };
     }
 
     function drawRandomDDChart(batch, hoverStep = state.hoverBarIdx) {
@@ -4503,9 +4926,145 @@
       canvas._ddMeta = { kind: "random_exp", batch, ptsLen: simYears + 1, pad, cw, ch, mapX, mapY, w, h };
     }
 
-    function renderRandomSummaryTable(batch) {
-      document.getElementById("ledgerTitle").textContent = t("ledger_title_rand", { runs: batch.numRuns.toLocaleString("en-US") });
+    function drawRollingCohortChart(rolling, hoverIdx = state.hoverBarIdx) {
+      const canvas = document.getElementById("ddCanvas");
+      const { ctx, w, h } = setupCanvas(canvas);
+      const C = getThemeColors();
+      ctx.clearRect(0, 0, w, h);
+
+      const cohorts = rolling.cohorts;
+      if (!cohorts || !cohorts.length) return;
+
+      const pad = { l: 74, r: 22, t: 16, b: 28 };
+      const cw = w - pad.l - pad.r;
+      const ch = h - pad.t - pad.b;
+
+      const isLog = state.scale === "log";
+      const allVals = cohorts.map(c => c.sim.endVal).concat([rolling.initialAsset]);
+      const posVals = allVals.filter(v => v > 0);
+
+      let yTicks, minV, maxV;
+      if (isLog) {
+        const rawMin = Math.max(10, (posVals.length ? Math.min(...posVals) : 100) * 0.85);
+        const rawMax = Math.max(rawMin * 5, Math.max(100, ...allVals) * 1.08);
+        yTicks = computeLogTicks(rawMin, rawMax);
+        minV = Math.min(rawMin, yTicks[0]);
+        maxV = Math.max(rawMax, yTicks[yTicks.length - 1]);
+      } else {
+        const rawMax = Math.max(100, ...allVals) * 1.06;
+        yTicks = computeNiceLinearTicks(0, rawMax, 4);
+        minV = yTicks[0];
+        maxV = yTicks[yTicks.length - 1];
+      }
+
+      const n = cohorts.length;
+      const mapX = i => pad.l + ((i + 0.5) / n) * cw;
+      const mapY = v => {
+        if (isLog) {
+          if (v <= 0) return pad.t + ch;
+          const lv = Math.log10(Math.max(minV, v));
+          const lmin = Math.log10(minV);
+          const lmax = Math.log10(maxV);
+          return pad.t + ch - ((lv - lmin) / (lmax - lmin || 1)) * ch;
+        }
+        return pad.t + ch - ((v - minV) / (maxV - minV || 1)) * ch;
+      };
+
+      ctx.strokeStyle = C.grid;
+      ctx.lineWidth = 1;
+      ctx.fillStyle = C.muted;
+      ctx.font = '11px ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+      ctx.textAlign = "right";
+      yTicks.forEach(v => {
+        const y = mapY(v);
+        if (y < pad.t - 4 || y > pad.t + ch + 4) return;
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(fmtCompactMoney(v), pad.l - 8, y + 4);
+      });
+
+      const yBase = pad.t + ch;
+      if (rolling.initialAsset >= minV && rolling.initialAsset <= maxV) {
+        const yInit = mapY(rolling.initialAsset);
+        ctx.save();
+        ctx.strokeStyle = C.zeroLine;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, yInit);
+        ctx.lineTo(w - pad.r, yInit);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const barW = Math.max(2.5, Math.min(34, (cw / n) * 0.66));
+      const dotR = Math.min(3.5, Math.max(2, barW * 0.45));
+      cohorts.forEach((c, i) => {
+        const cx = mapX(i);
+        const isHover = hoverIdx === i;
+        if (c.sim.survived) {
+          const yTop = Math.min(yBase - 2, mapY(c.sim.endVal));
+          const barH = Math.max(2, yBase - yTop);
+          if (c.sim.endVal >= rolling.initialAsset) {
+            ctx.fillStyle = isHover ? C.accent : C.barPos;
+            ctx.fillRect(cx - barW / 2, yTop, barW, barH);
+          } else {
+            ctx.save();
+            ctx.globalAlpha = isHover ? 1.0 : 0.72;
+            ctx.fillStyle = C.port;
+            ctx.fillRect(cx - barW / 2, yTop, barW, barH);
+            ctx.restore();
+          }
+        } else {
+          ctx.fillStyle = C.danger;
+          ctx.fillRect(cx - barW / 2, yBase - 3, barW, 3);
+          ctx.beginPath();
+          ctx.arc(cx, yBase - 4, isHover ? dotR + 1.5 : dotR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      ctx.fillStyle = C.muted;
+      ctx.font = CANVAS_FONT;
+      ctx.textAlign = "center";
+      const yrStep = n > 60 ? 10 : n > 30 ? 5 : n > 14 ? 2 : 1;
+      let lastTickPx = -999;
+      cohorts.forEach((c, i) => {
+        const isEdge = i === 0 || i === n - 1;
+        if (!isEdge && c.startYear % yrStep !== 0) return;
+        const px = mapX(i);
+        if (px - lastTickPx < 42 && !isEdge) return;
+        if (n > 1 && i === n - 1 && px - lastTickPx < 36) return;
+        ctx.fillText(String(c.startYear), px, h - 8);
+        lastTickPx = px;
+      });
+
+      if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
+        const hx = mapX(hoverIdx);
+        ctx.save();
+        ctx.strokeStyle = C.crosshair;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(hx, pad.t);
+        ctx.lineTo(hx, pad.t + ch);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      canvas._ddMeta = { kind: "rolling_cohort", rolling, cohorts, pad, cw, ch, mapX, mapY, w, h };
+    }
+
+    function renderRandomSummaryTable(batch, { isRolling = false } = {}) {
+      const runsStr = batch.numRuns.toLocaleString("en-US");
+      document.getElementById("ledgerTitle").textContent = isRolling
+        ? t("ledger_title_roll_years", { runs: runsStr })
+        : t("ledger_title_rand", { runs: runsStr });
       document.getElementById("ledgerFilters").style.display = "none";
+      document.getElementById("rollingFilters").style.display = "none";
+      document.getElementById("rollingViewWrap").style.display = isRolling ? "inline-flex" : "none";
       const hasCut = batch.expenseFloorPct < 100;
       const useMean = state.centerStat === "mean";
       const expStatHdr = useMean ? t("stat_avg_short") : t("stat_med_short");
@@ -4554,7 +5113,86 @@
       }
       tbody.innerHTML = "";
       tbody.appendChild(frag);
-      document.getElementById("ledgerCount").textContent = t("cnt_steps_runs", { steps: batch.simYears, runs: batch.numRuns.toLocaleString("en-US") });
+      document.getElementById("ledgerCount").textContent = t(isRolling ? "cnt_steps_windows" : "cnt_steps_runs", { steps: batch.simYears, runs: runsStr });
+    }
+
+    function renderRollingCohortsTable(rolling) {
+      const first = rolling.cohorts[0];
+      const last = rolling.cohorts[rolling.cohorts.length - 1];
+      document.getElementById("ledgerTitle").textContent = t("ledger_title_roll_cohorts", {
+        f0: first.startYear, f1: first.endYear, l0: last.startYear, l1: last.endYear
+      });
+      document.getElementById("ledgerFilters").style.display = "none";
+      document.getElementById("rollingViewWrap").style.display = "inline-flex";
+      document.getElementById("rollingFilters").style.display = "inline-flex";
+
+      const hasCut = rolling.expenseFloorPct < 100;
+      document.getElementById("ledgerHead").innerHTML = `
+        <tr>
+          <th>${t("th_window")}</th>
+          <th>${t("th_outcome")}</th>
+          <th>${t("th_end_bal")}</th>
+          <th>${t("th_multiple")}</th>
+          <th>${t("th_tot_exp_plain")}</th>
+          ${hasCut ? `<th>${t("th_cut_yrs_plain")}</th>` : ""}
+          <th>${t("th_avg_us_inf")}</th>
+          <th>${t("kpi_port_twwr")}</th>
+          <th>${t("kpi_sharpe")}</th>
+          <th>${t("th_drawdown")}</th>
+          <th>${t("th_worst_yr")}</th>
+        </tr>
+      `;
+
+      const filter = state.rollingFilter;
+      const filtered = rolling.cohorts.filter(c => {
+        if (filter === "depleted") return !c.sim.survived;
+        if (filter === "below_init") return c.sim.endVal < rolling.initialAsset;
+        return true;
+      });
+
+      const tbody = document.querySelector("#ledgerTable tbody");
+      const frag = document.createDocumentFragment();
+      if (!filtered.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${hasCut ? 11 : 10}" class="muted" style="text-align:center; padding:18px;">${t("roll_tbl_no_match")}</td>`;
+        frag.appendChild(tr);
+      } else {
+        filtered.forEach(c => {
+          const s = c.sim;
+          const tr = document.createElement("tr");
+          const outcomeHtml = !s.survived
+            ? `<span class="neg"><strong>${t("val_depl_yr", { step: s.depletedStep, yr: s.depletedHistYear })}</strong></span>`
+            : (s.endVal < rolling.initialAsset
+              ? `<span class="muted">${t("val_survived_below")}</span>`
+              : `<span class="pos">${t("val_survived")}</span>`);
+          const endHtml = s.survived
+            ? `<strong>${fmtExactMoney(s.endVal)}</strong>`
+            : `<span class="neg"><strong>$0</strong></span>`;
+          const worstHtml = s.worstRow
+            ? `<span class="${s.worstRow.portRetPct >= 0 ? 'pos' : 'neg'}">${fmtPct(s.worstRow.portRetPct, 1)}</span> <span class="muted">(${s.worstRow.histYear})</span>`
+            : "—";
+
+          tr.innerHTML = `
+            <td><span class="year-pill">${c.label}</span></td>
+            <td>${outcomeHtml}</td>
+            <td>${endHtml}</td>
+            <td class="muted">${s.multiple.toFixed(2)}x</td>
+            <td class="exp-col">${fmtExactMoney(s.totalExpenseDisp)}</td>
+            ${hasCut ? `<td class="muted">${s.cutYearsCount} / ${s.activeYearsCount}</td>` : ""}
+            <td class="inf-col">${fmtPct(s.avgInfPct, 2, false)}</td>
+            <td class="${s.twwr >= 0 ? 'pos' : 'neg'}"><strong>${fmtPct(s.twwr)}</strong></td>
+            <td>${s.sharpe.toFixed(2)}</td>
+            <td class="${s.maxDDPct < -0.05 ? 'neg' : 'muted'}">${fmtPct(s.maxDDPct, 2, false)}</td>
+            <td>${worstHtml}</td>
+          `;
+          frag.appendChild(tr);
+        });
+      }
+      tbody.innerHTML = "";
+      tbody.appendChild(frag);
+      document.getElementById("ledgerCount").textContent = filter === "all"
+        ? t("cnt_windows_all", { total: rolling.cohorts.length })
+        : t("cnt_windows_filtered", { shown: filtered.length, total: rolling.cohorts.length });
     }
 
     const HIST_TABLE_COLS = [
@@ -5415,12 +6053,34 @@
 
     function updateModeNotices(poolYears, simYears, mode) {
       const W = poolYears.length;
-      const isRandOrCompare = state.tab === "random" || state.tab === "compare";
-      elCenterToggleWrap.style.display = isRandOrCompare ? "inline-flex" : "none";
+      const isBandTab = state.tab === "random" || state.tab === "rolling" || state.tab === "compare";
+      elCenterToggleWrap.style.display = isBandTab ? "inline-flex" : "none";
       const rerollBtn = document.getElementById("btnReroll");
-      if (rerollBtn) rerollBtn.style.display = isRandOrCompare ? "inline-flex" : "none";
+      if (rerollBtn) rerollBtn.style.display = (state.tab === "random" || state.tab === "compare") ? "inline-flex" : "none";
       if (W === 0) {
         elSimModeNotice.style.display = "none";
+        return;
+      }
+      if (state.tab === "rolling") {
+        elSimModeNotice.className = W < simYears ? "notice warn" : "notice subtle";
+        elSimModeNotice.style.display = "block";
+        if (W < simYears) {
+          elSimModeNotice.textContent = t("notice_roll_short", {
+            y0: poolYears[0], y1: poolYears[W - 1], w: W, sim: simYears
+          });
+        } else {
+          const n = W - simYears + 1;
+          const f0 = poolYears[0], f1 = poolYears[simYears - 1];
+          const l0 = poolYears[n - 1], l1 = poolYears[W - 1];
+          if (n === 1) {
+            elSimModeNotice.textContent = t("notice_roll_one", { sim: simYears, f0, f1 });
+          } else if (n === 2) {
+            elSimModeNotice.textContent = t("notice_roll_two", { sim: simYears, f0, f1, l0, l1 });
+          } else {
+            const s0 = poolYears[1], s1 = poolYears[simYears];
+            elSimModeNotice.textContent = t("notice_roll_many", { n, sim: simYears, f0, f1, s0, s1, l0, l1 });
+          }
+        }
         return;
       }
       if (state.tab === "sequential" && simYears > W) {
@@ -5564,11 +6224,13 @@
 
       const btnCsv = document.getElementById("btnExportCsv");
       if (btnCsv) {
-        btnCsv.disabled = showRandBanner || showCmpBanner;
+        btnCsv.disabled = showRandBanner || showCmpBanner || (state.tab === "rolling" && Boolean(state.rollingCache && state.rollingCache.insufficientData));
       }
     }
 
     function renderRandomView(batch, eqPct, simYears, cfg) {
+      const tabSingle = document.getElementById("tabSingle");
+      if (tabSingle) tabSingle.classList.remove("is-rolling-empty");
       const { numRuns, poolYears } = batch;
       const { initialAsset, initialExpense, expenseFloorPct, inflationSource, displayBasis } = cfg;
       const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
@@ -5625,6 +6287,103 @@
       renderRandomSummaryTable(batch);
       drawRandomBandChart(batch);
       drawRandomDDChart(batch);
+    }
+
+    function renderRollingView(rolling, eqPct, simYears, cfg) {
+      const tabSingle = document.getElementById("tabSingle");
+      state.lastRun = { mode: "rolling", rolling, eqPct, simYears, cfg };
+
+      if (rolling.insufficientData || rolling.numRuns === 0) {
+        if (tabSingle) tabSingle.classList.add("is-rolling-empty");
+        syncRunningUI();
+        const py = rolling.poolYears || [];
+        const y0 = py.length ? py[0] : (parseInt(elStartYr.value, 10) || "—");
+        const y1 = py.length ? py[py.length - 1] : (parseInt(elEndYr.value, 10) || "—");
+        const w = py.length;
+        document.getElementById("rollingEmptyTitle").textContent = t("roll_empty_title", { y0, y1, w, sim: simYears });
+        document.getElementById("rollingEmptyDesc").textContent = t("roll_empty_desc", { y0, y1, w, sim: simYears });
+        const btnLong = document.getElementById("btnRollUseLongDataset");
+        const btnMatch = document.getElementById("btnRollMatchHorizon");
+        if (btnLong) {
+          btnLong.style.display = simYears <= RAW_DATA.length ? "inline-flex" : "none";
+          btnLong.textContent = t("roll_btn_use_nyu");
+        }
+        if (btnMatch) {
+          btnMatch.style.display = w >= 1 ? "inline-flex" : "none";
+          btnMatch.textContent = t("roll_btn_match_yrs", { w });
+        }
+        return;
+      }
+
+      if (tabSingle) tabSingle.classList.remove("is-rolling-empty");
+      syncRunningUI();
+
+      const { numRuns, cohorts, worstCohort, bestCohort, worstDDCohort } = rolling;
+      const { initialAsset, initialExpense, expenseFloorPct, inflationSource, displayBasis } = cfg;
+      const basisTag = displayBasis === "real" ? t("basis_real") : t("basis_nominal");
+
+      const useMean = state.centerStat === "mean";
+      const statShort = useMean ? t("stat_avg_short") : t("stat_med_short");
+      const statLong = useMean ? t("stat_avg_long") : t("stat_med_long");
+      const centerEnd = useMean ? rolling.endMean : rolling.endMedian;
+      const otherEnd = useMean ? rolling.endMedian : rolling.endMean;
+      const otherShort = useMean ? t("stat_med_short") : t("stat_avg_short");
+      const centerExp = useMean ? rolling.expMean : rolling.expMedian;
+      const centerTwwr = useMean ? rolling.twwrMean : rolling.twwrMedian;
+      const centerVol = useMean ? rolling.volMean : rolling.volMedian;
+      const centerSharpe = useMean ? rolling.sharpeMean : rolling.sharpeMedian;
+      const centerDD = useMean ? rolling.maxDDMean : rolling.maxDDMedian;
+      const survFmt = rolling.survivedCount.toLocaleString("en-US");
+      const runsFmt = numRuns.toLocaleString("en-US");
+
+      setKpi(1, t("kpi_end_bal_stat", { stat: statShort }), fmtCompactMoney(centerEnd), `${otherShort}: ${fmtCompactMoney(otherEnd)} • ${(centerEnd / initialAsset).toFixed(2)}x (${basisTag})`);
+      setKpi(2, t("kpi_survival"), `${rolling.survivalPct.toFixed(1)}%`, t("sub_survival_roll", { surv: survFmt, runs: runsFmt, grew: rolling.grewPct.toFixed(0) }), "kpi-val " + (rolling.survivalPct >= 90 ? "pos" : (rolling.survivalPct < 70 ? "neg" : "")));
+
+      const fmtOutcomeVal = c => c.sim.survived ? fmtCompactMoney(c.sim.endVal) : t("roll_depl_short", { step: c.sim.depletedStep });
+      setKpi(3, t("kpi_p10_p90_end"), `${fmtCompactMoney(rolling.endP10)}–${fmtCompactMoney(rolling.endP90)}`, t("sub_roll_worst_best", {
+        wYr: worstCohort.startYear, wVal: fmtOutcomeVal(worstCohort),
+        bYr: bestCohort.startYear, bVal: fmtOutcomeVal(bestCohort)
+      }));
+
+      const centerInf = useMean ? rolling.infMean : rolling.infMedian;
+      const rollInfLbl = inflationSource === "historical" ? t("inf_lbl_rnd_cpi") : t("inf_lbl_rnd_fix");
+      const centerCutYrs = useMean ? rolling.cutYrsMean : rolling.cutYrsMedian;
+      const rollCutText = (expenseFloorPct < 100 && initialExpense > 0)
+        ? t("sub_cut_rnd", { cut: centerCutYrs.toFixed(1), yrs: simYears })
+        : t("sub_survived_roll_cnt", { cnt: survFmt });
+      setKpi(4, t("kpi_tot_exp_stat", { stat: statShort }), rolling.survivedCount > 0 ? fmtCompactMoney(centerExp) : "—", `${rollCutText} • ${statShort} ${rollInfLbl}: ${centerInf.toFixed(2)}${t("per_yr_unit")}`, "kpi-val exp-col");
+      setKpi(5, t("kpi_port_twwr_stat", { stat: statShort }), fmtPct(centerTwwr), t("sub_vol_sharpe", { vol: centerVol.toFixed(2), sharpe: centerSharpe.toFixed(2) }), "kpi-val " + (centerTwwr >= 0 ? "pos" : "neg"));
+      setKpi(6, t("kpi_max_dd_stat", { stat: statShort }), fmtPct(centerDD, 2, false), t("sub_worst_roll_dd", { yr: worstDDCohort.startYear, dd: fmtPct(worstDDCohort.sim.maxDDPct, 1, false) }), "kpi-val neg");
+
+      document.getElementById("wealthLegendItems").innerHTML = `
+        <div class="legend-item"><span class="swatch" style="background:var(--port); height:4px;"></span><strong>${t("leg_port_roll", { stat: statLong, runs: runsFmt })}</strong></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--equity)"></span><span>${useMean ? t("leg_med_p50") : t("leg_avg_mean")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--mc-inner-band); height:9px;"></span><span>${t("leg_band_25_75")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--mc-outer-band); height:9px;"></span><span>${t("leg_band_10_90")}</span></div>
+      `;
+      const first = cohorts[0];
+      const last = cohorts[cohorts.length - 1];
+      const rollSubBase = cfg.inflationSource === "historical"
+        ? t("sub_wealth_roll_hist", { sim: simYears, f0: first.startYear, f1: first.endYear, l0: last.startYear, l1: last.endYear })
+        : t("sub_wealth_roll_fix", { sim: simYears, f0: first.startYear, f1: first.endYear, l0: last.startYear, l1: last.endYear, rate: cfg.fixedInfPct });
+      const rollHasCma = (cfg.eqReturnShiftPct || 0) !== 0 || (cfg.bdReturnShiftPct || 0) !== 0;
+      document.getElementById("chartSubhead").textContent = rollHasCma
+        ? `${rollSubBase} · ${t("cma_tag_short")}`
+        : rollSubBase;
+
+      document.getElementById("ddLegendItems").innerHTML = `
+        <div class="legend-item"><span class="swatch" style="background:var(--bar-pos); height:8px;"></span><span>${t("leg_roll_grew")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--port); height:8px;"></span><span>${t("leg_roll_below")}</span></div>
+        <div class="legend-item"><span class="swatch" style="background:var(--danger); height:8px;"></span><span>${t("leg_roll_depl")}</span></div>
+        <div class="legend-item"><span class="swatch" style="border-top:2px dashed var(--zero-line); height:0; background:transparent;"></span><span>${t("leg_roll_init_line")}</span></div>
+      `;
+      document.getElementById("ddSubhead").textContent = t("sub_dd_roll", { basis: basisTag });
+
+      if (state.rollingTableView === "years") renderRandomSummaryTable(rolling, { isRolling: true });
+      else renderRollingCohortsTable(rolling);
+
+      drawRandomBandChart(rolling);
+      drawRollingCohortChart(rolling);
     }
 
     async function startRandomJob(bKey, poolYears, simYears, numRuns, cfg, seed, eqPct) {
@@ -5729,7 +6488,11 @@
       const eqWeight = eqPct / 100.0;
       const eqKey = elEquity.value;
       const bdKey = elBond.value;
-      const mode = (state.tab === "random" || state.tab === "compare") ? "random" : (state.tab === "sequential" ? "sequential" : elSimMode.value);
+      const mode = (state.tab === "random" || state.tab === "compare")
+        ? "random"
+        : (state.tab === "rolling"
+          ? "rolling"
+          : (state.tab === "sequential" ? "sequential" : elSimMode.value));
       elSimMode.value = mode;
       const simYears = Math.max(1, Math.min(250, parseInt(elSimYears.value, 10) || 1));
       const numRuns = NUM_RANDOM_RUNS;
@@ -5806,6 +6569,7 @@
       const cmpVals = parseCompareValues(cmpVar, state.compareValuesMap[cmpVar]);
       const expectedRandomKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed });
       const expectedCompareKey = JSON.stringify({ poolYears, simYears, numRuns, cfg, seed: state.seed, cmpVar, cmpVals });
+      const expectedRollingKey = JSON.stringify({ poolYears, simYears, cfg });
       if (activeJobs.random.running && activeJobs.random.key !== expectedRandomKey) {
         cancelJob("random");
       }
@@ -5832,7 +6596,22 @@
         return;
       }
 
+      if (state.tab === "rolling") {
+        let rolling;
+        if (state.rollingKey === expectedRollingKey && state.rollingCache) {
+          rolling = state.rollingCache;
+        } else {
+          rolling = computeRollingBatch(poolYears, simYears, cfg);
+          state.rollingCache = rolling;
+          state.rollingKey = expectedRollingKey;
+        }
+        renderRollingView(rolling, eqPct, simYears, cfg);
+        return;
+      }
+
       if (mode === "sequential") {
+        const tabSingle = document.getElementById("tabSingle");
+        if (tabSingle) tabSingle.classList.remove("is-rolling-empty");
         syncRunningUI();
         const seqKey = `${poolYears[0]}-${poolYears[poolYears.length - 1]}-${poolYears.length}-${simYears}-seq`;
         if (forceResample || state.sequenceKey !== seqKey || state.sampledSequence.length !== simYears) {
@@ -5879,6 +6658,8 @@
         drawWealthChart(sim);
         drawDDChart(sim);
       } else {
+        const tabSingle = document.getElementById("tabSingle");
+        if (tabSingle) tabSingle.classList.remove("is-rolling-empty");
         if (state.batchKey === expectedRandomKey && state.batchCache) {
           syncRunningUI();
           renderRandomView(state.batchCache, eqPct, simYears, cfg);
@@ -5932,6 +6713,11 @@
         if (state.batchCache && !activeJobs.random.running) {
           drawRandomBandChart(state.batchCache, state.hoverStepIdx);
           drawRandomDDChart(state.batchCache, state.hoverBarIdx);
+        }
+      } else if (state.tab === "rolling") {
+        if (state.rollingCache && !state.rollingCache.insufficientData) {
+          drawRandomBandChart(state.rollingCache, state.hoverStepIdx);
+          drawRollingCohortChart(state.rollingCache, state.hoverBarIdx);
         }
       } else if (state.lastRun && state.lastRun.sim) {
         drawWealthChart(state.lastRun.sim, state.hoverStepIdx);
@@ -6295,6 +7081,52 @@
       });
     });
 
+    document.querySelectorAll("#rollingViewWrap .scale-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const nextView = btn.dataset.rview === "years" ? "years" : "cohorts";
+        if (state.rollingTableView === nextView) return;
+        state.rollingTableView = nextView;
+        document.querySelectorAll("#rollingViewWrap .scale-btn").forEach(b => setBtnActive(b, b === btn));
+        saveSettingsToStorage();
+        if (state.tab === "rolling" && state.rollingCache && !state.rollingCache.insufficientData) {
+          if (state.rollingTableView === "years") renderRandomSummaryTable(state.rollingCache, { isRolling: true });
+          else renderRollingCohortsTable(state.rollingCache);
+        }
+      });
+    });
+
+    document.querySelectorAll("#rollingFilters .filter-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.rollingFilter = btn.dataset.rfilter;
+        document.querySelectorAll("#rollingFilters .filter-pill").forEach(b => setBtnActive(b, b === btn));
+        saveSettingsToStorage();
+        if (state.tab === "rolling" && state.rollingCache && !state.rollingCache.insufficientData && state.rollingTableView === "cohorts") {
+          renderRollingCohortsTable(state.rollingCache);
+        }
+      });
+    });
+
+    const elBtnRollLong = document.getElementById("btnRollUseLongDataset");
+    if (elBtnRollLong) {
+      elBtnRollLong.addEventListener("click", () => {
+        elPreset.value = "nyu_full";
+        elEquity.value = PRESETS.nyu_full.eq;
+        elBond.value = PRESETS.nyu_full.bd;
+        populateYearSelects(PRESETS.nyu_full.start, PRESETS.nyu_full.end);
+        updateAll({ forceResample: true });
+      });
+    }
+
+    const elBtnRollMatch = document.getElementById("btnRollMatchHorizon");
+    if (elBtnRollMatch) {
+      elBtnRollMatch.addEventListener("click", () => {
+        const pool = getPoolYears();
+        elSimYears.value = String(Math.max(1, pool.length));
+        syncSimYrChips();
+        updateAll({ forceResample: true });
+      });
+    }
+
     // Tabs & Scale (ARIA tablist + keyboard arrow navigation)
     function syncTabAria(tabName) {
       const tabBtns = Array.from(document.querySelectorAll(".tab-btn"));
@@ -6305,8 +7137,9 @@
         b.setAttribute("tabindex", isAct ? "0" : "-1");
       });
       const tabSingle = document.getElementById("tabSingle");
-      if (tabSingle && (tabName === "sequential" || tabName === "random")) {
-        tabSingle.setAttribute("aria-labelledby", tabName === "random" ? "tabBtnRandom" : "tabBtnSequential");
+      if (tabSingle && (tabName === "sequential" || tabName === "random" || tabName === "rolling")) {
+        tabSingle.setAttribute("aria-labelledby",
+          tabName === "random" ? "tabBtnRandom" : (tabName === "rolling" ? "tabBtnRolling" : "tabBtnSequential"));
       }
     }
 
@@ -6317,7 +7150,7 @@
       state.hoverBarIdx = null;
       state.hoverCmpIdx = null;
       clearAllChartTooltips();
-      const isSimTab = tabName === "sequential" || tabName === "random";
+      const isSimTab = tabName === "sequential" || tabName === "random" || tabName === "rolling";
       syncTabAria(tabName);
       document.getElementById("tabSingle").style.display = isSimTab ? "block" : "none";
       document.getElementById("tabCompare").style.display = tabName === "compare" ? "block" : "none";
@@ -6425,7 +7258,7 @@
       if (e.key === "Escape") clearAllChartTooltips();
     });
 
-    // Wealth Chart Inspect + Crosshair (Sequential & Random — mouse + touch)
+    // Wealth Chart Inspect + Crosshair (Sequential, Random & Rolling — mouse + touch)
     const wealthCanvas = document.getElementById("wealthCanvas");
     const wealthTip = document.getElementById("wealthTooltip");
     function clearWealthTip() {
@@ -6433,7 +7266,7 @@
       if (state.hoverStepIdx !== null && wealthCanvas._chartMeta) {
         const m = wealthCanvas._chartMeta;
         state.hoverStepIdx = null;
-        if (m.kind === "random") drawRandomBandChart(m.batch, null);
+        if (m.kind === "random" || m.kind === "rolling") drawRandomBandChart(m.batch, null);
         else drawWealthChart(m.sim, null);
       }
     }
@@ -6446,24 +7279,26 @@
       const cwVis = m.cw * scaleX;
       const padLVis = m.pad.l * scaleX;
       const padRVis = m.pad.r * scaleX;
-      const redraw = hIdx => m.kind === "random" ? drawRandomBandChart(m.batch, hIdx) : drawWealthChart(m.sim, hIdx);
+      const isBand = m.kind === "random" || m.kind === "rolling";
+      const redraw = hIdx => isBand ? drawRandomBandChart(m.batch, hIdx) : drawWealthChart(m.sim, hIdx);
       if (mx < padLVis || mx > rect.width - padRVis) {
         clearWealthTip();
         return;
       }
-      const totalPts = m.kind === "random" ? m.ptsLen : m.pts.length;
+      const totalPts = isBand ? m.ptsLen : m.pts.length;
       const idx = Math.max(0, Math.min(totalPts - 1, Math.round(((mx - padLVis) / cwVis) * (totalPts - 1))));
       if (state.hoverStepIdx !== idx) {
         state.hoverStepIdx = idx;
         redraw(idx);
       }
       const hxVis = m.mapX(idx) * scaleX;
-      if (m.kind === "random") {
+      if (isBand) {
         const b = m.batch.bands;
         const runsFmt = m.batch.numRuns.toLocaleString("en-US");
+        const isRoll = m.kind === "rolling";
         const hdr = idx === 0
-          ? t("tip_w_rand_init", { runs: runsFmt })
-          : t("tip_w_rand_yr", { yr: idx, runs: runsFmt });
+          ? t(isRoll ? "tip_w_roll_init" : "tip_w_rand_init", { runs: runsFmt })
+          : t(isRoll ? "tip_w_roll_yr" : "tip_w_rand_yr", { yr: idx, runs: runsFmt });
         wealthTip.innerHTML = `
           <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
           <div class="tip-row"><span style="color:var(--port);">${t("tip_med_50")}</span><strong>${fmtExactMoney(b.p50[idx])}</strong></div>
@@ -6472,6 +7307,7 @@
           <div class="tip-row"><span style="color:var(--accent);">${t("tip_p75")}</span><span>${fmtExactMoney(b.p75[idx])}</span></div>
           <div class="tip-row"><span style="color:var(--accent);">${t("tip_p25")}</span><span>${fmtExactMoney(b.p25[idx])}</span></div>
           <div class="tip-row"><span style="color:var(--danger);">${t("tip_p10")}</span><span>${fmtExactMoney(b.p10[idx])}</span></div>
+          ${isRoll && idx > 0 ? `<div class="tip-row"><span style="color:var(--muted);">${t("tip_min_worst")}</span><span>${fmtExactMoney(b.min[idx])} (${b.minLabel[idx]})</span></div>` : ""}
           ${idx > 0 ? `<div class="tip-row"><span style="color:var(--inflation);">${t("tip_avg_inf")}</span><span>${fmtPct(b.infMean[idx - 1], 2, false)}</span></div>` : ""}
           <div class="tip-row" style="margin-top:3px; color:var(--muted);"><span>${t("tip_surv_gt0")}</span><strong>${b.survRate[idx].toFixed(1)}%</strong></div>
         `;
@@ -6493,7 +7329,7 @@
       positionTooltip(wealthTip, hxVis, rect.width);
     }, clearWealthTip);
 
-    // Second Chart Inspect + Crosshair (Sequential Drawdown/Return & Random Cumulative Total Expense)
+    // Second Chart Inspect + Crosshair (Sequential Drawdown/Return, Random Cumulative Expense, & Rolling Outcomes)
     const ddCanvas = document.getElementById("ddCanvas");
     const ddTip = document.getElementById("ddTooltip");
     function clearDDTip() {
@@ -6502,20 +7338,24 @@
         const m = ddCanvas._ddMeta;
         state.hoverBarIdx = null;
         if (m.kind === "random_exp") drawRandomDDChart(m.batch, null);
+        else if (m.kind === "rolling_cohort") drawRollingCohortChart(m.rolling, null);
         else drawDDChart(m.sim, null);
       }
     }
     bindChartPointer(ddCanvas, clientX => {
       const m = ddCanvas._ddMeta;
       const isRandExp = m && m.kind === "random_exp";
-      const totalLen = m ? (isRandExp ? m.ptsLen : m.rows.length) : 0;
+      const isRollCoh = m && m.kind === "rolling_cohort";
+      const totalLen = m ? (isRandExp ? m.ptsLen : (isRollCoh ? m.cohorts.length : m.rows.length)) : 0;
       if (!m || !totalLen) return;
       const rect = ddCanvas.getBoundingClientRect();
       const mx = clientX - rect.left;
       const scaleX = rect.width / m.w;
       const padLVis = m.pad.l * scaleX;
       const cwVis = m.cw * scaleX;
-      const redraw = hIdx => isRandExp ? drawRandomDDChart(m.batch, hIdx) : drawDDChart(m.sim, hIdx);
+      const redraw = hIdx => isRandExp
+        ? drawRandomDDChart(m.batch, hIdx)
+        : (isRollCoh ? drawRollingCohortChart(m.rolling, hIdx) : drawDDChart(m.sim, hIdx));
       if (mx < padLVis || mx > rect.width - m.pad.r * scaleX) {
         clearDDTip();
         return;
@@ -6547,6 +7387,22 @@
         ` : `
           <div style="font-weight:700; margin-bottom:4px;">${hdr}</div>
           <div class="muted">${t("tip_no_surv", { yr: idx })}</div>
+        `;
+      } else if (isRollCoh) {
+        const c = m.cohorts[idx];
+        const s = c.sim;
+        const hdr = t("tip_roll_coh_hdr", { y0: c.startYear, y1: c.endYear, yrs: m.rolling.simYears });
+        const endText = s.survived
+          ? `<strong>${fmtExactMoney(s.endVal)} (${s.multiple.toFixed(2)}x)</strong>`
+          : `<strong class="neg">${t("val_depl_yr", { step: s.depletedStep, yr: s.depletedHistYear })}</strong>`;
+        ddTip.innerHTML = `
+          <div style="font-weight:700; margin-bottom:5px; border-bottom:1px solid var(--border); padding-bottom:4px;">${hdr}</div>
+          <div class="tip-row"><span style="color:var(--port);">${t("tip_end_bal")}</span>${endText}</div>
+          <div class="tip-row"><span style="color:var(--expense);">${t("tip_tot_exp")}</span><strong>${fmtExactMoney(s.totalExpenseDisp)}</strong></div>
+          <div class="tip-row"><span style="color:var(--accent);">${t("tip_twwr")}</span><strong class="${s.twwr >= 0 ? 'pos' : 'neg'}">${fmtPct(s.twwr)}</strong></div>
+          <div class="tip-row"><span style="color:var(--muted);">${t("tip_sharpe")}</span><span>${s.sharpe.toFixed(2)}</span></div>
+          <div class="tip-row"><span style="color:var(--danger);">${t("tip_drawdown")}</span><span>${fmtPct(s.maxDDPct, 2, false)}</span></div>
+          <div class="tip-row"><span style="color:var(--inflation);">${t("tip_avg_inf")}</span><span>${fmtPct(s.avgInfPct, 2, false)}</span></div>
         `;
       } else {
         const r = m.rows[idx];
@@ -6756,7 +7612,67 @@
       if (!state.lastRun) return;
       const { mode, eqPct, simYears } = state.lastRun;
       let lines;
-      if (mode === "random") {
+      let filename = `retirement_simulation_${mode}_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
+      if (mode === "rolling") {
+        const { rolling } = state.lastRun;
+        if (!rolling || rolling.insufficientData || rolling.numRuns === 0) return;
+        if (state.rollingTableView === "years") {
+          const b = rolling.bands;
+          lines = ["SimYear,SurvivedWindows,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,SurvAvgYrExpense,SurvMedYrExpense,SurvAvgCumExpense,SurvMedCumExpense,SurvCumExpP10,SurvCumExpP90,SurvCutRunsPct,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
+          for (let s = 1; s <= rolling.simYears; s++) {
+            lines.push([
+              s,
+              b.survCount[s],
+              b.survRate[s].toFixed(2),
+              b.mean[s].toFixed(2),
+              b.p50[s].toFixed(2),
+              b.p10[s].toFixed(2),
+              b.p25[s].toFixed(2),
+              b.p75[s].toFixed(2),
+              b.p90[s].toFixed(2),
+              b.expMean[s - 1].toFixed(2),
+              b.expP50[s - 1].toFixed(2),
+              b.cumExpMean[s].toFixed(2),
+              b.cumExpP50[s].toFixed(2),
+              b.cumExpP10[s].toFixed(2),
+              b.cumExpP90[s].toFixed(2),
+              b.cutRate[s - 1].toFixed(2),
+              b.infMean[s - 1].toFixed(2),
+              b.infP50[s - 1].toFixed(2),
+              b.ddMean[s - 1].toFixed(2),
+              b.ddP50[s - 1].toFixed(2)
+            ].join(","));
+          }
+          filename = `retirement_simulation_rolling_years_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
+        } else {
+          lines = ["Window,StartYear,EndYear,Years,Survived,DepletedSimYear,DepletedHistYear,EndingBalance,Multiple,TotalExpense,CutYears,ActiveYears,AvgInflationPct,TwwrPct,VolPct,Sharpe,MaxDDPct,WorstYear,WorstYearRetPct"];
+          rolling.cohorts.forEach(c => {
+            const s = c.sim;
+            lines.push([
+              c.label,
+              c.startYear,
+              c.endYear,
+              rolling.simYears,
+              s.survived ? "true" : "false",
+              s.depletedStep !== null ? s.depletedStep : "",
+              s.depletedHistYear !== null ? s.depletedHistYear : "",
+              s.endVal.toFixed(2),
+              s.multiple.toFixed(4),
+              s.totalExpenseDisp.toFixed(2),
+              s.cutYearsCount,
+              s.activeYearsCount,
+              s.avgInfPct.toFixed(2),
+              s.twwr.toFixed(2),
+              s.vol.toFixed(2),
+              s.sharpe.toFixed(3),
+              s.maxDDPct.toFixed(2),
+              s.worstRow ? s.worstRow.histYear : "",
+              s.worstRow ? s.worstRow.portRetPct.toFixed(2) : ""
+            ].join(","));
+          });
+          filename = `retirement_simulation_rolling_${rolling.cohorts[0].startYear}_${rolling.cohorts[rolling.cohorts.length - 1].startYear}_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
+        }
+      } else if (mode === "random") {
         const { batch } = state.lastRun;
         const b = batch.bands;
         lines = ["SimYear,SurvivedRuns,SurvivalPct,AverageBalance,MedianP50,P10,P25,P75,P90,SurvAvgYrExpense,SurvMedYrExpense,SurvAvgCumExpense,SurvMedCumExpense,SurvCumExpP10,SurvCumExpP90,SurvCutRunsPct,AvgInflationPct,MedInflationPct,AvgDrawdownPct,MedDrawdownPct"];
@@ -6809,7 +7725,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `retirement_simulation_${mode}_${eqPct}_${100 - eqPct}_${simYears}yrs.csv`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -7009,6 +7925,8 @@
           centerStat: state.centerStat,
           dataScope: state.dataScope,
           ledgerFilter: state.ledgerFilter,
+          rollingTableView: state.rollingTableView,
+          rollingFilter: state.rollingFilter,
           compareVar: state.compareVar,
           compareValuesMap: state.compareValuesMap,
           theme,
@@ -7127,6 +8045,18 @@
             setBtnActive(b, b.dataset.filter === state.ledgerFilter);
           });
         }
+        if (saved.rollingTableView === "cohorts" || saved.rollingTableView === "years") {
+          state.rollingTableView = saved.rollingTableView;
+          document.querySelectorAll("#rollingViewWrap .scale-btn").forEach(b => {
+            setBtnActive(b, b.dataset.rview === state.rollingTableView);
+          });
+        }
+        if (["all", "depleted", "below_init"].includes(saved.rollingFilter)) {
+          state.rollingFilter = saved.rollingFilter;
+          document.querySelectorAll("#rollingFilters .filter-pill").forEach(b => {
+            setBtnActive(b, b.dataset.rfilter === state.rollingFilter);
+          });
+        }
         if (saved.compareVar && COMPARE_DEFAULTS[saved.compareVar]) {
           state.compareVar = saved.compareVar;
         }
@@ -7145,9 +8075,9 @@
 
         syncSimYrChips();
 
-        if (["sequential", "random", "compare", "data"].includes(saved.tab)) {
+        if (["sequential", "random", "rolling", "compare", "data"].includes(saved.tab)) {
           state.tab = saved.tab;
-          const isSimTab = state.tab === "sequential" || state.tab === "random";
+          const isSimTab = state.tab === "sequential" || state.tab === "random" || state.tab === "rolling";
           syncTabAria(state.tab);
           document.getElementById("tabSingle").style.display = isSimTab ? "block" : "none";
           document.getElementById("tabCompare").style.display = state.tab === "compare" ? "block" : "none";
