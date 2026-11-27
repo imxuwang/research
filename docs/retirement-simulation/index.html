@@ -916,6 +916,30 @@
       padding-top: 8px;
       border-top: 1px solid var(--border);
     }
+    .col-tooltip {
+      display: none;
+      position: fixed;
+      z-index: 65;
+      pointer-events: none;
+      width: max-content;
+      max-width: min(290px, calc(100vw - 24px));
+      background: var(--tooltip-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 9px 12px;
+      box-shadow: var(--tip-shadow);
+      font-family: var(--font);
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-soft);
+      text-wrap: pretty;
+    }
+    .col-tooltip.is-open { display: block; }
+    .col-tip-title {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
 
     .btn {
       background: transparent;
@@ -1068,6 +1092,17 @@
       font-size: 12px;
       font-weight: 600;
       z-index: 2;
+    }
+    th[data-col-tip] {
+      cursor: help;
+      text-decoration: underline dotted var(--border-strong);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      transition: color 0.12s, text-decoration-color 0.12s;
+    }
+    th[data-col-tip]:hover {
+      color: var(--text);
+      text-decoration-color: var(--text-soft);
     }
     tbody tr:nth-child(even) td { background: var(--row-alt); }
     tbody tr:hover td { background: var(--row-hover); }
@@ -1495,7 +1530,7 @@
       .scenario-var-btn, .tab-btn, .scale-btn, .basis-help-btn, .info-btn, .btn, .chev,
       .seg-ctl button, .switch, .switch::after, .run-progress-fill, #tabSingle #simKpis,
       #tabSingle > .panel-block, #tabCompare #cmpKpis, #tabCompare .compare-grid,
-      #tabCompare .compare-table-block {
+      #tabCompare .compare-table-block, th[data-col-tip] {
         transition: none;
       }
       .tab-spinner {
@@ -2203,6 +2238,10 @@
     </div>
   </div>
   <div id="infoPopover" class="info-popover" popover="auto" role="note"></div>
+  <div id="colTooltip" class="col-tooltip" role="tooltip" aria-hidden="true">
+    <div class="col-tip-title" id="colTooltipTitle"></div>
+    <div class="col-tip-body" id="colTooltipBody"></div>
+  </div>
 
   <script>
     // Embedded Historical Annual Return & US CPI Data (1928–2025, % in USD)
@@ -2839,7 +2878,197 @@
       cnt_windows_all: { "en-UK": "{total} windows", "zh-CN": "共 {total} 个窗口" },
       cnt_windows_filtered: { "en-UK": "{shown} / {total} windows", "zh-CN": "显示 {shown} / {total} 个窗口" },
       cnt_steps_windows: { "en-UK": "{steps} steps • {runs} windows", "zh-CN": "{steps} 年 • {runs} 个窗口" },
-      roll_tbl_no_match: { "en-UK": "No rolling windows match this filter.", "zh-CN": "没有符合当前筛选条件的滚动窗口。" }
+      roll_tbl_no_match: { "en-UK": "No rolling windows match this filter.", "zh-CN": "没有符合当前筛选条件的滚动窗口。" },
+
+      // Column Header Hover Explanations
+      ctip_roll_window: {
+        "en-UK": "Consecutive historical calendar years tested for this retirement cohort (length equals Years in retirement).",
+        "zh-CN": "该退休队列所测试的连续历史日历年份区间（长度等于退休模拟年数）。"
+      },
+      ctip_roll_outcome: {
+        "en-UK": "Whether the portfolio lasted the full horizon (Survived, or Survived < initial) or ran out of money early, showing the depletion year.",
+        "zh-CN": "投资组合是否支撑完整个退休周期（存活，或存活但低于初始本金），若提前耗尽则显示耗尽年份。"
+      },
+      ctip_roll_end_bal: {
+        "en-UK": "Portfolio value at the end of the window in the selected Nominal $ or Real $ basis ($0 if depleted).",
+        "zh-CN": "窗口结束时的组合期末余额（按所选名义金额 $ 或实际购买力 $ 计价；若已耗尽则为 $0）。"
+      },
+      ctip_roll_multiple: {
+        "en-UK": "Ending Balance divided by Starting portfolio (1.00x means ending wealth equals starting principal in the selected Nominal $ or Real $ basis).",
+        "zh-CN": "期末资产除以初始资产的倍数（1.00x 表示按当前名义或实际口径计价的期末资产等于初始本金）。"
+      },
+      ctip_roll_tot_exp: {
+        "en-UK": "Cumulative withdrawals taken across all active years of this window, in the selected Nominal $ or Real $ basis.",
+        "zh-CN": "该窗口所有未耗尽活跃年份内实际提取的累计总支出（按所选名义金额 $ 或实际购买力 $ 计价）。"
+      },
+      ctip_roll_cut_yrs: {
+        "en-UK": "Years where the bad-year rule reduced spending divided by active (non-depleted) years in this window.",
+        "zh-CN": "触发不佳年份规则而缩减支出的年数，占该窗口资产未耗尽活跃年数的比例。"
+      },
+      ctip_roll_avg_inf: {
+        "en-UK": "Compound annualized inflation rate (US CPI CAGR or your fixed rate) over this historical window.",
+        "zh-CN": "该历史窗口内的年化复合通胀率（美国 CPI 年化复合涨幅或所设固定通胀率）。"
+      },
+      ctip_port_twwr: {
+        "en-UK": "Time-weighted annualized investment return (geometric CAGR) across active years, independent of withdrawal size (inflation-adjusted in Real $).",
+        "zh-CN": "活跃年份内组合的时间加权年化几何收益率（不受提取金额大小影响；实际购买力 $ 下为扣除通胀后的实际年化收益）。"
+      },
+      ctip_sharpe: {
+        "en-UK": "Risk-adjusted return: mean annual portfolio return in excess of 3-Month US T-Bills divided by excess-return volatility across active years.",
+        "zh-CN": "风险调整后收益：活跃年份内组合相对 3 个月美国国库券的年均超额收益率，除以超额收益的年化标准差。"
+      },
+      ctip_roll_max_dd: {
+        "en-UK": "Worst peak-to-trough percentage drop in year-end portfolio balance (including withdrawals) during this window (-100% if depleted).",
+        "zh-CN": "该窗口内年末组合余额（含提取影响）从历史峰值到谷底的最大百分比跌幅（资产耗尽时为 -100%）。"
+      },
+      ctip_roll_worst_yr: {
+        "en-UK": "Lowest single-year portfolio investment return during active years of this window, with its historical calendar year.",
+        "zh-CN": "该窗口活跃年份中单年组合投资收益率最低的一年及其对应的历史日历年份。"
+      },
+      ctip_sim_yr: {
+        "en-UK": "Simulated retirement year number from the start of retirement (Yr 1 through final horizon year).",
+        "zh-CN": "从退休起点开始计算的模拟年份序号（第 1 年至退休期末年）。"
+      },
+      ctip_surv_pct: {
+        "en-UK": "Percentage of simulated paths whose year-end portfolio balance remains above $0 through this year.",
+        "zh-CN": "截至该年年末组合余额仍大于 $0（尚未耗尽）的模拟序列占比。"
+      },
+      ctip_avg_bal: {
+        "en-UK": "Arithmetic mean year-end portfolio balance across all simulated paths (including $0 depleted paths).",
+        "zh-CN": "全部模拟序列（含余额为 $0 的已耗尽序列）在该年年末的算术平均资产余额。"
+      },
+      ctip_med_bal: {
+        "en-UK": "50th-percentile year-end balance across all paths (half of paths finish higher, half lower).",
+        "zh-CN": "全部模拟序列在该年年末的 50% 分位资产余额（一半序列高于此值，一半低于此值）。"
+      },
+      ctip_p10: {
+        "en-UK": "Unfavorable 10th-percentile year-end balance (90% of paths are at or above this level, 10% below).",
+        "zh-CN": "较差情形（10% 分位）年末余额（90% 的序列不低于此值，仅 10% 低于此值）。"
+      },
+      ctip_p25: {
+        "en-UK": "Lower-quartile (25th-percentile) year-end balance across all simulated paths.",
+        "zh-CN": "全部模拟序列在该年年末的下四分位（25% 分位）资产余额。"
+      },
+      ctip_p75: {
+        "en-UK": "Upper-quartile (75th-percentile) year-end balance across all simulated paths.",
+        "zh-CN": "全部模拟序列在该年年末的上四分位（75% 分位）资产余额。"
+      },
+      ctip_p90: {
+        "en-UK": "Favorable 90th-percentile year-end balance (top 10% of paths exceed this amount).",
+        "zh-CN": "较好情形（90% 分位）年末余额（表现最好的前 10% 序列高于此值）。"
+      },
+      ctip_yr_exp: {
+        "en-UK": "Single-year withdrawal in this retirement year (median or mean) among paths still surviving through this year.",
+        "zh-CN": "截至该年仍存活的模拟序列在当年的单年提取支出（中位数或均值）。"
+      },
+      ctip_cum_exp: {
+        "en-UK": "Cumulative total withdrawals from Yr 1 through this year among paths still surviving through this year.",
+        "zh-CN": "截至该年仍存活的模拟序列从第 1 年累计至该年的总提取支出。"
+      },
+      ctip_cut_runs_pct: {
+        "en-UK": "Percentage of paths surviving through this year that triggered a bad-year spending cut in this year.",
+        "zh-CN": "截至该年仍存活的模拟序列中，当年触发不佳年份支出缩减规则的比例。"
+      },
+      ctip_step_avg_inf: {
+        "en-UK": "Mean annual inflation rate experienced in this retirement year across all simulated paths.",
+        "zh-CN": "全部模拟序列在该退休模拟年所经历的平均年度通胀率。"
+      },
+      ctip_med_dd: {
+        "en-UK": "Median year-end percentage decline from each path's prior peak portfolio balance at this retirement year.",
+        "zh-CN": "各模拟序列在该年年末相对自身此前历史峰值的中位数回撤幅度。"
+      },
+      ctip_hist_yr: {
+        "en-UK": "Historical calendar year supplying asset returns and US CPI inflation for this step.",
+        "zh-CN": "为该模拟年份提供股票、债券收益率及美国 CPI 通胀数据的历史日历年份。"
+      },
+      ctip_start_bal: {
+        "en-UK": "Portfolio balance at the start of the year before that year's return and withdrawal.",
+        "zh-CN": "当年投资收益与提取发生前的年初组合资产余额。"
+      },
+      ctip_exp_out: {
+        "en-UK": "Amount withdrawn during the year; a percentage badge indicates a bad-year spending cut was applied.",
+        "zh-CN": "当年实际提取的支出金额；带百分比标签表示当年触发了不佳年份支出缩减。"
+      },
+      ctip_us_inf: {
+        "en-UK": "Annual inflation rate applied in this year (historical US CPI-U or your fixed rate).",
+        "zh-CN": "当年适用的年度通胀率（美国历史 CPI-U 涨幅或所设固定通胀率）。"
+      },
+      ctip_eq_ret: {
+        "en-UK": "Selected stock index total return for this year (inflation-adjusted in Real $ mode).",
+        "zh-CN": "所选股票指数当年的全收益率（实际购买力 $ 模式下为扣除通胀后的实际收益率）。"
+      },
+      ctip_bd_ret: {
+        "en-UK": "Selected bond index total return for this year (inflation-adjusted in Real $ mode).",
+        "zh-CN": "所选债券指数当年的全收益率（实际购买力 $ 模式下为扣除通胀后的实际收益率）。"
+      },
+      ctip_seq_port_ret: {
+        "en-UK": "Blended investment return earned by the portfolio during this year.",
+        "zh-CN": "投资组合在当年实现的综合投资收益率。"
+      },
+      ctip_end_eq: {
+        "en-UK": "Year-end value of the equity sleeve (after rebalancing if Every year is selected).",
+        "zh-CN": "年末股票仓位市值（若开启每年再平衡，则为再平衡后的市值）。"
+      },
+      ctip_end_bd: {
+        "en-UK": "Year-end value of the bond sleeve (after rebalancing if Every year is selected).",
+        "zh-CN": "年末债券仓位市值（若开启每年再平衡，则为再平衡后的市值）。"
+      },
+      ctip_seq_end_bal: {
+        "en-UK": "Total portfolio value at year-end after withdrawals and investment returns.",
+        "zh-CN": "扣除当年支出并计入投资收益后的年末组合总资产。"
+      },
+      ctip_seq_dd: {
+        "en-UK": "Percentage drop of year-end balance from the highest prior year-end peak (0.00% at a new high).",
+        "zh-CN": "年末资产相对此前最高年末峰值的百分比回撤（创新高时为 0.00%）。"
+      },
+      ctip_cmp_var: {
+        "en-UK": "Tested value of the swept parameter; 'Current' marks the value matching your sidebar plan.",
+        "zh-CN": "被对比变量的各组测试取值；标有“当前”的一行对应左侧边栏当前的计划设置。"
+      },
+      ctip_cmp_surv: {
+        "en-UK": "Percentage of 10,000 paired random runs that finished the full horizon with balance above $0.",
+        "zh-CN": "10,000 次配对随机模拟中，撑完整个退休期且期末余额大于 $0 的比例。"
+      },
+      ctip_cmp_grew: {
+        "en-UK": "Percentage of runs whose ending balance (in Nominal $ or Real $) is at least the starting portfolio.",
+        "zh-CN": "期末资产（按当前名义或实际口径）不低于初始本金的模拟次数占比。"
+      },
+      ctip_cmp_end: {
+        "en-UK": "Median or mean final portfolio balance across all 10,000 paired runs, with multiple of starting portfolio.",
+        "zh-CN": "10,000 次配对模拟的期末资产中位数或均值，括号内为相对初始本金的倍数。"
+      },
+      ctip_cmp_p10_p90: {
+        "en-UK": "80% outcome range of ending portfolio balances, from 10th percentile to 90th percentile.",
+        "zh-CN": "期末资产的 10%–90% 分位区间（涵盖中间 80% 的模拟结果范围）。"
+      },
+      ctip_cmp_exp: {
+        "en-UK": "Median or mean cumulative lifetime withdrawals among runs surviving the full horizon.",
+        "zh-CN": "完整存活至期末的模拟序列在退休期内的累计总支出（中位数或均值）。"
+      },
+      ctip_cmp_cut: {
+        "en-UK": "Median or mean number of bad-year spending-cut years among surviving runs.",
+        "zh-CN": "完整存活的模拟序列触发不佳年份支出缩减的年数（中位数或均值）。"
+      },
+      ctip_cmp_dd: {
+        "en-UK": "Median or mean worst peak-to-trough portfolio balance decline across the 10,000 paired runs.",
+        "zh-CN": "10,000 次配对模拟中各序列最大回撤的中位数或均值。"
+      },
+      ctip_hist_col_yr: {
+        "en-UK": "Calendar year of the annual historical observation.",
+        "zh-CN": "年度历史观测数据对应的日历年份。"
+      },
+      ctip_hist_col_cpi: {
+        "en-UK": "Annual US Consumer Price Index (CPI-U) inflation rate for the calendar year.",
+        "zh-CN": "该日历年度的美国消费者物价指数 (CPI-U) 通胀率。"
+      },
+      ctip_hist_col_cum: {
+        "en-UK": "Cumulative price level starting from $100 at the start of the displayed range.",
+        "zh-CN": "以所显示区间起点为 $100 计算的累计物价水平（反映初始 $100 商品经累计通胀后的价格）。"
+      },
+      ctip_hist_col_idx: {
+        "en-UK": "{series}: annual nominal total return in USD (with dividends/coupons reinvested); '—' marks pre-inception years.",
+        "zh-CN": "{series}：按美元计价的年度名义全收益率（含股息或票息再投资）；“—”表示指数成立前的年份。"
+      }
     };
 
     const NUM_RANDOM_RUNS = 10000;
@@ -2973,6 +3202,14 @@
 
     function getSeriesLabel(seriesKey) {
       return t("series_" + seriesKey);
+    }
+
+    function escAttr(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function thCol(label, tipText) {
+      return `<th data-col-label="${escAttr(label)}" data-col-tip="${escAttr(tipText)}">${label}</th>`;
     }
 
     function syncRangeNoticeText() {
@@ -3896,18 +4133,18 @@
       document.getElementById("rollingFilters").style.display = "none";
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
-          <th>${t("th_sim_yr")}</th>
-          <th>${t("th_hist_yr")}</th>
-          <th>${t("th_start_bal")}</th>
-          <th>${t("th_exp_out")}</th>
-          <th>${t("th_us_inf")}</th>
-          <th>${t("th_eq_ret")}</th>
-          <th>${t("th_bd_ret")}</th>
-          <th>${t("th_port_ret")}</th>
-          <th>${t("th_end_eq")}</th>
-          <th>${t("th_end_bd")}</th>
-          <th>${t("th_end_bal")}</th>
-          <th>${t("th_drawdown")}</th>
+          ${thCol(t("th_sim_yr"), t("ctip_sim_yr"))}
+          ${thCol(t("th_hist_yr"), t("ctip_hist_yr"))}
+          ${thCol(t("th_start_bal"), t("ctip_start_bal"))}
+          ${thCol(t("th_exp_out"), t("ctip_exp_out"))}
+          ${thCol(t("th_us_inf"), t("ctip_us_inf"))}
+          ${thCol(t("th_eq_ret"), t("ctip_eq_ret"))}
+          ${thCol(t("th_bd_ret"), t("ctip_bd_ret"))}
+          ${thCol(t("th_port_ret"), t("ctip_seq_port_ret"))}
+          ${thCol(t("th_end_eq"), t("ctip_end_eq"))}
+          ${thCol(t("th_end_bd"), t("ctip_end_bd"))}
+          ${thCol(t("th_end_bal"), t("ctip_seq_end_bal"))}
+          ${thCol(t("th_drawdown"), t("ctip_seq_dd"))}
         </tr>
       `;
       const tbody = document.querySelector("#ledgerTable tbody");
@@ -5070,19 +5307,19 @@
       const expStatHdr = useMean ? t("stat_avg_short") : t("stat_med_short");
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
-          <th>${t("th_sim_yr")}</th>
-          <th>${t("th_surv_pct")}</th>
-          <th>${t("th_avg_bal")}</th>
-          <th>${t("th_med_p50")}</th>
-          <th>${t("th_p10")}</th>
-          <th>${t("th_p25")}</th>
-          <th>${t("th_p75")}</th>
-          <th>${t("th_p90")}</th>
-          <th title="${t("tip_surv_yr")}">${t("th_yr_exp", { stat: expStatHdr })}</th>
-          <th title="${t("tip_surv_cum")}">${t("th_tot_exp", { stat: expStatHdr })}</th>
-          ${hasCut ? `<th title="${t("tip_surv_yr")}">${t("th_cut_runs_pct")}</th>` : ""}
-          <th>${t("th_avg_us_inf")}</th>
-          <th>${t("th_med_dd")}</th>
+          ${thCol(t("th_sim_yr"), t("ctip_sim_yr"))}
+          ${thCol(t("th_surv_pct"), t("ctip_surv_pct"))}
+          ${thCol(t("th_avg_bal"), t("ctip_avg_bal"))}
+          ${thCol(t("th_med_p50"), t("ctip_med_bal"))}
+          ${thCol(t("th_p10"), t("ctip_p10"))}
+          ${thCol(t("th_p25"), t("ctip_p25"))}
+          ${thCol(t("th_p75"), t("ctip_p75"))}
+          ${thCol(t("th_p90"), t("ctip_p90"))}
+          ${thCol(t("th_yr_exp", { stat: expStatHdr }), t("ctip_yr_exp"))}
+          ${thCol(t("th_tot_exp", { stat: expStatHdr }), t("ctip_cum_exp"))}
+          ${hasCut ? thCol(t("th_cut_runs_pct"), t("ctip_cut_runs_pct")) : ""}
+          ${thCol(t("th_avg_us_inf"), t("ctip_step_avg_inf"))}
+          ${thCol(t("th_med_dd"), t("ctip_med_dd"))}
         </tr>
       `;
       const tbody = document.querySelector("#ledgerTable tbody");
@@ -5129,17 +5366,17 @@
       const hasCut = rolling.expenseFloorPct < 100;
       document.getElementById("ledgerHead").innerHTML = `
         <tr>
-          <th>${t("th_window")}</th>
-          <th>${t("th_outcome")}</th>
-          <th>${t("th_end_bal")}</th>
-          <th>${t("th_multiple")}</th>
-          <th>${t("th_tot_exp_plain")}</th>
-          ${hasCut ? `<th>${t("th_cut_yrs_plain")}</th>` : ""}
-          <th>${t("th_avg_us_inf")}</th>
-          <th>${t("kpi_port_twwr")}</th>
-          <th>${t("kpi_sharpe")}</th>
-          <th>${t("th_drawdown")}</th>
-          <th>${t("th_worst_yr")}</th>
+          ${thCol(t("th_window"), t("ctip_roll_window"))}
+          ${thCol(t("th_outcome"), t("ctip_roll_outcome"))}
+          ${thCol(t("th_end_bal"), t("ctip_roll_end_bal"))}
+          ${thCol(t("th_multiple"), t("ctip_roll_multiple"))}
+          ${thCol(t("th_tot_exp_plain"), t("ctip_roll_tot_exp"))}
+          ${hasCut ? thCol(t("th_cut_yrs_plain"), t("ctip_roll_cut_yrs")) : ""}
+          ${thCol(t("th_avg_us_inf"), t("ctip_roll_avg_inf"))}
+          ${thCol(t("kpi_port_twwr"), t("ctip_port_twwr"))}
+          ${thCol(t("kpi_sharpe"), t("ctip_sharpe"))}
+          ${thCol(t("th_drawdown"), t("ctip_roll_max_dd"))}
+          ${thCol(t("th_worst_yr"), t("ctip_roll_worst_yr"))}
         </tr>
       `;
 
@@ -5519,12 +5756,12 @@
 
       document.getElementById("histDataHead").innerHTML = `
         <tr>
-          <th>${t("th_year")}</th>
-          <th>${t("th_us_cpi")}</th>
-          <th>${t("th_cum_cpi")}</th>
+          ${thCol(t("th_year"), t("ctip_hist_col_yr"))}
+          ${thCol(t("th_us_cpi"), t("ctip_hist_col_cpi"))}
+          ${thCol(t("th_cum_cpi"), t("ctip_hist_col_cum"))}
           ${HIST_TABLE_COLS.map(colKey => {
             const tag = colKey === cfg.eqKey ? t("tag_eq") : (colKey === cfg.bdKey ? t("tag_bd") : "");
-            return `<th>${t("hcol_" + colKey)}${tag}</th>`;
+            return thCol(`${t("hcol_" + colKey)}${tag}`, t("ctip_hist_col_idx", { series: getSeriesLabel(colKey) }));
           }).join("")}
         </tr>
       `;
@@ -6003,16 +6240,16 @@
       const showCutCol = varKey === "expense_floor" || baseCfg.expenseFloorPct < 100;
       document.getElementById("compareHead").innerHTML = `
         <tr>
-          <th>${t("cmp_var_" + varKey)}</th>
-          <th>${t("kpi_survival")}</th>
-          <th>${t("cmp_th_grew")}</th>
-          <th>${t("kpi_end_bal_stat", { stat: statShort })}</th>
-          <th>${t("kpi_p10_p90_end")}</th>
-          <th>${t("kpi_tot_exp_stat", { stat: statShort })}</th>
-          ${showCutCol ? `<th>${t("cmp_th_cut_yrs", { stat: statShort })}</th>` : ""}
-          <th>${t("kpi_port_twwr_stat", { stat: statShort })}</th>
-          <th>${t("kpi_sharpe")}</th>
-          <th>${t("kpi_max_dd_stat", { stat: statShort })}</th>
+          ${thCol(t("cmp_var_" + varKey), t("ctip_cmp_var"))}
+          ${thCol(t("kpi_survival"), t("ctip_cmp_surv"))}
+          ${thCol(t("cmp_th_grew"), t("ctip_cmp_grew"))}
+          ${thCol(t("kpi_end_bal_stat", { stat: statShort }), t("ctip_cmp_end"))}
+          ${thCol(t("kpi_p10_p90_end"), t("ctip_cmp_p10_p90"))}
+          ${thCol(t("kpi_tot_exp_stat", { stat: statShort }), t("ctip_cmp_exp"))}
+          ${showCutCol ? thCol(t("cmp_th_cut_yrs", { stat: statShort }), t("ctip_cmp_cut")) : ""}
+          ${thCol(t("kpi_port_twwr_stat", { stat: statShort }), t("ctip_port_twwr"))}
+          ${thCol(t("kpi_sharpe"), t("ctip_sharpe"))}
+          ${thCol(t("kpi_max_dd_stat", { stat: statShort }), t("ctip_cmp_dd"))}
         </tr>
       `;
 
@@ -6481,7 +6718,14 @@
       }
     }
 
+    var activeColTh = null;
+
     function updateAll({ forceResample = false } = {}) {
+      queueMicrotask(() => {
+        if (typeof hideColTooltip === "function" && activeColTh && !activeColTh.isConnected) {
+          hideColTooltip();
+        }
+      });
       const initialAsset = Math.max(1, parseMoneyInput(elInitial) || 1000000);
       const initialExpense = Math.max(0, parseMoneyInput(elExpense));
       const eqPct = parseInt(elRatioSelect.value, 10);
@@ -7215,6 +7459,7 @@
       activeChartClearers.forEach(fn => {
         if (fn !== exceptClearer) fn();
       });
+      if (exceptClearer === null && typeof hideColTooltip === "function") hideColTooltip();
     }
 
     function bindChartPointer(canvas, onInspectClientX, onClear) {
@@ -7252,7 +7497,7 @@
     }
 
     document.addEventListener("pointerdown", e => {
-      if (!e.target.closest(".chart-wrap")) clearAllChartTooltips();
+      if (!e.target.closest(".chart-wrap") && !e.target.closest("th[data-col-tip]")) clearAllChartTooltips();
     });
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") clearAllChartTooltips();
@@ -8197,6 +8442,65 @@
       });
     }
 
+    // Table Column Header Tooltip Controller (desktop hover + touch tap)
+    const elColTooltip = document.getElementById("colTooltip");
+    const elColTooltipTitle = document.getElementById("colTooltipTitle");
+    const elColTooltipBody = document.getElementById("colTooltipBody");
+
+    function hideColTooltip() {
+      if (!elColTooltip) return;
+      elColTooltip.classList.remove("is-open");
+      elColTooltip.setAttribute("aria-hidden", "true");
+      activeColTh = null;
+    }
+
+    function showColTooltip(thEl) {
+      if (!elColTooltip || !thEl || !thEl.dataset.colTip) return;
+      elColTooltipTitle.textContent = thEl.dataset.colLabel || thEl.textContent.trim();
+      elColTooltipBody.textContent = thEl.dataset.colTip;
+      elColTooltip.classList.add("is-open");
+      elColTooltip.setAttribute("aria-hidden", "false");
+      activeColTh = thEl;
+
+      const r = thEl.getBoundingClientRect();
+      const pw = elColTooltip.offsetWidth;
+      const ph = elColTooltip.offsetHeight;
+      const left = Math.max(12, Math.min(window.innerWidth - pw - 12, r.left + r.width / 2 - pw / 2));
+      const top = r.top - ph - 7 >= 10 ? r.top - ph - 7 : Math.min(window.innerHeight - ph - 10, r.bottom + 7);
+      elColTooltip.style.left = Math.round(left) + "px";
+      elColTooltip.style.top = Math.round(top) + "px";
+    }
+
+    document.addEventListener("pointerover", e => {
+      if (e.pointerType !== "mouse") return;
+      const th = e.target.closest("th[data-col-tip]");
+      if (th) showColTooltip(th);
+      else if (activeColTh) hideColTooltip();
+    });
+
+    document.addEventListener("pointerout", e => {
+      if (e.pointerType === "mouse" && !e.relatedTarget && activeColTh) hideColTooltip();
+    });
+
+    document.addEventListener("pointerdown", e => {
+      const th = e.target.closest("th[data-col-tip]");
+      if (e.pointerType !== "mouse") {
+        if (th) {
+          if (activeColTh === th) hideColTooltip();
+          else showColTooltip(th);
+        } else {
+          hideColTooltip();
+        }
+      } else if (!th) {
+        hideColTooltip();
+      }
+    });
+
+    document.addEventListener("scroll", hideColTooltip, { capture: true, passive: true });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") hideColTooltip();
+    });
+
     // Compare controls listeners
     document.querySelectorAll("#compareVarWrap button[data-cvar]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -8264,6 +8568,7 @@
     let resizeRaf = null;
     let resizeTimer = null;
     window.addEventListener("resize", () => {
+      hideColTooltip();
       if (elBasisPopover && isPopoverOpen(elBasisPopover)) closeAnchoredPopover(elBasisPopover, "#btnBasisHelp");
       if (elInfoPopover && isPopoverOpen(elInfoPopover)) { closeAnchoredPopover(elInfoPopover, ".info-btn"); activeInfoBtn = null; }
       if (resizeRaf === null) {
